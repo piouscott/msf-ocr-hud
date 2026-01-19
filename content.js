@@ -912,6 +912,12 @@ window.startCropCalibrator = startCropCalibrator;
 function startPortraitCapture(options) {
   const { dataUrl, count } = options;
 
+  // Disposition MSF War: 2 portraits en haut, 3 en bas (total 5)
+  // Ligne 1: positions 0, 1 (centres sur colonnes 0.5 et 1.5 d'une grille 3 colonnes)
+  // Ligne 2: positions 2, 3, 4 (colonnes 0, 1, 2)
+  const GRID_COLS = 3;
+  const GRID_ROWS = 2;
+
   // Charger l'image de fond
   const bgImage = new Image();
   bgImage.onload = () => {
@@ -943,13 +949,21 @@ function startPortraitCapture(options) {
     box.style.cssText = "position:absolute;border:3px solid #ff922b;background:rgba(255,146,43,0.1);box-sizing:border-box;pointer-events:none";
     overlay.appendChild(box);
 
-    // Lignes de separation (pour montrer les 5 colonnes)
-    const separators = [];
-    for (let i = 1; i < count; i++) {
+    // Lignes de separation pour grille 3x2
+    const vSeparators = []; // 2 lignes verticales
+    const hSeparators = []; // 1 ligne horizontale
+
+    for (let i = 1; i < GRID_COLS; i++) {
       const sep = document.createElement("div");
       sep.style.cssText = "position:absolute;width:2px;background:#ff922b;opacity:0.7;pointer-events:none;display:none";
       box.appendChild(sep);
-      separators.push(sep);
+      vSeparators.push(sep);
+    }
+    for (let i = 1; i < GRID_ROWS; i++) {
+      const sep = document.createElement("div");
+      sep.style.cssText = "position:absolute;height:2px;background:#ff922b;opacity:0.7;pointer-events:none;display:none";
+      box.appendChild(sep);
+      hSeparators.push(sep);
     }
 
     // Instructions
@@ -959,9 +973,8 @@ function startPortraitCapture(options) {
       <div style="color:#ff922b;font-weight:bold;font-size:16px;margin-bottom:8px">
         Capture des ${count} portraits
       </div>
-      <div style="margin-bottom:12px">Selectionnez la zone contenant les ${count} portraits alignes horizontalement</div>
+      <div style="margin-bottom:12px">Selectionnez la zone contenant les 5 portraits (2 en haut, 3 en bas)</div>
       <div style="font-size:12px;color:#888">
-        La zone sera decoupee automatiquement en ${count} colonnes<br>
         <b>ENTREE</b> = Valider | <b>ESC</b> = Annuler
       </div>
     `;
@@ -1000,13 +1013,22 @@ function startPortraitCapture(options) {
       box.style.width = w + "px";
       box.style.height = h + "px";
 
-      // Mettre a jour les separateurs
-      const colW = w / count;
-      separators.forEach((sep, i) => {
+      // Mettre a jour les separateurs verticaux (colonnes)
+      const colW = w / GRID_COLS;
+      vSeparators.forEach((sep, i) => {
         sep.style.display = w > 50 ? "block" : "none";
         sep.style.left = (colW * (i + 1)) + "px";
         sep.style.top = "0";
         sep.style.height = h + "px";
+      });
+
+      // Mettre a jour les separateurs horizontaux (lignes)
+      const rowH = h / GRID_ROWS;
+      hSeparators.forEach((sep, i) => {
+        sep.style.display = h > 50 ? "block" : "none";
+        sep.style.left = "0";
+        sep.style.top = (rowH * (i + 1)) + "px";
+        sep.style.width = w + "px";
       });
     }
 
@@ -1016,7 +1038,7 @@ function startPortraitCapture(options) {
       const w = Math.abs(endX - startX);
       const h = Math.abs(endY - startY);
 
-      if (w < 50 || h < 20) return null;
+      if (w < 50 || h < 50) return null;
 
       // Calculer les coordonnees dans l'image originale
       const scaleX = bgImage.naturalWidth / W;
@@ -1027,24 +1049,43 @@ function startPortraitCapture(options) {
       const srcW = w * scaleX;
       const srcH = h * scaleY;
 
-      const colW = srcW / count;
+      const cellW = srcW / GRID_COLS;
+      const cellH = srcH / GRID_ROWS;
       const portraits = [];
 
-      // Decoupe en colonnes carrees (prendre la hauteur comme cote du carre)
-      const squareSize = Math.min(colW, srcH);
+      // Taille du carre = min des dimensions de cellule
+      const squareSize = Math.min(cellW, cellH) * 0.85; // 85% pour eviter les bords
       const outSize = Math.max(64, Math.round(squareSize));
 
-      for (let i = 0; i < count; i++) {
+      // Layout MSF War: 2 portraits en haut (centres), 3 en bas
+      // Positions en colonnes (0-indexed):
+      // - Ligne 0: col 0.5, 1.5 (centres entre les lignes de la grille)
+      // - Ligne 1: col 0, 1, 2
+      const positions = [
+        { col: 0.5, row: 0 },  // Portrait 1 - haut gauche
+        { col: 1.5, row: 0 },  // Portrait 2 - haut droite
+        { col: 0, row: 1 },    // Portrait 3 - bas gauche
+        { col: 1, row: 1 },    // Portrait 4 - bas centre
+        { col: 2, row: 1 }     // Portrait 5 - bas droite
+      ];
+
+      for (let i = 0; i < Math.min(count, positions.length); i++) {
+        const pos = positions[i];
+
         const portraitCanvas = document.createElement("canvas");
         portraitCanvas.width = outSize;
         portraitCanvas.height = outSize;
         const pCtx = portraitCanvas.getContext("2d");
 
-        // Centrer le carre dans chaque colonne
-        const colX = srcX + i * colW + (colW - squareSize) / 2;
-        const colY = srcY + (srcH - squareSize) / 2;
+        // Centre de la cellule (positions decimales pour les 2 du haut)
+        const cellCenterX = srcX + pos.col * cellW + cellW / 2;
+        const cellCenterY = srcY + pos.row * cellH + cellH / 2;
 
-        pCtx.drawImage(bgImage, colX, colY, squareSize, squareSize, 0, 0, outSize, outSize);
+        // Coin superieur gauche du carre centre
+        const cropX = cellCenterX - squareSize / 2;
+        const cropY = cellCenterY - squareSize / 2;
+
+        pCtx.drawImage(bgImage, cropX, cropY, squareSize, squareSize, 0, 0, outSize, outSize);
 
         portraits.push({ dataUrl: portraitCanvas.toDataURL("image/png") });
       }
