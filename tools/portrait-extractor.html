@@ -928,15 +928,22 @@
           const textW = Math.floor(cellW * 0.9);
           const textH = Math.floor(nameH);
 
-          // Extraire la zone de texte
+          // Extraire la zone de texte avec agrandissement 3x pour meilleur OCR
+          const scale = 3;
           const textCanvas = document.createElement('canvas');
-          textCanvas.width = textW;
-          textCanvas.height = textH;
+          textCanvas.width = textW * scale;
+          textCanvas.height = textH * scale;
           const tCtx = textCanvas.getContext('2d');
-          tCtx.drawImage(previewCanvas, textX, textY, textW, textH, 0, 0, textW, textH);
 
-          // Preprocesser pour OCR (augmenter contraste, inverser si fond sombre)
-          preprocessForOCR(tCtx, textW, textH);
+          // Desactiver le lissage pour un texte plus net
+          tCtx.imageSmoothingEnabled = true;
+          tCtx.imageSmoothingQuality = 'high';
+
+          // Dessiner avec agrandissement
+          tCtx.drawImage(previewCanvas, textX, textY, textW, textH, 0, 0, textW * scale, textH * scale);
+
+          // Preprocesser pour OCR (seuil adaptatif Otsu, inversion si fond sombre)
+          preprocessForOCR(tCtx, textW * scale, textH * scale);
 
           // OCR
           const { data: { text } } = await ocrWorker.recognize(textCanvas);
@@ -960,28 +967,77 @@
     }
 
     function preprocessForOCR(ctx, w, h) {
+      // MSF utilise du texte dore/blanc sur fond sombre
+      // On va: 1) agrandir 3x, 2) detecter le texte clair, 3) binariser avec seuil adaptatif
+
       const imageData = ctx.getImageData(0, 0, w, h);
       const data = imageData.data;
 
-      // Calculer la luminosite moyenne
-      let totalBrightness = 0;
-      for (let i = 0; i < data.length; i += 4) {
-        totalBrightness += (data[i] + data[i + 1] + data[i + 2]) / 3;
-      }
-      const avgBrightness = totalBrightness / (data.length / 4);
+      // Analyser l'histogramme pour trouver le seuil optimal
+      const histogram = new Array(256).fill(0);
+      const brightnesses = [];
 
-      // Si fond sombre (< 128), inverser les couleurs
+      for (let i = 0; i < data.length; i += 4) {
+        // Utiliser une formule qui favorise le jaune/or (caracteristique MSF)
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        // Le texte MSF est souvent jaune/or (R et G eleves, B plus bas)
+        const gray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+        histogram[gray]++;
+        brightnesses.push(gray);
+      }
+
+      // Trouver la luminosite moyenne
+      const avgBrightness = brightnesses.reduce((a, b) => a + b, 0) / brightnesses.length;
+
+      // Methode d'Otsu pour trouver le seuil optimal
+      const total = brightnesses.length;
+      let sum = 0;
+      for (let i = 0; i < 256; i++) sum += i * histogram[i];
+
+      let sumB = 0;
+      let wB = 0;
+      let maxVariance = 0;
+      let threshold = 128;
+
+      for (let t = 0; t < 256; t++) {
+        wB += histogram[t];
+        if (wB === 0) continue;
+        const wF = total - wB;
+        if (wF === 0) break;
+
+        sumB += t * histogram[t];
+        const mB = sumB / wB;
+        const mF = (sum - sumB) / wF;
+        const variance = wB * wF * (mB - mF) * (mB - mF);
+
+        if (variance > maxVariance) {
+          maxVariance = variance;
+          threshold = t;
+        }
+      }
+
+      // Ajuster le seuil pour MSF (texte clair sur fond sombre)
+      // Si la moyenne est sombre, baisser le seuil pour capturer plus de texte clair
+      if (avgBrightness < 80) {
+        threshold = Math.max(60, threshold - 30);
+      }
+
+      // Appliquer le preprocessing: inversion + binarisation
       const invert = avgBrightness < 100;
 
       for (let i = 0; i < data.length; i += 4) {
         let gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
 
+        // Pour MSF, le texte est clair (valeur haute) - on veut le garder
         if (invert) {
+          // Fond sombre: les pixels clairs (texte) deviennent noirs apres inversion
           gray = 255 - gray;
         }
 
-        // Augmenter le contraste
-        gray = gray < 128 ? 0 : 255;
+        // Binarisation avec le seuil d'Otsu
+        gray = gray < threshold ? 0 : 255;
 
         data[i] = gray;
         data[i + 1] = gray;
@@ -998,9 +1054,31 @@
       let clean = text.trim()
         .replace(/\n/g, ' ')           // Remplacer sauts de ligne
         .replace(/\s+/g, ' ')          // Normaliser espaces
-        .replace(/[_|\\\/\[\]{}]/g, '') // Supprimer caracteres parasites
-        .replace(/^[^a-zA-Z]+/, '')    // Supprimer prefixe non-alpha
-        .replace(/[^a-zA-Z]+$/, '')    // Supprimer suffixe non-alpha
+        .replace(/[_|\\\/\[\]{}«»""]/g, '') // Supprimer caracteres parasites
+        .replace(/\s*[.,;:!?]+\s*$/g, '') // Supprimer ponctuation finale
+        .trim();
+
+      // Corrections OCR courantes pour MSF
+      clean = clean
+        .replace(/\bME\s*U\b/gi, 'MCU')           // ME U -> MCU
+        .replace(/\b0\b/g, 'O')                    // 0 -> O (zero vs lettre)
+        .replace(/\b1\b/g, 'I')                    // 1 -> I
+        .replace(/\bll\b/gi, 'II')                 // ll -> II (chiffre romain)
+        .replace(/\bFEND[GC]J\b/gi, 'ENDGAME')    // FENDGJ -> ENDGAME
+        .replace(/\bTHAND[S]?\b/gi, 'THANOS')     // THANDS -> THANOS
+        .replace(/\bTOMERE\b/gi, "D'OMBRE")       // TOMERE -> D'OMBRE
+        .replace(/\bFANTASII\b/gi, 'FANTASTIC')   // FANTASII -> FANTASTIC
+        .replace(/\bRO[1I]\b/gi, 'ROI')           // RO1 ou ROI corrige
+        .replace(/\bINVIS[1I]BLE\b/gi, 'INVISIBLE')
+        .replace(/\b([A-Z])\s+([A-Z])\b/g, '$1$2') // Lettres separees par espace
+        .replace(/\(\s+/g, '(')                    // Espace apres (
+        .replace(/\s+\)/g, ')')                    // Espace avant )
+        .trim();
+
+      // Supprimer prefixe/suffixe non-alpha (apres corrections)
+      clean = clean
+        .replace(/^[^a-zA-Z(]+/, '')
+        .replace(/[^a-zA-Z)]+$/, '')
         .trim();
 
       // Ignorer les resultats trop courts ou avec trop peu de lettres

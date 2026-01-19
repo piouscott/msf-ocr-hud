@@ -327,6 +327,7 @@ Min Power : [1.1]x
 - [x] Paramètres par défaut optimisés pour cartes MSF (portrait 70%×50%, nom à 80%)
 - [x] Paramètres de marge (startX, startY, gridWidth, gridHeight) pour ajuster la zone de grille
 - [x] Paramètre d'écart entre lignes (rowGap) pour compenser les espacements irréguliers
+- [x] OCR amélioré: seuil adaptatif (Otsu), agrandissement 3x, corrections MSF automatiques
 
 ---
 
