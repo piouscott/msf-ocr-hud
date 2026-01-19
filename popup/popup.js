@@ -3,6 +3,10 @@ const ext = typeof browser !== "undefined" ? browser : chrome;
 // Elements DOM
 const btnAnalyze = document.getElementById("btn-analyze");
 const btnCalibrate = document.getElementById("btn-calibrate");
+const btnExport = document.getElementById("btn-export");
+const btnImport = document.getElementById("btn-import");
+const btnManage = document.getElementById("btn-manage");
+const importFile = document.getElementById("import-file");
 const spinner = document.getElementById("spinner");
 const statusText = document.getElementById("status-text");
 const resultsSection = document.getElementById("results");
@@ -55,6 +59,82 @@ btnCalibrate.addEventListener("click", async () => {
   } catch (e) {
     setStatus("Erreur: " + e.message, "error");
   }
+});
+
+// ============================================
+// Bouton Exporter
+// ============================================
+
+btnExport.addEventListener("click", async () => {
+  try {
+    const stored = await ext.storage.local.get(["msfZonesConfig", "msfPortraits"]);
+
+    const exportData = {
+      version: 1,
+      exportDate: new Date().toISOString(),
+      zones: stored.msfZonesConfig || null,
+      portraits: stored.msfPortraits || {}
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `msf-config-${Date.now()}.json`;
+    a.click();
+
+    URL.revokeObjectURL(url);
+    setStatus("Config exportee", "success");
+  } catch (e) {
+    setStatus("Erreur export: " + e.message, "error");
+  }
+});
+
+// ============================================
+// Bouton Importer
+// ============================================
+
+btnImport.addEventListener("click", () => {
+  importFile.click();
+});
+
+importFile.addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+
+    if (data.zones) {
+      await ext.storage.local.set({ msfZonesConfig: data.zones });
+    }
+
+    if (data.portraits) {
+      // Fusionner avec les portraits existants
+      const stored = await ext.storage.local.get("msfPortraits");
+      const merged = { ...(stored.msfPortraits || {}), ...data.portraits };
+      await ext.storage.local.set({ msfPortraits: merged });
+    }
+
+    const zoneCount = data.zones ? data.zones.slots.length : 0;
+    const portraitCount = data.portraits ? Object.keys(data.portraits).length : 0;
+    setStatus(`Importe: ${zoneCount} slots, ${portraitCount} portraits`, "success");
+
+    // Reset le file input
+    importFile.value = "";
+  } catch (e) {
+    setStatus("Erreur import: " + e.message, "error");
+  }
+});
+
+// ============================================
+// Bouton Gerer Counters
+// ============================================
+
+btnManage.addEventListener("click", () => {
+  window.location.href = "manage.html";
 });
 
 // ============================================

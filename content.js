@@ -428,6 +428,17 @@ class CounterSuggester {
     const countersDb = await countersRes.json();
     const teamsDb = await teamsRes.json();
 
+    // Charger les counters custom depuis storage
+    try {
+      const stored = await ext.storage.local.get("msfCustomCounters");
+      if (stored.msfCustomCounters) {
+        // Les counters custom ecrasent les defaults
+        Object.assign(countersDb.counters, stored.msfCustomCounters);
+      }
+    } catch (e) {
+      console.log("[MSF] Pas de counters custom en storage");
+    }
+
     return new CounterSuggester(countersDb, teamsDb);
   }
 

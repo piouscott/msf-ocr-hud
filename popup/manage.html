@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>MSF - Gestion Counters</title>
+  <link rel="stylesheet" href="popup.css">
+  <style>
+    body { width: 450px; min-height: 400px; }
+    #app { max-height: 500px; overflow-y: auto; }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 12px;
+      color: #00d4ff;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .back-link:hover { text-decoration: underline; }
+
+    .team-section {
+      background: #2d2d44;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .team-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+
+    .team-name-title {
+      font-weight: 600;
+      color: #00d4ff;
+    }
+
+    .team-toggle {
+      color: #888;
+      font-size: 12px;
+    }
+
+    .counter-list {
+      display: none;
+    }
+
+    .counter-list.expanded {
+      display: block;
+    }
+
+    .counter-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid #444;
+    }
+
+    .counter-row:last-child { border-bottom: none; }
+
+    .counter-row select,
+    .counter-row input {
+      background: #1a1a2e;
+      border: 1px solid #444;
+      border-radius: 4px;
+      color: #fff;
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+
+    .counter-row select { flex: 2; }
+    .counter-row input[type="number"] { width: 50px; }
+    .counter-row input[type="text"] { flex: 1; }
+
+    .counter-row .btn-remove {
+      background: #ff6b6b;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    .btn-add-counter {
+      background: #51cf66;
+      color: #1a1a2e;
+      border: none;
+      border-radius: 4px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    #save-bar {
+      position: sticky;
+      bottom: 0;
+      background: #1a1a2e;
+      padding: 12px 0;
+      border-top: 1px solid #444;
+      text-align: center;
+    }
+
+    #btn-save {
+      background: #00d4ff;
+      color: #1a1a2e;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 24px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <span class="back-link" id="back">&larr; Retour</span>
+    <header>
+      <h1>Gestion Counters</h1>
+    </header>
+
+    <div id="teams-container">
+      <!-- Genere par JS -->
+    </div>
+
+    <div id="save-bar">
+      <button id="btn-save">Sauvegarder</button>
+      <span id="save-status"></span>
+    </div>
+  </div>
+
+  <script src="manage.js"></script>
+</body>
+</html>

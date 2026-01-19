@@ -75,6 +75,26 @@ button:active {
   background: #3d3d55;
 }
 
+#tools {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.btn-small {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 11px;
+  background: #1a1a2e;
+  border: 1px solid #444;
+  color: #888;
+}
+
+.btn-small:hover {
+  border-color: #00d4ff;
+  color: #ccc;
+}
+
 #status {
   display: flex;
   align-items: center;

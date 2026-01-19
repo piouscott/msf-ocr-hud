@@ -273,10 +273,12 @@ Min Power : [1.1]x
 - [x] Logique de suggestion (CounterSuggester avec minPowerRatio)
 - [x] Afficher top 3 counters dans popup avec % confiance et puissance min
 
-### Phase 5 : Gestion
-- [ ] Interface d'ajout de counters
-- [ ] Export/Import de config
-- [ ] Compatibilité Chrome
+### Phase 5 : Gestion ✅
+- [x] Export config (zones + portraits) en JSON
+- [x] Import config avec fusion des portraits
+- [x] Interface de gestion des counters (manage.html)
+- [x] Counters custom stockes dans storage.local
+- [ ] Compatibilité Chrome (a tester)
 
 ---
 
@@ -320,4 +322,4 @@ Min Power : [1.1]x
 
 ---
 
-**Prochaine étape** : Phase 5 - Interface de gestion des counters et export/import.
+**Prochaine étape** : Test complet et ajustements. Extension fonctionnelle!
