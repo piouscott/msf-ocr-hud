@@ -328,6 +328,13 @@
         <span id="cfg-gridHeight-val">100%</span>
       </div>
     </div>
+    <div class="config-row">
+      <div class="config-item">
+        <label>Ecart lignes:</label>
+        <input type="range" id="cfg-rowGap" value="0" min="-10" max="20">
+        <span id="cfg-rowGap-val">0%</span>
+      </div>
+    </div>
 
     <div style="margin-top:15px; padding-top:15px; border-top:1px solid #444;">
       <div style="font-size:12px; color:#00d4ff; margin-bottom:8px;">Position portrait dans la cellule:</div>
@@ -418,6 +425,7 @@
       startY: 0,        // % marge haute avant la grille
       gridWidth: 100,   // % largeur totale de la grille (100 = toute l'image)
       gridHeight: 100,  // % hauteur totale de la grille
+      rowGap: 0,        // % espacement supplementaire entre les lignes
       portraitSize: 80, // % (legacy, non utilise si widthPct/heightPct definis)
       offsetX: 50,      // % position horizontale du centre dans la cellule
       offsetY: 8,       // % position verticale du haut dans la cellule (petit decalage)
@@ -528,6 +536,10 @@
       config.gridHeight = parseInt(e.target.value);
       document.getElementById('cfg-gridHeight-val').textContent = config.gridHeight + '%';
     });
+    document.getElementById('cfg-rowGap').addEventListener('input', (e) => {
+      config.rowGap = parseInt(e.target.value);
+      document.getElementById('cfg-rowGap-val').textContent = config.rowGap + '%';
+    });
 
     // Position portrait dans cellule
     document.getElementById('cfg-offsetX').addEventListener('input', (e) => {
@@ -616,6 +628,7 @@
       config.startY = 0;
       config.gridWidth = 98;
       config.gridHeight = 100;
+      config.rowGap = 0;
 
       // Position portrait dans cellule
       config.offsetX = 50;
@@ -634,6 +647,8 @@
       document.getElementById('cfg-gridWidth-val').textContent = config.gridWidth + '%';
       document.getElementById('cfg-gridHeight').value = config.gridHeight;
       document.getElementById('cfg-gridHeight-val').textContent = config.gridHeight + '%';
+      document.getElementById('cfg-rowGap').value = config.rowGap;
+      document.getElementById('cfg-rowGap-val').textContent = config.rowGap + '%';
 
       // Mettre a jour les sliders - portrait
       document.getElementById('cfg-offsetX').value = config.offsetX;
@@ -758,10 +773,14 @@
       ctx.strokeRect(gridStartX, gridStartY, gridW, gridH);
       ctx.setLineDash([]);
 
+      // Ecart entre lignes (rowGap en % de cellH)
+      const rowGapPx = cellH * (config.rowGap / 100);
+
       for (let row = 0; row < config.rows; row++) {
         for (let col = 0; col < config.cols; col++) {
           const cellX = gridStartX + col * cellW;
-          const cellY = gridStartY + row * cellH;
+          // Ajouter le gap cumule pour chaque ligne
+          const cellY = gridStartY + row * cellH + row * rowGapPx;
 
           // offsetX: 50% = centre, offsetY: 0% = haut
           const x = cellX + (config.offsetX / 100) * cellW - pW / 2;
@@ -806,10 +825,13 @@
       const pW = Math.floor(cellW * (config.widthPct / 100));
       const pH = Math.floor(cellH * (config.heightPct / 100));
 
+      // Ecart entre lignes
+      const rowGapPx = cellH * (config.rowGap / 100);
+
       for (let row = 0; row < config.rows; row++) {
         for (let col = 0; col < config.cols; col++) {
           const cellX = gridStartX + col * cellW;
-          const cellY = gridStartY + row * cellH;
+          const cellY = gridStartY + row * cellH + row * rowGapPx;
 
           // offsetX: 50% = centre, offsetY: 0% = haut
           const x = Math.floor(cellX + (config.offsetX / 100) * cellW - pW / 2);
@@ -887,6 +909,7 @@
         const cellH = gridH / config.rows;
         const nameY = cellH * (config.nameOffsetY / 100);
         const nameH = cellH * (config.nameHeight / 100);
+        const rowGapPx = cellH * (config.rowGap / 100);
 
         let recognized = 0;
         const total = extractedPortraits.filter(p => !p.isEmpty).length;
@@ -899,7 +922,7 @@
 
           // Calculer la zone de texte pour ce portrait
           const cellX = gridStartX + p.col * cellW;
-          const cellY = gridStartY + p.row * cellH;
+          const cellY = gridStartY + p.row * cellH + p.row * rowGapPx;
           const textX = Math.floor(cellX + cellW * 0.05);
           const textY = Math.floor(cellY + nameY);
           const textW = Math.floor(cellW * 0.9);
