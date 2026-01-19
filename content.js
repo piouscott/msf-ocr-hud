@@ -570,6 +570,15 @@ ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     sendResponse({ success: true });
     return true;
   }
+
+  if (msg.action === "startPortraitCapture") {
+    startPortraitCapture({
+      dataUrl: msg.dataUrl,
+      count: msg.count || 5
+    });
+    sendResponse({ success: true });
+    return true;
+  }
 });
 
 async function handleExtraction(dataUrl) {
@@ -895,5 +904,225 @@ async function saveCalibration(data) {
 }
 
 window.startCropCalibrator = startCropCalibrator;
+
+// ============================================
+// Capture de portraits pour le mode War
+// ============================================
+
+function startPortraitCapture(options) {
+  const { dataUrl, count } = options;
+  const capturedPortraits = [];
+  let currentIndex = 0;
+
+  // Charger l'image de fond
+  const bgImage = new Image();
+  bgImage.onload = () => {
+    createCaptureOverlay();
+  };
+  bgImage.src = dataUrl;
+
+  function createCaptureOverlay() {
+    const overlay = document.createElement("div");
+    overlay.id = "msf-portrait-capture";
+    overlay.style.cssText = "position:fixed;inset:0;z-index:2147483647;cursor:crosshair;background:rgba(0,0,0,0.5)";
+
+    // Canvas avec le screenshot
+    const canvas = document.createElement("canvas");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    canvas.style.cssText = "position:absolute;inset:0;pointer-events:none";
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+    overlay.appendChild(canvas);
+
+    // Box de selection
+    const box = document.createElement("div");
+    box.style.cssText = "position:absolute;border:3px solid #ff922b;background:rgba(255,146,43,0.2);box-sizing:border-box;pointer-events:none";
+    overlay.appendChild(box);
+
+    // Instructions
+    const info = document.createElement("div");
+    info.style.cssText = "position:fixed;left:50%;top:20px;transform:translateX(-50%);background:rgba(0,0,0,0.95);color:#fff;padding:16px 24px;border-radius:12px;font:14px sans-serif;text-align:center;max-width:450px;z-index:10";
+    updateInfo();
+    overlay.appendChild(info);
+
+    // Mini previews des portraits captures
+    const previewsContainer = document.createElement("div");
+    previewsContainer.style.cssText = "position:fixed;left:50%;bottom:20px;transform:translateX(-50%);display:flex;gap:8px;background:rgba(0,0,0,0.9);padding:12px;border-radius:8px;z-index:10";
+    for (let i = 0; i < count; i++) {
+      const preview = document.createElement("div");
+      preview.style.cssText = "width:48px;height:48px;border:2px dashed #555;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#555;font-size:14px;font-weight:bold;overflow:hidden";
+      preview.textContent = i + 1;
+      preview.id = `portrait-preview-${i}`;
+      previewsContainer.appendChild(preview);
+    }
+    overlay.appendChild(previewsContainer);
+
+    document.body.appendChild(overlay);
+
+    function updateInfo() {
+      info.innerHTML = `
+        <div style="color:#ff922b;font-weight:bold;font-size:16px;margin-bottom:8px">
+          Portrait ${currentIndex + 1} / ${count}
+        </div>
+        <div style="margin-bottom:12px">Selectionnez le portrait du personnage ${currentIndex + 1}</div>
+        <div style="font-size:12px;color:#888">
+          Dessinez un carre autour du portrait<br>
+          <b>ENTREE</b> = Valider | <b>ESC</b> = Terminer | <b>RETOUR</b> = Annuler dernier
+        </div>
+      `;
+    }
+
+    let startX = 0, startY = 0, endX = 0, endY = 0;
+    let dragging = false;
+    let hasSelection = false;
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+
+    function clamp(v, min, max) {
+      return Math.max(min, Math.min(max, v));
+    }
+
+    function updateBox() {
+      const x = Math.min(startX, endX);
+      const y = Math.min(startY, endY);
+      const w = Math.abs(endX - startX);
+      const h = Math.abs(endY - startY);
+      // Forcer un carre (utiliser la plus petite dimension)
+      const size = Math.min(w, h);
+      box.style.left = x + "px";
+      box.style.top = y + "px";
+      box.style.width = size + "px";
+      box.style.height = size + "px";
+    }
+
+    function captureCurrentSelection() {
+      const x = Math.min(startX, endX);
+      const y = Math.min(startY, endY);
+      const w = Math.abs(endX - startX);
+      const h = Math.abs(endY - startY);
+      const size = Math.min(w, h);
+
+      if (size < 10) return null;
+
+      // Creer un canvas pour le portrait
+      const portraitCanvas = document.createElement("canvas");
+      portraitCanvas.width = size;
+      portraitCanvas.height = size;
+      const pCtx = portraitCanvas.getContext("2d");
+
+      // Calculer les coordonnees dans l'image originale
+      const scaleX = bgImage.naturalWidth / W;
+      const scaleY = bgImage.naturalHeight / H;
+      const srcX = x * scaleX;
+      const srcY = y * scaleY;
+      const srcSize = size * Math.max(scaleX, scaleY);
+
+      pCtx.drawImage(bgImage, srcX, srcY, srcSize, srcSize, 0, 0, size, size);
+
+      return portraitCanvas.toDataURL("image/png");
+    }
+
+    function updatePreview(index, dataUrl) {
+      const preview = document.getElementById(`portrait-preview-${index}`);
+      if (preview && dataUrl) {
+        preview.innerHTML = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover">`;
+        preview.style.borderStyle = "solid";
+        preview.style.borderColor = "#51cf66";
+      }
+    }
+
+    function saveAndNext() {
+      const dataUrl = captureCurrentSelection();
+      if (!dataUrl) return;
+
+      capturedPortraits[currentIndex] = { dataUrl };
+      updatePreview(currentIndex, dataUrl);
+
+      currentIndex++;
+      hasSelection = false;
+      box.style.width = "0";
+      box.style.height = "0";
+
+      if (currentIndex >= count) {
+        finishCapture();
+      } else {
+        updateInfo();
+      }
+    }
+
+    function undoLast() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        capturedPortraits[currentIndex] = null;
+        const preview = document.getElementById(`portrait-preview-${currentIndex}`);
+        if (preview) {
+          preview.innerHTML = currentIndex + 1;
+          preview.style.borderStyle = "dashed";
+          preview.style.borderColor = "#555";
+        }
+        updateInfo();
+      }
+    }
+
+    function finishCapture() {
+      overlay.remove();
+
+      // Filtrer les portraits valides
+      const validPortraits = capturedPortraits.filter(p => p && p.dataUrl);
+
+      if (validPortraits.length > 0) {
+        // Envoyer les portraits au background pour relayer au popup
+        ext.runtime.sendMessage({
+          type: "MSF_PORTRAITS_CAPTURED",
+          portraits: capturedPortraits // Garder les nulls pour la position
+        });
+
+        console.log(`[MSF] ${validPortraits.length} portraits captures`);
+      } else {
+        alert("Aucun portrait capture");
+      }
+    }
+
+    overlay.addEventListener("mousedown", function(e) {
+      if (e.target === info || e.target === previewsContainer || e.target.closest("#portrait-preview-0")) return;
+      dragging = true;
+      hasSelection = false;
+      startX = clamp(e.clientX, 0, W);
+      startY = clamp(e.clientY, 0, H);
+      endX = startX;
+      endY = startY;
+      updateBox();
+    });
+
+    overlay.addEventListener("mousemove", function(e) {
+      if (!dragging) return;
+      endX = clamp(e.clientX, 0, W);
+      endY = clamp(e.clientY, 0, H);
+      updateBox();
+    });
+
+    overlay.addEventListener("mouseup", function() {
+      if (dragging && Math.abs(endX - startX) > 10 && Math.abs(endY - startY) > 10) {
+        hasSelection = true;
+      }
+      dragging = false;
+    });
+
+    window.addEventListener("keydown", function handler(e) {
+      if (e.key === "Escape") {
+        window.removeEventListener("keydown", handler);
+        finishCapture();
+      } else if (e.key === "Enter" && hasSelection) {
+        saveAndNext();
+      } else if (e.key === "Backspace") {
+        e.preventDefault();
+        undoLast();
+      }
+    });
+  }
+}
+
+window.startPortraitCapture = startPortraitCapture;
 
 console.log("[MSF] Calibrateur pret - Tapez: startCropCalibrator()");

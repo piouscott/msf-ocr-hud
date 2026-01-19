@@ -37,6 +37,21 @@ ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     });
     return true;
   }
+
+  if (msg.type === "MSF_START_PORTRAIT_CAPTURE") {
+    handlePortraitCapture(msg.count || 5).then(sendResponse).catch(e => {
+      sendResponse({ error: e.message });
+    });
+    return true;
+  }
+
+  // Relayer les portraits captures du content script vers le popup
+  if (msg.type === "MSF_PORTRAITS_CAPTURED") {
+    // Broadcast to all extension pages (popup)
+    ext.runtime.sendMessage(msg);
+    sendResponse({ relayed: true });
+    return true;
+  }
 });
 
 async function handleAnalyzeRequest() {
@@ -89,6 +104,29 @@ async function handleStartCalibrator(msg) {
     action: "startCalibrator",
     label: msg.label || "CROP",
     showGrid: msg.showGrid || false
+  });
+
+  return { success: true };
+}
+
+/**
+ * Lance la capture de portraits en guerre
+ */
+async function handlePortraitCapture(count) {
+  const [tab] = await ext.tabs.query({ active: true, currentWindow: true });
+
+  if (!tab) {
+    throw new Error("Aucun onglet actif");
+  }
+
+  // Capturer le screenshot
+  const dataUrl = await ext.tabs.captureVisibleTab(tab.windowId, { format: "png" });
+
+  // Envoyer au content script pour lancer le mode de selection
+  await ext.tabs.sendMessage(tab.id, {
+    action: "startPortraitCapture",
+    dataUrl: dataUrl,
+    count: count
   });
 
   return { success: true };

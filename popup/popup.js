@@ -38,8 +38,20 @@ const warPower = document.getElementById("war-power");
 const btnWarAnalyze = document.getElementById("btn-war-analyze");
 const warResult = document.getElementById("war-result");
 
+// War portrait mode elements
+const tabPortrait = document.getElementById("tab-portrait");
+const tabManual = document.getElementById("tab-manual");
+const warPortraitMode = document.getElementById("war-portrait-mode");
+const warManualMode = document.getElementById("war-manual-mode");
+const warPortraits = document.getElementById("war-portraits");
+const btnWarCapture = document.getElementById("btn-war-capture");
+const btnWarAnalyzePortraits = document.getElementById("btn-war-analyze-portraits");
+
 // War Analyzer instance
 let warAnalyzer = null;
+
+// Portraits captures pour le mode War
+let capturedWarPortraits = [null, null, null, null, null];
 
 // API Key constante (ne change pas)
 const MSF_API_KEY = "17wMKJLRxy3pYDCKG5ciP7VSU45OVumB2biCzzgw";
@@ -715,3 +727,177 @@ function displayWarResult(result) {
   warResult.innerHTML = html;
   warResult.classList.remove("hidden");
 }
+
+// ============================================
+// War Mode - Onglets
+// ============================================
+
+tabPortrait.addEventListener("click", () => {
+  tabPortrait.classList.add("active");
+  tabManual.classList.remove("active");
+  warPortraitMode.classList.remove("hidden");
+  warManualMode.classList.add("hidden");
+});
+
+tabManual.addEventListener("click", () => {
+  tabManual.classList.add("active");
+  tabPortrait.classList.remove("active");
+  warManualMode.classList.remove("hidden");
+  warPortraitMode.classList.add("hidden");
+});
+
+// ============================================
+// War Mode - Capture Portraits
+// ============================================
+
+btnWarCapture.addEventListener("click", async () => {
+  try {
+    // Fermer le popup et lancer le calibrateur en mode portrait
+    await ext.runtime.sendMessage({
+      type: "MSF_START_PORTRAIT_CAPTURE",
+      count: 5
+    });
+    setStatus("Selectionnez les 5 portraits (ESC pour quitter)");
+    setTimeout(() => window.close(), 300);
+  } catch (e) {
+    showWarResult("Erreur: " + e.message, "error");
+  }
+});
+
+// Ecouter les portraits captures depuis le content script
+ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg.type === "MSF_PORTRAITS_CAPTURED") {
+    capturedWarPortraits = msg.portraits;
+    updateWarPortraitsDisplay();
+    sendResponse({ received: true });
+  }
+});
+
+/**
+ * Met a jour l'affichage des portraits captures
+ */
+function updateWarPortraitsDisplay() {
+  const slots = warPortraits.querySelectorAll(".war-portrait-slot");
+
+  slots.forEach((slot, i) => {
+    const portrait = capturedWarPortraits[i];
+
+    if (portrait && portrait.dataUrl) {
+      slot.innerHTML = `
+        <img src="${portrait.dataUrl}" alt="Portrait ${i + 1}">
+        ${portrait.name ? `<div class="portrait-name">${portrait.name}</div>` : ""}
+        ${portrait.similarity ? `<div class="portrait-badge ${portrait.similarity >= 70 ? 'good' : 'unknown'}">${portrait.similarity >= 70 ? '✓' : '?'}</div>` : ""}
+      `;
+      slot.classList.add("has-portrait");
+      if (portrait.name && portrait.similarity >= 70) {
+        slot.classList.add("identified");
+      }
+    } else {
+      slot.innerHTML = `<div class="portrait-placeholder">${i + 1}</div>`;
+      slot.classList.remove("has-portrait", "identified");
+    }
+  });
+}
+
+// Permettre de coller des images depuis le clipboard
+document.addEventListener("paste", async (e) => {
+  if (warPanel.classList.contains("hidden")) return;
+  if (!tabPortrait.classList.contains("active")) return;
+
+  const items = e.clipboardData?.items;
+  if (!items) return;
+
+  for (const item of items) {
+    if (item.type.startsWith("image/")) {
+      const blob = item.getAsFile();
+      const dataUrl = await blobToDataUrl(blob);
+
+      // Trouver le premier slot vide
+      const emptyIndex = capturedWarPortraits.findIndex(p => !p);
+      if (emptyIndex !== -1) {
+        capturedWarPortraits[emptyIndex] = { dataUrl };
+        updateWarPortraitsDisplay();
+      }
+      break;
+    }
+  }
+});
+
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+// Click sur un slot pour le vider ou le remplacer
+warPortraits.addEventListener("click", async (e) => {
+  const slot = e.target.closest(".war-portrait-slot");
+  if (!slot) return;
+
+  const index = parseInt(slot.dataset.index);
+
+  if (capturedWarPortraits[index]) {
+    // Demander si on veut supprimer
+    if (confirm("Supprimer ce portrait ?")) {
+      capturedWarPortraits[index] = null;
+      updateWarPortraitsDisplay();
+    }
+  }
+});
+
+// ============================================
+// War Mode - Analyse Portraits
+// ============================================
+
+btnWarAnalyzePortraits.addEventListener("click", async () => {
+  const portraits = capturedWarPortraits.filter(p => p && p.dataUrl);
+
+  if (portraits.length < 3) {
+    showWarResult("Capturez au moins 3 portraits", "error");
+    return;
+  }
+
+  const powerValue = parseFormattedNumber(warPower.value);
+
+  btnWarAnalyzePortraits.disabled = true;
+  showWarResult("Analyse des portraits...", "");
+
+  try {
+    // Initialiser le WarAnalyzer si necessaire
+    if (!warAnalyzer) {
+      warAnalyzer = new WarAnalyzer();
+      await warAnalyzer.init();
+    }
+
+    // Analyser les portraits
+    const portraitDataUrls = portraits.map(p => p.dataUrl);
+    const result = await warAnalyzer.analyzeEnemyTeamFromPortraits(portraitDataUrls, powerValue || null);
+
+    // Mettre a jour l'affichage des portraits avec les noms identifies
+    if (result.portraits) {
+      result.portraits.forEach((p, i) => {
+        if (capturedWarPortraits[i]) {
+          capturedWarPortraits[i].name = p.name;
+          capturedWarPortraits[i].similarity = p.similarity;
+          capturedWarPortraits[i].charId = p.charId;
+          capturedWarPortraits[i].hash = p.hash;
+        }
+      });
+      updateWarPortraitsDisplay();
+    }
+
+    // Afficher les resultats
+    displayWarResult(result);
+
+  } catch (e) {
+    console.error("[War] Erreur analyse portraits:", e);
+    showWarResult("Erreur: " + e.message, "error");
+  } finally {
+    btnWarAnalyzePortraits.disabled = false;
+  }
+});
+
+// Note: btnCloseWar listener est defini plus haut

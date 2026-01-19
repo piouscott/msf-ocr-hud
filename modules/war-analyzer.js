@@ -9,9 +9,11 @@ class WarAnalyzer {
     this.ocrWorker = null;
     this.knownNames = [];
     this.nameToId = {};
+    this.idToName = {}; // Reverse mapping charId -> name
     this.teamsData = [];
     this.countersData = {};
     this.warMetaTeams = [];
+    this.portraitsDb = {}; // Hash -> charId mapping
     this.initialized = false;
   }
 
@@ -30,9 +32,39 @@ class WarAnalyzer {
       const namesData = await namesRes.json();
       this.knownNames = namesData.names || [];
       this.nameToId = namesData.nameToId || {};
+      // Creer le reverse mapping
+      for (const [name, charId] of Object.entries(this.nameToId)) {
+        this.idToName[charId] = name;
+      }
       console.log(`[WarAnalyzer] ${this.knownNames.length} noms charges`);
     } catch (e) {
       console.error("[WarAnalyzer] Erreur chargement noms:", e);
+    }
+
+    // Charger la base de portraits (hash -> nom/charId)
+    try {
+      const portraitsUrl = typeof ext !== "undefined"
+        ? ext.runtime.getURL("data/portraits.json")
+        : "../data/portraits.json";
+      const portraitsRes = await fetch(portraitsUrl);
+      const portraitsJson = await portraitsRes.json();
+      this.portraitsDb = portraitsJson.portraits || {};
+      console.log(`[WarAnalyzer] ${Object.keys(this.portraitsDb).length} portraits charges`);
+
+      // Charger aussi les portraits depuis le storage local (ajouts utilisateur)
+      if (typeof ext !== "undefined") {
+        try {
+          const stored = await ext.storage.local.get("msfPortraits");
+          if (stored.msfPortraits) {
+            Object.assign(this.portraitsDb, stored.msfPortraits);
+            console.log(`[WarAnalyzer] +${Object.keys(stored.msfPortraits).length} portraits depuis storage`);
+          }
+        } catch (e) {
+          console.log("[WarAnalyzer] Pas de portraits en storage");
+        }
+      }
+    } catch (e) {
+      console.error("[WarAnalyzer] Erreur chargement portraits:", e);
     }
 
     // Charger les equipes
@@ -500,6 +532,341 @@ class WarAnalyzer {
       this.ocrWorker = null;
     }
     this.initialized = false;
+  }
+
+  // ============================================
+  // Identification par portraits (hash pHash)
+  // ============================================
+
+  /**
+   * Calcule le hash perceptuel d'une image
+   */
+  async computePortraitHash(imageDataUrl) {
+    const hashSize = 8;
+    const sampleSize = 32;
+
+    // Charger l'image dans un canvas
+    const imageData = await this._getImageData(imageDataUrl, sampleSize);
+
+    // Convertir en niveaux de gris
+    const pixels = imageData.data;
+    const gray = new Float32Array(sampleSize * sampleSize);
+    for (let i = 0; i < gray.length; i++) {
+      const offset = i * 4;
+      gray[i] = 0.299 * pixels[offset] + 0.587 * pixels[offset + 1] + 0.114 * pixels[offset + 2];
+    }
+
+    // Redimensionner en hashSize x hashSize
+    const resized = new Float32Array(hashSize * hashSize);
+    const blockW = sampleSize / hashSize;
+    const blockH = sampleSize / hashSize;
+
+    for (let y = 0; y < hashSize; y++) {
+      for (let x = 0; x < hashSize; x++) {
+        let sum = 0;
+        let count = 0;
+        const startY = Math.floor(y * blockH);
+        const endY = Math.floor((y + 1) * blockH);
+        const startX = Math.floor(x * blockW);
+        const endX = Math.floor((x + 1) * blockW);
+
+        for (let py = startY; py < endY; py++) {
+          for (let px = startX; px < endX; px++) {
+            sum += gray[py * sampleSize + px];
+            count++;
+          }
+        }
+        resized[y * hashSize + x] = count > 0 ? sum / count : 0;
+      }
+    }
+
+    // Calculer le hash binaire base sur la mediane
+    const sorted = [...resized].sort((a, b) => a - b);
+    const median = sorted[Math.floor(sorted.length / 2)];
+    let binary = "";
+    for (let i = 0; i < resized.length; i++) {
+      binary += resized[i] > median ? "1" : "0";
+    }
+
+    // Convertir en hexadecimal
+    let hex = "";
+    for (let i = 0; i < binary.length; i += 4) {
+      hex += parseInt(binary.substr(i, 4), 2).toString(16);
+    }
+
+    return hex;
+  }
+
+  /**
+   * Helper: charge une image et retourne ses pixels
+   */
+  _getImageData(dataUrl, size) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, size, size);
+        const data = ctx.getImageData(0, 0, size, size);
+        resolve(data);
+      };
+      img.onerror = () => reject(new Error("Echec chargement image"));
+      img.src = dataUrl;
+    });
+  }
+
+  /**
+   * Calcule la distance de Hamming entre deux hash
+   */
+  hashDistance(hash1, hash2) {
+    if (hash1.length !== hash2.length) return Infinity;
+    let distance = 0;
+    for (let i = 0; i < hash1.length; i++) {
+      const n1 = parseInt(hash1[i], 16);
+      const n2 = parseInt(hash2[i], 16);
+      let xor = n1 ^ n2;
+      while (xor) {
+        distance += xor & 1;
+        xor >>= 1;
+      }
+    }
+    return distance;
+  }
+
+  /**
+   * Calcule la similarite entre deux hash (0-100%)
+   */
+  hashSimilarity(hash1, hash2) {
+    const maxBits = hash1.length * 4; // 4 bits par caractere hex
+    const dist = this.hashDistance(hash1, hash2);
+    return Math.round((1 - dist / maxBits) * 100);
+  }
+
+  /**
+   * Trouve le meilleur match pour un hash dans la base de portraits
+   */
+  findPortraitMatch(hash, threshold = 70) {
+    let bestMatch = null;
+    let bestSimilarity = 0;
+
+    for (const [dbHash, nameOrData] of Object.entries(this.portraitsDb)) {
+      const sim = this.hashSimilarity(hash, dbHash);
+
+      if (sim > bestSimilarity && sim >= threshold) {
+        bestSimilarity = sim;
+
+        // Le format peut etre soit une string (nom) soit un objet {name, charId}
+        if (typeof nameOrData === "string") {
+          bestMatch = {
+            name: nameOrData,
+            charId: this.nameToId[nameOrData.toUpperCase()] || null,
+            similarity: sim,
+            hash: dbHash
+          };
+        } else {
+          bestMatch = {
+            name: nameOrData.name || "Inconnu",
+            charId: nameOrData.charId || null,
+            similarity: sim,
+            hash: dbHash
+          };
+        }
+      }
+    }
+
+    return bestMatch;
+  }
+
+  /**
+   * Identifie une liste de portraits et retourne les personnages
+   */
+  async identifyPortraits(portraitDataUrls) {
+    const identified = [];
+
+    for (const dataUrl of portraitDataUrls) {
+      try {
+        const hash = await this.computePortraitHash(dataUrl);
+        const match = this.findPortraitMatch(hash);
+
+        if (match) {
+          identified.push({
+            name: match.name,
+            charId: match.charId,
+            similarity: match.similarity,
+            hash: hash
+          });
+        } else {
+          identified.push({
+            name: null,
+            charId: null,
+            similarity: 0,
+            hash: hash
+          });
+        }
+      } catch (e) {
+        console.error("[WarAnalyzer] Erreur hash portrait:", e);
+        identified.push({
+          name: null,
+          charId: null,
+          similarity: 0,
+          hash: null,
+          error: e.message
+        });
+      }
+    }
+
+    return identified;
+  }
+
+  /**
+   * Identifie une equipe a partir de portraits (dataUrls)
+   * et suggere les counters
+   */
+  async analyzeEnemyTeamFromPortraits(portraitDataUrls, enemyPower = null) {
+    await this.init();
+
+    // 1. Identifier les portraits
+    const identifiedPortraits = await this.identifyPortraits(portraitDataUrls);
+
+    // 2. Extraire les charIds identifies
+    const charIds = identifiedPortraits
+      .filter(p => p.charId)
+      .map(p => p.charId);
+
+    // 3. Extraire les noms pour affichage
+    const characterNames = identifiedPortraits.map(p => p.name || "?");
+
+    if (charIds.length < 3) {
+      return {
+        identified: false,
+        portraits: identifiedPortraits,
+        characters: characterNames,
+        team: null,
+        counters: [],
+        message: `Seulement ${charIds.length} personnages identifies (min 3 requis)`
+      };
+    }
+
+    // 4. Identifier l'equipe via les charIds
+    const teamResult = this._identifyTeamFromCharIds(charIds);
+
+    if (!teamResult.team) {
+      return {
+        identified: false,
+        portraits: identifiedPortraits,
+        characters: characterNames,
+        team: null,
+        counters: [],
+        message: "Equipe non identifiee"
+      };
+    }
+
+    // 5. Recuperer les counters
+    const counters = this.getCountersForTeam(teamResult.team.id, enemyPower);
+
+    return {
+      identified: true,
+      portraits: identifiedPortraits,
+      characters: characterNames,
+      team: {
+        id: teamResult.team.id,
+        name: teamResult.team.name,
+        nameFr: teamResult.team.nameFr
+      },
+      matchConfidence: teamResult.confidence,
+      matchCount: teamResult.matchCount,
+      counters: counters,
+      message: `${teamResult.team.name} identifie (${teamResult.confidence}%)`
+    };
+  }
+
+  /**
+   * Identifie une equipe a partir de charIds (interne)
+   */
+  _identifyTeamFromCharIds(charIds) {
+    if (charIds.length < 3) {
+      return { team: null, matchCount: 0, confidence: 0 };
+    }
+
+    // 1. Chercher dans teams.json
+    let bestTeam = null;
+    let bestMatchCount = 0;
+
+    for (const team of this.teamsData) {
+      if (!team.memberIds) continue;
+
+      const matchCount = charIds.filter(id => team.memberIds.includes(id)).length;
+
+      if (matchCount > bestMatchCount) {
+        bestMatchCount = matchCount;
+        bestTeam = team;
+      }
+    }
+
+    // 2. Chercher dans war-meta si pas de bon match
+    if (!bestTeam || bestMatchCount < 3) {
+      let bestMetaTeam = null;
+      let bestMetaMatchCount = 0;
+
+      for (const metaTeam of this.warMetaTeams) {
+        if (!metaTeam.squad) continue;
+
+        const matchCount = charIds.filter(id => metaTeam.squad.includes(id)).length;
+
+        if (matchCount > bestMetaMatchCount) {
+          bestMetaMatchCount = matchCount;
+          bestMetaTeam = metaTeam;
+        }
+      }
+
+      if (bestMetaTeam && bestMetaMatchCount > bestMatchCount) {
+        bestTeam = {
+          id: "meta_" + bestMetaTeam.squad.join("_").substring(0, 30),
+          name: bestMetaTeam.squad.slice(0, 3).map(id => this.idToName[id] || id).join(" + ") + "...",
+          memberIds: bestMetaTeam.squad,
+          isMetaTeam: true,
+          popularity: bestMetaTeam.popularity
+        };
+        bestMatchCount = bestMetaMatchCount;
+      }
+    }
+
+    const confidence = bestTeam
+      ? Math.round((bestMatchCount / Math.min(5, charIds.length)) * 100)
+      : 0;
+
+    return {
+      team: bestTeam,
+      matchCount: bestMatchCount,
+      confidence: confidence
+    };
+  }
+
+  /**
+   * Sauvegarde un nouveau portrait dans le storage
+   */
+  async savePortrait(hash, name, charId = null) {
+    if (typeof ext === "undefined") return false;
+
+    try {
+      const stored = await ext.storage.local.get("msfPortraits");
+      const portraits = stored.msfPortraits || {};
+
+      portraits[hash] = charId ? { name, charId } : name;
+
+      await ext.storage.local.set({ msfPortraits: portraits });
+
+      // Mettre a jour la base locale
+      this.portraitsDb[hash] = portraits[hash];
+
+      console.log(`[WarAnalyzer] Portrait sauvegarde: ${name} (${hash})`);
+      return true;
+    } catch (e) {
+      console.error("[WarAnalyzer] Erreur sauvegarde portrait:", e);
+      return false;
+    }
   }
 }
 
