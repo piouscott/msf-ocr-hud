@@ -72,16 +72,30 @@ function displayResults(slots) {
 
     // Nom de l'equipe identifiee ou "Equipe custom"
     const teamName = slot.team ? slot.team.name : "Equipe custom";
-    const teamBadge = slot.team ? "match-exact" : "";
 
     // Titres des portraits avec noms identifies
     const portraitTitles = slot.identifiedPortraits || [];
+
+    // Counters suggeres
+    const counters = slot.counters || [];
+    const countersHtml = counters.length > 0 ? `
+      <div class="counters">
+        <div class="counters-title">Counters:</div>
+        ${counters.slice(0, 3).map(c => `
+          <div class="counter-item">
+            <span class="counter-name">${c.teamName}</span>
+            <span class="counter-confidence">${c.confidence}%</span>
+            ${c.minPower ? `<span class="counter-power">${formatPower(c.minPower)}+</span>` : ""}
+          </div>
+        `).join("")}
+      </div>
+    ` : "";
 
     slotDiv.innerHTML = `
       <div class="slot-header">
         <div class="slot-info">
           <span class="slot-title">Slot ${slot.slotNumber}</span>
-          <span class="team-name">${teamName}${teamConfidence}</span>
+          <span class="team-name">${teamName}</span>
         </div>
         <div class="slot-power-edit">
           <input type="text"
@@ -101,6 +115,7 @@ function displayResults(slots) {
           return `<img src="${p}" alt="${name}" class="portrait-thumb" title="${name}${sim}" data-hash="${hash}" data-name="${name}">`;
         }).join("")}
       </div>
+      ${countersHtml}
     `;
 
     resultsSection.appendChild(slotDiv);

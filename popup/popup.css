@@ -206,3 +206,44 @@ button:active {
 .portrait-thumb:hover {
   border-color: #00d4ff;
 }
+
+/* Counters */
+.counters {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #444;
+}
+
+.counters-title {
+  font-size: 11px;
+  color: #888;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.counter-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 13px;
+}
+
+.counter-name {
+  flex: 1;
+  color: #51cf66;
+}
+
+.counter-confidence {
+  color: #ffd43b;
+  font-weight: 500;
+  min-width: 35px;
+}
+
+.counter-power {
+  color: #888;
+  font-size: 11px;
+  min-width: 60px;
+  text-align: right;
+}

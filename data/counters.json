@@ -1,0 +1,56 @@
+{
+  "description": "Base de donnees des counters MSF",
+  "version": 1,
+  "counters": {
+    "darkhold": [
+      { "team": "orchis", "confidence": 95, "minPowerRatio": 0.8, "notes": "Nimrod hard counter" },
+      { "team": "gamma", "confidence": 85, "minPowerRatio": 1.0 },
+      { "team": "eternals", "confidence": 75, "minPowerRatio": 1.1 }
+    ],
+    "gamma": [
+      { "team": "darkhold", "confidence": 90, "minPowerRatio": 0.9 },
+      { "team": "eternals", "confidence": 80, "minPowerRatio": 1.0 },
+      { "team": "unlimited_xmen", "confidence": 75, "minPowerRatio": 1.1 }
+    ],
+    "unlimited_xmen": [
+      { "team": "orchis", "confidence": 95, "minPowerRatio": 0.7, "notes": "Mutant killer" },
+      { "team": "black_order", "confidence": 80, "minPowerRatio": 1.0 },
+      { "team": "eternals", "confidence": 70, "minPowerRatio": 1.2 }
+    ],
+    "hero_asgardians": [
+      { "team": "darkhold", "confidence": 85, "minPowerRatio": 0.9 },
+      { "team": "black_order", "confidence": 80, "minPowerRatio": 1.0 },
+      { "team": "gamma", "confidence": 75, "minPowerRatio": 1.1 }
+    ],
+    "black_order": [
+      { "team": "eternals", "confidence": 90, "minPowerRatio": 0.8 },
+      { "team": "darkhold", "confidence": 85, "minPowerRatio": 0.9 },
+      { "team": "gamma", "confidence": 75, "minPowerRatio": 1.0 }
+    ],
+    "eternals": [
+      { "team": "darkhold", "confidence": 90, "minPowerRatio": 0.8 },
+      { "team": "orchis", "confidence": 85, "minPowerRatio": 0.9 },
+      { "team": "black_order", "confidence": 80, "minPowerRatio": 1.0 }
+    ],
+    "orchis": [
+      { "team": "gamma", "confidence": 85, "minPowerRatio": 0.9 },
+      { "team": "darkhold", "confidence": 80, "minPowerRatio": 1.0 },
+      { "team": "eternals", "confidence": 75, "minPowerRatio": 1.1 }
+    ],
+    "rebirth": [
+      { "team": "darkhold", "confidence": 85, "minPowerRatio": 0.9 },
+      { "team": "black_order", "confidence": 80, "minPowerRatio": 1.0 },
+      { "team": "gamma", "confidence": 75, "minPowerRatio": 1.1 }
+    ],
+    "young_avengers": [
+      { "team": "black_order", "confidence": 85, "minPowerRatio": 0.9 },
+      { "team": "darkhold", "confidence": 80, "minPowerRatio": 1.0 },
+      { "team": "eternals", "confidence": 75, "minPowerRatio": 1.1 }
+    ],
+    "cabal": [
+      { "team": "gamma", "confidence": 90, "minPowerRatio": 0.8 },
+      { "team": "hero_asgardians", "confidence": 85, "minPowerRatio": 0.9 },
+      { "team": "eternals", "confidence": 75, "minPowerRatio": 1.0 }
+    ]
+  }
+}

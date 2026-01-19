@@ -268,10 +268,10 @@ Min Power : [1.1]x
 - [x] Clic sur portrait pour l'enregistrer dans la base
 - [x] Afficher nom d'équipe dans popup
 
-### Phase 4 : Counters (EN COURS)
-- [ ] Créer `data/counters.json`
-- [ ] Logique de suggestion
-- [ ] Afficher counters recommandés dans popup
+### Phase 4 : Counters ✅
+- [x] Créer `data/counters.json` (10 équipes avec 3 counters chacune)
+- [x] Logique de suggestion (CounterSuggester avec minPowerRatio)
+- [x] Afficher top 3 counters dans popup avec % confiance et puissance min
 
 ### Phase 5 : Gestion
 - [ ] Interface d'ajout de counters
@@ -320,4 +320,4 @@ Min Power : [1.1]x
 
 ---
 
-**Prochaine étape** : Phase 4 - Créer `counters.json` et afficher les suggestions.
+**Prochaine étape** : Phase 5 - Interface de gestion des counters et export/import.

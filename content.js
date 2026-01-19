@@ -407,6 +407,56 @@ class TeamIdentifier {
 }
 
 // ============================================
+// CounterSuggester - Suggestions de counters
+// ============================================
+
+class CounterSuggester {
+  constructor(countersDb, teamsDb) {
+    this.counters = countersDb.counters || {};
+    this.teams = teamsDb.teams || [];
+  }
+
+  static async load() {
+    const countersUrl = ext.runtime.getURL("data/counters.json");
+    const teamsUrl = ext.runtime.getURL("data/teams.json");
+
+    const [countersRes, teamsRes] = await Promise.all([
+      fetch(countersUrl),
+      fetch(teamsUrl)
+    ]);
+
+    const countersDb = await countersRes.json();
+    const teamsDb = await teamsRes.json();
+
+    return new CounterSuggester(countersDb, teamsDb);
+  }
+
+  getTeamName(teamId) {
+    const team = this.teams.find(t => t.id === teamId);
+    return team ? team.name : teamId;
+  }
+
+  suggestCounters(teamId, enemyPower) {
+    const counters = this.counters[teamId];
+    if (!counters || counters.length === 0) {
+      return [];
+    }
+
+    return counters.map(counter => {
+      const minPower = enemyPower ? Math.round(enemyPower * counter.minPowerRatio) : null;
+      return {
+        teamId: counter.team,
+        teamName: this.getTeamName(counter.team),
+        confidence: counter.confidence,
+        minPowerRatio: counter.minPowerRatio,
+        minPower: minPower,
+        notes: counter.notes || null
+      };
+    }).sort((a, b) => b.confidence - a.confidence);
+  }
+}
+
+// ============================================
 // Handler pour l'extraction complete
 // ============================================
 
@@ -484,7 +534,16 @@ async function handleExtraction(dataUrl) {
     console.log("[MSF] TeamIdentifier non disponible:", e.message);
   }
 
-  // 5. Extraire les puissances et identifier les equipes
+  // 5. Charger les counters
+  let suggester = null;
+  try {
+    suggester = await CounterSuggester.load();
+    console.log("[MSF] CounterSuggester charge");
+  } catch (e) {
+    console.log("[MSF] CounterSuggester non disponible:", e.message);
+  }
+
+  // 6. Extraire les puissances et identifier les equipes
   const results = [];
   for (const slot of slotData) {
     console.log("[MSF] Traitement slot", slot.slotNumber);
@@ -515,16 +574,24 @@ async function handleExtraction(dataUrl) {
       }
     }
 
+    // Suggestions de counters
+    let counters = [];
+    if (suggester && teamInfo && teamInfo.id) {
+      counters = suggester.suggestCounters(teamInfo.id, power);
+      console.log(`[MSF] Counters pour ${teamInfo.name}:`, counters.length);
+    }
+
     results.push({
       slotNumber: slot.slotNumber,
       power: power,
       portraits: slot.portraits,
       identifiedPortraits: identifiedPortraits,
-      team: teamInfo
+      team: teamInfo,
+      counters: counters
     });
   }
 
-  // 6. Cleanup
+  // 7. Cleanup
   await ocr.terminate();
 
   console.log("[MSF] Extraction terminee");
