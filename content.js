@@ -408,6 +408,7 @@ class TeamIdentifier {
 
 // ============================================
 // CounterSuggester - Suggestions de counters
+// Architecture 3 niveaux: Default < Remote < Custom
 // ============================================
 
 class CounterSuggester {
@@ -416,6 +417,14 @@ class CounterSuggester {
     this.teams = teamsDb.teams || [];
   }
 
+  /**
+   * Charge les counters avec fusion 3 niveaux:
+   * 1. Default (data/counters.json) - base incluse dans l'extension
+   * 2. Remote (URL configurable) - sync depuis serveur externe
+   * 3. Custom (storage.local) - modifications utilisateur
+   *
+   * Priorite: Custom > Remote > Default
+   */
   static async load() {
     const countersUrl = ext.runtime.getURL("data/counters.json");
     const teamsUrl = ext.runtime.getURL("data/teams.json");
@@ -425,21 +434,92 @@ class CounterSuggester {
       fetch(teamsUrl)
     ]);
 
-    const countersDb = await countersRes.json();
+    const defaultCounters = await countersRes.json();
     const teamsDb = await teamsRes.json();
 
-    // Charger les counters custom depuis storage
+    // Commencer avec les counters par defaut
+    const mergedCounters = { counters: { ...defaultCounters.counters } };
+
+    // Charger les counters remote depuis storage (synces precedemment)
+    try {
+      const stored = await ext.storage.local.get("msfRemoteCounters");
+      if (stored.msfRemoteCounters && stored.msfRemoteCounters.counters) {
+        // Remote ecrase default (par equipe)
+        for (const [teamId, counters] of Object.entries(stored.msfRemoteCounters.counters)) {
+          mergedCounters.counters[teamId] = counters;
+        }
+        console.log("[MSF] Counters remote charges");
+      }
+    } catch (e) {
+      console.log("[MSF] Pas de counters remote en storage");
+    }
+
+    // Charger les counters custom (priorite maximale)
     try {
       const stored = await ext.storage.local.get("msfCustomCounters");
       if (stored.msfCustomCounters) {
-        // Les counters custom ecrasent les defaults
-        Object.assign(countersDb.counters, stored.msfCustomCounters);
+        // Custom ecrase tout (par equipe)
+        for (const [teamId, counters] of Object.entries(stored.msfCustomCounters)) {
+          mergedCounters.counters[teamId] = counters;
+        }
+        console.log("[MSF] Counters custom charges");
       }
     } catch (e) {
       console.log("[MSF] Pas de counters custom en storage");
     }
 
-    return new CounterSuggester(countersDb, teamsDb);
+    return new CounterSuggester(mergedCounters, teamsDb);
+  }
+
+  /**
+   * Synchronise les counters depuis une URL distante
+   * @param {string} url - URL du fichier JSON des counters
+   * @returns {Promise<{success: boolean, message: string, count: number}>}
+   */
+  static async syncFromRemote(url) {
+    try {
+      const response = await fetch(url, {
+        cache: "no-cache",
+        headers: { "Accept": "application/json" }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Valider le format
+      if (!data.counters || typeof data.counters !== "object") {
+        throw new Error("Format invalide: 'counters' manquant");
+      }
+
+      // Sauvegarder avec metadata
+      const remoteData = {
+        counters: data.counters,
+        version: data.version || 1,
+        syncedAt: new Date().toISOString(),
+        sourceUrl: url
+      };
+
+      await ext.storage.local.set({ msfRemoteCounters: remoteData });
+
+      const teamCount = Object.keys(data.counters).length;
+      console.log(`[MSF] Sync remote: ${teamCount} equipes depuis ${url}`);
+
+      return {
+        success: true,
+        message: `${teamCount} equipes synchronisees`,
+        count: teamCount
+      };
+    } catch (e) {
+      console.error("[MSF] Erreur sync remote:", e);
+      return {
+        success: false,
+        message: e.message,
+        count: 0
+      };
+    }
   }
 
   getTeamName(teamId) {

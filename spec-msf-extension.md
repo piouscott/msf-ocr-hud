@@ -225,24 +225,47 @@ Min Power : [1.1]x
 **Storage API** : `browser.storage.local`
 ```javascript
 {
-  zones: {...},           // Calibration écran
-  customCounters: {...},  // Counters persos
-  preferences: {
-    autoAnalyze: false,
-    showPowerRatio: true
+  msfZonesConfig: {...},      // Calibration écran
+  msfPortraits: {...},        // Hash portraits enregistrés
+  msfCustomCounters: {...},   // Counters modifiés par l'utilisateur
+  msfRemoteCounters: {...},   // Counters synchronisés depuis URL
+  msfSyncUrl: "https://..."   // URL de synchronisation
+}
+```
+
+### 6.2 Système de counters à 3 niveaux
+**Priorité** : Custom > Remote > Default
+
+| Niveau | Source | Description |
+|--------|--------|-------------|
+| Default | `data/counters.json` | Base incluse dans l'extension (repo) |
+| Remote | URL configurable | Synchronisation depuis serveur externe |
+| Custom | `storage.local` | Modifications manuelles de l'utilisateur |
+
+**Fusion** : Pour chaque équipe, on utilise les counters du niveau le plus prioritaire disponible.
+
+**Format counters.json** :
+```javascript
+{
+  "description": "Base de donnees des counters MSF",
+  "version": 1,
+  "counters": {
+    "darkhold": [
+      { "team": "orchis", "confidence": 95, "minPowerRatio": 0.8, "notes": "..." }
+    ]
   }
 }
 ```
 
-### 6.2 Bases de données
+### 6.3 Bases de données
 **Fichiers statiques** (inclus dans l'extension)
 - `teams.json` : ~50 équipes connues
-- `counters.json` : ~150 relations counter
+- `counters.json` : Base de counters par défaut
 - `portraits.json` : ~200 hash de personnages
 
-**Mise à jour** : 
-- Manuellement via mise à jour de l'extension
-- Ou fetch depuis un JSON hébergé (optionnel)
+**Mise à jour** :
+- Default : via mise à jour de l'extension
+- Remote : sync manuelle depuis URL configurable dans le popup
 
 ---
 
@@ -279,6 +302,13 @@ Min Power : [1.1]x
 - [x] Interface de gestion des counters (manage.html)
 - [x] Counters custom stockes dans storage.local
 - [x] Compatibilité Chrome (couche abstraction `ext` dans tous les fichiers)
+
+### Phase 6 : Synchronisation Counters ✅
+- [x] Système 3 niveaux (Default < Remote < Custom)
+- [x] Panneau sync dans popup avec URL configurable
+- [x] Fonction sync depuis URL distante (fetch JSON)
+- [x] Badges de source dans manage.html (Défaut/Sync/Perso)
+- [x] Bouton réinitialiser pour revenir aux valeurs par défaut
 
 ---
 

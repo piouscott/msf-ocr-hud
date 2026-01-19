@@ -1,9 +1,15 @@
 const ext = typeof browser !== "undefined" ? browser : chrome;
 
 let teamsData = [];
-let countersData = {};
+let defaultCounters = {};
+let remoteCounters = {};
+let customCounters = {};
+let mergedCounters = {};
 
-// Charger les donnees
+// Source des counters pour chaque equipe
+let counterSources = {};
+
+// Charger les donnees avec les 3 niveaux
 async function loadData() {
   try {
     const teamsUrl = ext.runtime.getURL("data/teams.json");
@@ -18,21 +24,71 @@ async function loadData() {
     const countersJson = await countersRes.json();
 
     teamsData = teamsJson.teams || [];
-    countersData = countersJson.counters || {};
+    defaultCounters = countersJson.counters || {};
 
-    // Charger les counters custom depuis storage
-    const stored = await ext.storage.local.get("msfCustomCounters");
-    if (stored.msfCustomCounters) {
-      // Fusionner avec les counters par defaut
-      for (const [teamId, counters] of Object.entries(stored.msfCustomCounters)) {
-        countersData[teamId] = counters;
-      }
+    // Charger les counters remote depuis storage
+    const storedRemote = await ext.storage.local.get("msfRemoteCounters");
+    if (storedRemote.msfRemoteCounters && storedRemote.msfRemoteCounters.counters) {
+      remoteCounters = storedRemote.msfRemoteCounters.counters;
     }
 
+    // Charger les counters custom depuis storage
+    const storedCustom = await ext.storage.local.get("msfCustomCounters");
+    if (storedCustom.msfCustomCounters) {
+      customCounters = storedCustom.msfCustomCounters;
+    }
+
+    // Fusionner les counters et determiner les sources
+    mergeCounters();
+
     renderTeams();
+    renderSourceLegend();
   } catch (e) {
     console.error("Erreur chargement:", e);
   }
+}
+
+/**
+ * Fusionne les 3 niveaux de counters et determine la source de chaque
+ * Priorite: Custom > Remote > Default
+ */
+function mergeCounters() {
+  mergedCounters = {};
+  counterSources = {};
+
+  // Collecter tous les teamIds
+  const allTeamIds = new Set([
+    ...Object.keys(defaultCounters),
+    ...Object.keys(remoteCounters),
+    ...Object.keys(customCounters)
+  ]);
+
+  for (const teamId of allTeamIds) {
+    if (customCounters[teamId] && customCounters[teamId].length > 0) {
+      mergedCounters[teamId] = customCounters[teamId];
+      counterSources[teamId] = "custom";
+    } else if (remoteCounters[teamId] && remoteCounters[teamId].length > 0) {
+      mergedCounters[teamId] = remoteCounters[teamId];
+      counterSources[teamId] = "remote";
+    } else if (defaultCounters[teamId]) {
+      mergedCounters[teamId] = defaultCounters[teamId];
+      counterSources[teamId] = "default";
+    }
+  }
+}
+
+function renderSourceLegend() {
+  const legend = document.getElementById("source-legend");
+  if (!legend) return;
+
+  const hasRemote = Object.keys(remoteCounters).length > 0;
+  const hasCustom = Object.keys(customCounters).length > 0;
+
+  legend.innerHTML = `
+    <span class="legend-item"><span class="source-badge default"></span> Defaut</span>
+    ${hasRemote ? '<span class="legend-item"><span class="source-badge remote"></span> Sync</span>' : ''}
+    ${hasCustom ? '<span class="legend-item"><span class="source-badge custom"></span> Perso</span>' : ''}
+  `;
 }
 
 function renderTeams() {
@@ -44,16 +100,21 @@ function renderTeams() {
     section.className = "team-section";
     section.dataset.teamId = team.id;
 
-    const counters = countersData[team.id] || [];
+    const counters = mergedCounters[team.id] || [];
+    const source = counterSources[team.id] || "default";
 
     section.innerHTML = `
       <div class="team-header">
         <span class="team-name-title">${team.name}</span>
-        <span class="team-toggle">${counters.length} counters</span>
+        <span class="team-meta">
+          <span class="source-badge ${source}" title="Source: ${source}"></span>
+          <span class="team-toggle">${counters.length} counters</span>
+        </span>
       </div>
       <div class="counter-list">
         ${counters.map((c, i) => renderCounterRow(c, i)).join("")}
         <button class="btn-add-counter" data-team="${team.id}">+ Ajouter counter</button>
+        ${source !== "default" ? `<button class="btn-reset" data-team="${team.id}">Reinitialiser</button>` : ""}
       </div>
     `;
 
@@ -78,6 +139,10 @@ function renderTeams() {
       row.remove();
     });
   });
+
+  document.querySelectorAll(".btn-reset").forEach(btn => {
+    btn.addEventListener("click", () => resetTeamCounters(btn.dataset.team));
+  });
 }
 
 function renderCounterRow(counter, index) {
@@ -101,11 +166,6 @@ function addCounter(teamId) {
   const list = section.querySelector(".counter-list");
   const addBtn = list.querySelector(".btn-add-counter");
 
-  const newRow = document.createElement("div");
-  newRow.className = "counter-row";
-  newRow.innerHTML = renderCounterRow({ team: teamsData[0]?.id || "", confidence: 80, minPowerRatio: 1.0 }, -1);
-
-  // Remplacer le contenu du div par celui du template
   const template = document.createElement("div");
   template.innerHTML = renderCounterRow({ team: teamsData[0]?.id || "", confidence: 80, minPowerRatio: 1.0 }, -1);
   const row = template.firstElementChild;
@@ -115,16 +175,39 @@ function addCounter(teamId) {
   list.insertBefore(row, addBtn);
 }
 
+/**
+ * Reinitialise les counters d'une equipe aux valeurs par defaut
+ */
+async function resetTeamCounters(teamId) {
+  if (!confirm(`Reinitialiser les counters de cette equipe aux valeurs par defaut ?`)) {
+    return;
+  }
+
+  // Supprimer du custom
+  delete customCounters[teamId];
+  await ext.storage.local.set({ msfCustomCounters: customCounters });
+
+  // Recalculer la fusion
+  mergeCounters();
+  renderTeams();
+
+  document.getElementById("save-status").textContent = "Reinitialise!";
+  document.getElementById("save-status").style.color = "#51cf66";
+  setTimeout(() => {
+    document.getElementById("save-status").textContent = "";
+  }, 2000);
+}
+
 // Sauvegarder
 document.getElementById("btn-save").addEventListener("click", async () => {
-  const customCounters = {};
+  const newCustomCounters = {};
 
   document.querySelectorAll(".team-section").forEach(section => {
     const teamId = section.dataset.teamId;
     const rows = section.querySelectorAll(".counter-row");
 
     if (rows.length > 0) {
-      customCounters[teamId] = [];
+      const counters = [];
 
       rows.forEach(row => {
         const team = row.querySelector(".counter-team").value;
@@ -132,25 +215,39 @@ document.getElementById("btn-save").addEventListener("click", async () => {
         const minPowerRatio = parseFloat(row.querySelector(".counter-ratio").value) || 1.0;
         const notes = row.querySelector(".counter-notes").value.trim();
 
-        customCounters[teamId].push({
+        counters.push({
           team,
           confidence,
           minPowerRatio,
           notes: notes || undefined
         });
       });
+
+      // Verifier si les counters ont change par rapport au default/remote
+      const originalCounters = remoteCounters[teamId] || defaultCounters[teamId] || [];
+      const hasChanged = JSON.stringify(counters) !== JSON.stringify(originalCounters);
+
+      if (hasChanged) {
+        newCustomCounters[teamId] = counters;
+      }
     }
   });
 
   try {
+    customCounters = newCustomCounters;
     await ext.storage.local.set({ msfCustomCounters: customCounters });
-    document.getElementById("save-status").textContent = " Sauvegarde!";
+
+    // Recalculer la fusion et re-render
+    mergeCounters();
+    renderTeams();
+
+    document.getElementById("save-status").textContent = "Sauvegarde!";
     document.getElementById("save-status").style.color = "#51cf66";
     setTimeout(() => {
       document.getElementById("save-status").textContent = "";
     }, 2000);
   } catch (e) {
-    document.getElementById("save-status").textContent = " Erreur!";
+    document.getElementById("save-status").textContent = "Erreur!";
     document.getElementById("save-status").style.color = "#ff6b6b";
   }
 });

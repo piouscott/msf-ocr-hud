@@ -21,7 +21,21 @@
       <button id="btn-export" class="btn-small">Exporter</button>
       <button id="btn-import" class="btn-small">Importer</button>
       <button id="btn-manage" class="btn-small">Counters</button>
+      <button id="btn-settings" class="btn-small">Sync</button>
       <input type="file" id="import-file" accept=".json" class="hidden">
+    </section>
+
+    <section id="sync-panel" class="hidden">
+      <div class="sync-header">
+        <span>Synchronisation Counters</span>
+        <button id="btn-close-sync" class="btn-close">X</button>
+      </div>
+      <div class="sync-form">
+        <input type="url" id="sync-url" placeholder="URL du fichier counters.json" class="sync-input">
+        <button id="btn-sync" class="btn-sync">Sync</button>
+      </div>
+      <div id="sync-status" class="sync-status"></div>
+      <div id="sync-info" class="sync-info"></div>
     </section>
 
     <section id="status">

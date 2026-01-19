@@ -30,6 +30,13 @@ ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     });
     return true;
   }
+
+  if (msg.type === "MSF_SYNC_COUNTERS") {
+    handleSyncCounters(msg.url).then(sendResponse).catch(e => {
+      sendResponse({ success: false, message: e.message });
+    });
+    return true;
+  }
 });
 
 async function handleAnalyzeRequest() {
@@ -85,6 +92,55 @@ async function handleStartCalibrator(msg) {
   });
 
   return { success: true };
+}
+
+/**
+ * Synchronise les counters depuis une URL distante
+ */
+async function handleSyncCounters(url) {
+  try {
+    const response = await fetch(url, {
+      cache: "no-cache",
+      headers: { "Accept": "application/json" }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    // Valider le format
+    if (!data.counters || typeof data.counters !== "object") {
+      throw new Error("Format invalide: 'counters' manquant");
+    }
+
+    // Sauvegarder avec metadata
+    const remoteData = {
+      counters: data.counters,
+      version: data.version || 1,
+      syncedAt: new Date().toISOString(),
+      sourceUrl: url
+    };
+
+    await ext.storage.local.set({ msfRemoteCounters: remoteData });
+
+    const teamCount = Object.keys(data.counters).length;
+    console.log(`[BG] Sync remote: ${teamCount} equipes depuis ${url}`);
+
+    return {
+      success: true,
+      message: `${teamCount} equipes synchronisees`,
+      count: teamCount
+    };
+  } catch (e) {
+    console.error("[BG] Erreur sync remote:", e);
+    return {
+      success: false,
+      message: e.message,
+      count: 0
+    };
+  }
 }
 
 // Ancien handler pour clic direct (backup si pas de popup)

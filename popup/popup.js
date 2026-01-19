@@ -6,10 +6,19 @@ const btnCalibrate = document.getElementById("btn-calibrate");
 const btnExport = document.getElementById("btn-export");
 const btnImport = document.getElementById("btn-import");
 const btnManage = document.getElementById("btn-manage");
+const btnSettings = document.getElementById("btn-settings");
 const importFile = document.getElementById("import-file");
 const spinner = document.getElementById("spinner");
 const statusText = document.getElementById("status-text");
 const resultsSection = document.getElementById("results");
+
+// Sync panel elements
+const syncPanel = document.getElementById("sync-panel");
+const btnCloseSync = document.getElementById("btn-close-sync");
+const syncUrl = document.getElementById("sync-url");
+const btnSync = document.getElementById("btn-sync");
+const syncStatus = document.getElementById("sync-status");
+const syncInfo = document.getElementById("sync-info");
 
 // ============================================
 // Bouton Analyser
@@ -136,6 +145,83 @@ importFile.addEventListener("change", async (e) => {
 btnManage.addEventListener("click", () => {
   window.location.href = "manage.html";
 });
+
+// ============================================
+// Panneau Synchronisation
+// ============================================
+
+btnSettings.addEventListener("click", async () => {
+  syncPanel.classList.toggle("hidden");
+
+  if (!syncPanel.classList.contains("hidden")) {
+    // Charger l'URL sauvegardee et les infos de sync
+    const stored = await ext.storage.local.get(["msfSyncUrl", "msfRemoteCounters"]);
+
+    if (stored.msfSyncUrl) {
+      syncUrl.value = stored.msfSyncUrl;
+    }
+
+    if (stored.msfRemoteCounters) {
+      const info = stored.msfRemoteCounters;
+      const date = info.syncedAt ? new Date(info.syncedAt).toLocaleString("fr-FR") : "?";
+      const count = info.counters ? Object.keys(info.counters).length : 0;
+      syncInfo.textContent = `Derniere sync: ${date} (${count} equipes)`;
+    } else {
+      syncInfo.textContent = "Aucune synchronisation effectuee";
+    }
+  }
+});
+
+btnCloseSync.addEventListener("click", () => {
+  syncPanel.classList.add("hidden");
+});
+
+btnSync.addEventListener("click", async () => {
+  const url = syncUrl.value.trim();
+
+  if (!url) {
+    setSyncStatus("URL requise", "error");
+    return;
+  }
+
+  // Valider l'URL
+  try {
+    new URL(url);
+  } catch {
+    setSyncStatus("URL invalide", "error");
+    return;
+  }
+
+  // Sauvegarder l'URL
+  await ext.storage.local.set({ msfSyncUrl: url });
+
+  btnSync.disabled = true;
+  setSyncStatus("Synchronisation...", "");
+
+  try {
+    // Envoyer la requete au content script via background
+    const response = await ext.runtime.sendMessage({
+      type: "MSF_SYNC_COUNTERS",
+      url: url
+    });
+
+    if (response.success) {
+      setSyncStatus(response.message, "success");
+      syncInfo.textContent = `Sync: ${new Date().toLocaleString("fr-FR")} (${response.count} equipes)`;
+    } else {
+      setSyncStatus("Erreur: " + response.message, "error");
+    }
+  } catch (e) {
+    setSyncStatus("Erreur: " + e.message, "error");
+  } finally {
+    btnSync.disabled = false;
+  }
+});
+
+function setSyncStatus(text, type) {
+  syncStatus.textContent = text;
+  syncStatus.className = "sync-status " + (type || "");
+}
 
 // ============================================
 // Affichage des resultats

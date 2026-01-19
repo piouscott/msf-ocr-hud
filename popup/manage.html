@@ -113,6 +113,54 @@
       font-weight: 600;
       cursor: pointer;
     }
+
+    /* Source badges */
+    .source-legend {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 12px;
+      font-size: 11px;
+      color: #888;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .source-badge {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .source-badge.default { background: #888; }
+    .source-badge.remote { background: #00d4ff; }
+    .source-badge.custom { background: #51cf66; }
+
+    .team-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-reset {
+      background: transparent;
+      border: 1px solid #ff6b6b;
+      color: #ff6b6b;
+      border-radius: 4px;
+      padding: 4px 10px;
+      cursor: pointer;
+      font-size: 11px;
+      margin-left: 8px;
+    }
+
+    .btn-reset:hover {
+      background: #ff6b6b;
+      color: #fff;
+    }
   </style>
 </head>
 <body>
@@ -121,6 +169,8 @@
     <header>
       <h1>Gestion Counters</h1>
     </header>
+
+    <div id="source-legend" class="source-legend"></div>
 
     <div id="teams-container">
       <!-- Genere par JS -->
