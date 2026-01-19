@@ -278,7 +278,7 @@ Min Power : [1.1]x
 - [x] Import config avec fusion des portraits
 - [x] Interface de gestion des counters (manage.html)
 - [x] Counters custom stockes dans storage.local
-- [ ] Compatibilité Chrome (a tester)
+- [x] Compatibilité Chrome (couche abstraction `ext` dans tous les fichiers)
 
 ---
 
@@ -322,4 +322,8 @@ Min Power : [1.1]x
 
 ---
 
-**Prochaine étape** : Test complet et ajustements. Extension fonctionnelle!
+**Statut** : Extension V1.0 complète et fonctionnelle!
+
+**Pour tester** :
+1. Firefox : `about:debugging` → Charger un module complémentaire temporaire → sélectionner `manifest.json`
+2. Chrome : `chrome://extensions` → Mode développeur → Charger l'extension non empaquetée
