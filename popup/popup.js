@@ -29,6 +29,18 @@ const btnSaveApi = document.getElementById("btn-save-api");
 const btnTestApi = document.getElementById("btn-test-api");
 const apiStatus = document.getElementById("api-status");
 
+// War panel elements
+const warPanel = document.getElementById("war-panel");
+const btnWarOcr = document.getElementById("btn-war-ocr");
+const btnCloseWar = document.getElementById("btn-close-war");
+const warNames = document.getElementById("war-names");
+const warPower = document.getElementById("war-power");
+const btnWarAnalyze = document.getElementById("btn-war-analyze");
+const warResult = document.getElementById("war-result");
+
+// War Analyzer instance
+let warAnalyzer = null;
+
 // API Key constante (ne change pas)
 const MSF_API_KEY = "17wMKJLRxy3pYDCKG5ciP7VSU45OVumB2biCzzgw";
 
@@ -591,4 +603,115 @@ btnTestApi.addEventListener("click", async () => {
 function setApiStatus(text, type) {
   apiStatus.textContent = text;
   apiStatus.className = "sync-status " + (type || "");
+}
+
+// ============================================
+// Panneau War OCR
+// ============================================
+
+btnWarOcr.addEventListener("click", () => {
+  warPanel.classList.toggle("hidden");
+  syncPanel.classList.add("hidden");
+  apiPanel.classList.add("hidden");
+
+  if (!warPanel.classList.contains("hidden")) {
+    warResult.classList.add("hidden");
+  }
+});
+
+btnCloseWar.addEventListener("click", () => {
+  warPanel.classList.add("hidden");
+});
+
+btnWarAnalyze.addEventListener("click", async () => {
+  const namesText = warNames.value.trim();
+
+  if (!namesText) {
+    showWarResult("Entrez au moins un nom de personnage", "error");
+    return;
+  }
+
+  // Parser les noms (1 par ligne)
+  const names = namesText
+    .split(/[\n\r]+/)
+    .map(n => n.trim().toUpperCase())
+    .filter(n => n.length > 0);
+
+  if (names.length === 0) {
+    showWarResult("Aucun nom valide detecte", "error");
+    return;
+  }
+
+  // Parser la puissance
+  const powerValue = parseFormattedNumber(warPower.value);
+
+  btnWarAnalyze.disabled = true;
+  showWarResult("Analyse en cours...", "");
+
+  try {
+    // Initialiser le WarAnalyzer si necessaire
+    if (!warAnalyzer) {
+      warAnalyzer = new WarAnalyzer();
+      await warAnalyzer.init();
+    }
+
+    // Analyser l'equipe
+    const result = warAnalyzer.analyzeEnemyTeam(names, powerValue || null);
+
+    // Afficher les resultats
+    displayWarResult(result);
+
+  } catch (e) {
+    console.error("[War] Erreur:", e);
+    showWarResult("Erreur: " + e.message, "error");
+  } finally {
+    btnWarAnalyze.disabled = false;
+  }
+});
+
+function showWarResult(message, type) {
+  warResult.innerHTML = `<div class="${type === 'error' ? 'war-team-unknown' : ''}">${message}</div>`;
+  warResult.classList.remove("hidden");
+}
+
+function displayWarResult(result) {
+  let html = "";
+
+  if (result.identified && result.team) {
+    html += `<div class="war-team-identified">Equipe: ${result.team.name}</div>`;
+
+    if (result.matchConfidence) {
+      html += `<div style="font-size:11px;color:#888;margin-bottom:8px;">Confiance: ${result.matchConfidence}%</div>`;
+    }
+
+    if (result.counters && result.counters.length > 0) {
+      html += `<div class="counters-title">Counters recommandes:</div>`;
+      html += `<div class="war-counters-list">`;
+
+      result.counters.slice(0, 5).forEach(c => {
+        html += `
+          <div class="war-counter-item">
+            <span class="war-counter-name">${c.teamName}</span>
+            <div class="war-counter-meta">
+              <span class="war-counter-confidence">${c.confidence}%</span>
+              ${c.minPower ? `<span class="war-counter-power">${formatPower(c.minPower)}+</span>` : ""}
+            </div>
+          </div>
+        `;
+      });
+
+      html += `</div>`;
+    } else {
+      html += `<div class="war-team-unknown">Aucun counter defini pour cette equipe</div>`;
+    }
+  } else {
+    html += `<div class="war-team-unknown">Equipe non identifiee</div>`;
+
+    if (result.characters && result.characters.length > 0) {
+      html += `<div style="font-size:11px;color:#888;margin-top:6px;">Personnages detectes: ${result.characters.join(", ")}</div>`;
+    }
+  }
+
+  warResult.innerHTML = html;
+  warResult.classList.remove("hidden");
 }

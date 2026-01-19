@@ -14,6 +14,7 @@
 
     <section id="actions">
       <button id="btn-analyze" class="btn-primary">Analyser l'ecran</button>
+      <button id="btn-war-ocr" class="btn-war">War OCR</button>
       <button id="btn-calibrate" class="btn-secondary">Calibrer zones</button>
     </section>
 
@@ -43,6 +44,26 @@
       <div id="api-status" class="sync-status"></div>
     </section>
 
+    <section id="war-panel" class="hidden">
+      <div class="sync-header">
+        <span>War OCR - Analyse equipe</span>
+        <button id="btn-close-war" class="btn-close">X</button>
+      </div>
+      <div class="war-form">
+        <label class="api-label">Noms des personnages (1 par ligne)</label>
+        <textarea id="war-names" class="war-textarea" rows="5" placeholder="CAPTAIN AMERICA&#10;BLACK KNIGHT&#10;CAPTAIN CARTER&#10;STARBRAND&#10;COSMIC GHOST RIDER"></textarea>
+        <div class="api-help">Entrez les noms detectes a l'ecran ou collez depuis OCR</div>
+      </div>
+      <div class="war-power-row">
+        <label class="api-label">Puissance ennemi (optionnel)</label>
+        <input type="text" id="war-power" class="sync-input" placeholder="Ex: 5000000">
+      </div>
+      <div class="api-actions">
+        <button id="btn-war-analyze" class="btn-sync">Trouver counters</button>
+      </div>
+      <div id="war-result" class="war-result hidden"></div>
+    </section>
+
     <section id="sync-panel" class="hidden">
       <div class="sync-header">
         <span>Synchronisation Counters</span>
@@ -69,6 +90,7 @@
   <script src="../lib/tesseract/tesseract.min.js"></script>
   <script src="../modules/zone-cropper.js"></script>
   <script src="../modules/ocr-engine.js"></script>
+  <script src="../modules/war-analyzer.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

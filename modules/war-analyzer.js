@@ -1,0 +1,509 @@
+/**
+ * War Analyzer Module
+ * Detecte les equipes ennemies via OCR des noms de personnages
+ * et suggere les counters appropries
+ */
+
+class WarAnalyzer {
+  constructor() {
+    this.ocrWorker = null;
+    this.knownNames = [];
+    this.nameToId = {};
+    this.teamsData = [];
+    this.countersData = {};
+    this.warMetaTeams = [];
+    this.initialized = false;
+  }
+
+  /**
+   * Initialise le module (charge les donnees + OCR worker)
+   */
+  async init() {
+    if (this.initialized) return;
+
+    // Charger les noms connus pour OCR
+    try {
+      const namesUrl = typeof ext !== "undefined"
+        ? ext.runtime.getURL("data/ocr-names.json")
+        : "../data/ocr-names.json";
+      const namesRes = await fetch(namesUrl);
+      const namesData = await namesRes.json();
+      this.knownNames = namesData.names || [];
+      this.nameToId = namesData.nameToId || {};
+      console.log(`[WarAnalyzer] ${this.knownNames.length} noms charges`);
+    } catch (e) {
+      console.error("[WarAnalyzer] Erreur chargement noms:", e);
+    }
+
+    // Charger les equipes
+    try {
+      const teamsUrl = typeof ext !== "undefined"
+        ? ext.runtime.getURL("data/teams.json")
+        : "../data/teams.json";
+      const teamsRes = await fetch(teamsUrl);
+      const teamsJson = await teamsRes.json();
+      this.teamsData = teamsJson.teams || [];
+      console.log(`[WarAnalyzer] ${this.teamsData.length} equipes chargees`);
+    } catch (e) {
+      console.error("[WarAnalyzer] Erreur chargement equipes:", e);
+    }
+
+    // Charger les counters
+    try {
+      const countersUrl = typeof ext !== "undefined"
+        ? ext.runtime.getURL("data/counters.json")
+        : "../data/counters.json";
+      const countersRes = await fetch(countersUrl);
+      const countersJson = await countersRes.json();
+      this.countersData = countersJson.counters || {};
+      console.log(`[WarAnalyzer] ${Object.keys(this.countersData).length} counters charges`);
+    } catch (e) {
+      console.error("[WarAnalyzer] Erreur chargement counters:", e);
+    }
+
+    // Charger les equipes meta de guerre
+    try {
+      const warMetaUrl = typeof ext !== "undefined"
+        ? ext.runtime.getURL("data/war-meta.json")
+        : "../data/war-meta.json";
+      const warMetaRes = await fetch(warMetaUrl);
+      const warMetaJson = await warMetaRes.json();
+      this.warMetaTeams = warMetaJson.teams || [];
+      console.log(`[WarAnalyzer] ${this.warMetaTeams.length} equipes meta war chargees`);
+    } catch (e) {
+      console.error("[WarAnalyzer] Erreur chargement war-meta:", e);
+    }
+
+    // Initialiser Tesseract
+    if (typeof Tesseract !== "undefined") {
+      this.ocrWorker = await Tesseract.createWorker("eng+fra", 1, {
+        workerBlobURL: false,
+        corePath: typeof ext !== "undefined"
+          ? ext.runtime.getURL("lib/tesseract/tesseract-core-simd.wasm.js")
+          : "../lib/tesseract/tesseract-core-simd.wasm.js"
+      });
+      console.log("[WarAnalyzer] OCR worker initialise");
+    }
+
+    this.initialized = true;
+  }
+
+  /**
+   * Calcule la distance de Levenshtein
+   */
+  levenshtein(a, b) {
+    if (a.length === 0) return b.length;
+    if (b.length === 0) return a.length;
+
+    const matrix = [];
+    for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+    for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+    for (let i = 1; i <= b.length; i++) {
+      for (let j = 1; j <= a.length; j++) {
+        if (b.charAt(i - 1) === a.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1,
+            matrix[i][j - 1] + 1,
+            matrix[i - 1][j] + 1
+          );
+        }
+      }
+    }
+    return matrix[b.length][a.length];
+  }
+
+  /**
+   * Trouve le meilleur match pour un nom OCR
+   */
+  findBestMatch(ocrName, threshold = 0.6) {
+    if (!ocrName || this.knownNames.length === 0) return null;
+
+    const normalized = ocrName.toUpperCase().trim();
+
+    // Match exact
+    if (this.knownNames.includes(normalized)) {
+      return {
+        name: normalized,
+        charId: this.nameToId[normalized] || null,
+        similarity: 100
+      };
+    }
+
+    // Fuzzy matching
+    let bestMatch = null;
+    let bestScore = 0;
+
+    for (const known of this.knownNames) {
+      const distance = this.levenshtein(normalized, known);
+      const maxLen = Math.max(normalized.length, known.length);
+      const similarity = (maxLen - distance) / maxLen;
+
+      if (similarity > bestScore && similarity >= threshold) {
+        bestScore = similarity;
+        bestMatch = {
+          name: known,
+          charId: this.nameToId[known] || null,
+          similarity: Math.round(similarity * 100)
+        };
+      }
+    }
+
+    return bestMatch;
+  }
+
+  /**
+   * Nettoie le texte OCR
+   */
+  cleanOCRText(text) {
+    if (!text) return "";
+
+    let clean = text.trim()
+      .replace(/\n/g, " ")
+      .replace(/\s+/g, " ")
+      .replace(/[_|\\\/\[\]{}«»""]/g, "")
+      .replace(/\s*[.,;:!?]+\s*$/g, "")
+      .trim();
+
+    // Corrections OCR courantes
+    clean = clean
+      .replace(/\bME\s*U\b/gi, "MCU")
+      .replace(/\b0\b/g, "O")
+      .replace(/\b1\b/g, "I")
+      .replace(/\bll\b/gi, "II")
+      .trim();
+
+    clean = clean
+      .replace(/^[^a-zA-Z(]+/, "")
+      .replace(/[^a-zA-Z)]+$/, "")
+      .trim();
+
+    const letters = clean.replace(/[^a-zA-Z]/g, "");
+    if (letters.length < 3) return "";
+
+    return clean.toUpperCase();
+  }
+
+  /**
+   * Preprocesse une image pour l'OCR (seuil adaptatif Otsu)
+   */
+  preprocessForOCR(canvas) {
+    const ctx = canvas.getContext("2d");
+    const w = canvas.width;
+    const h = canvas.height;
+    const imageData = ctx.getImageData(0, 0, w, h);
+    const data = imageData.data;
+
+    // Histogramme
+    const histogram = new Array(256).fill(0);
+    const brightnesses = [];
+
+    for (let i = 0; i < data.length; i += 4) {
+      const gray = Math.round(0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
+      histogram[gray]++;
+      brightnesses.push(gray);
+    }
+
+    const avgBrightness = brightnesses.reduce((a, b) => a + b, 0) / brightnesses.length;
+
+    // Methode d'Otsu
+    const total = brightnesses.length;
+    let sum = 0;
+    for (let i = 0; i < 256; i++) sum += i * histogram[i];
+
+    let sumB = 0, wB = 0, maxVariance = 0, threshold = 128;
+
+    for (let t = 0; t < 256; t++) {
+      wB += histogram[t];
+      if (wB === 0) continue;
+      const wF = total - wB;
+      if (wF === 0) break;
+
+      sumB += t * histogram[t];
+      const mB = sumB / wB;
+      const mF = (sum - sumB) / wF;
+      const variance = wB * wF * (mB - mF) * (mB - mF);
+
+      if (variance > maxVariance) {
+        maxVariance = variance;
+        threshold = t;
+      }
+    }
+
+    if (avgBrightness < 80) {
+      threshold = Math.max(60, threshold - 30);
+    }
+
+    const invert = avgBrightness < 100;
+
+    for (let i = 0; i < data.length; i += 4) {
+      let gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+      if (invert) gray = 255 - gray;
+      gray = gray < threshold ? 0 : 255;
+      data[i] = gray;
+      data[i + 1] = gray;
+      data[i + 2] = gray;
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+    return canvas;
+  }
+
+  /**
+   * Extrait le texte d'une zone d'image
+   */
+  async extractTextFromZone(imageDataUrl, zone) {
+    if (!this.ocrWorker) {
+      throw new Error("OCR worker non initialise");
+    }
+
+    // Creer un canvas pour la zone
+    const img = await this.loadImage(imageDataUrl);
+    const x = Math.floor(zone.x * img.width);
+    const y = Math.floor(zone.y * img.height);
+    const w = Math.floor(zone.w * img.width);
+    const h = Math.floor(zone.h * img.height);
+
+    // Agrandir 3x pour meilleur OCR
+    const scale = 3;
+    const canvas = document.createElement("canvas");
+    canvas.width = w * scale;
+    canvas.height = h * scale;
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(img, x, y, w, h, 0, 0, w * scale, h * scale);
+
+    // Preprocesser
+    this.preprocessForOCR(canvas);
+
+    // OCR
+    const { data: { text } } = await this.ocrWorker.recognize(canvas);
+    return this.cleanOCRText(text);
+  }
+
+  /**
+   * Charge une image depuis dataUrl
+   */
+  loadImage(dataUrl) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = dataUrl;
+    });
+  }
+
+  /**
+   * Analyse une liste de noms de personnages et identifie l'equipe
+   */
+  identifyTeamFromNames(characterNames) {
+    if (!characterNames || characterNames.length === 0) {
+      return null;
+    }
+
+    // Convertir les noms en IDs (via nameToId)
+    const charIds = characterNames
+      .map(name => this.nameToId[name.toUpperCase()])
+      .filter(id => id);
+
+    if (charIds.length < 3) {
+      return { team: null, matchedMembers: characterNames, confidence: 0 };
+    }
+
+    // 1. Chercher d'abord dans les equipes definies (teams.json)
+    let bestTeam = null;
+    let bestMatchCount = 0;
+
+    for (const team of this.teamsData) {
+      if (!team.memberIds) continue;
+
+      const matchCount = charIds.filter(id => team.memberIds.includes(id)).length;
+
+      if (matchCount > bestMatchCount) {
+        bestMatchCount = matchCount;
+        bestTeam = team;
+      }
+    }
+
+    // 2. Si pas de match dans teams.json, chercher dans war-meta
+    if (!bestTeam || bestMatchCount < 3) {
+      let bestMetaTeam = null;
+      let bestMetaMatchCount = 0;
+
+      for (const metaTeam of this.warMetaTeams) {
+        if (!metaTeam.squad) continue;
+
+        const matchCount = charIds.filter(id => metaTeam.squad.includes(id)).length;
+
+        if (matchCount > bestMetaMatchCount) {
+          bestMetaMatchCount = matchCount;
+          bestMetaTeam = metaTeam;
+        }
+      }
+
+      // Utiliser le meta team si meilleur match
+      if (bestMetaTeam && bestMetaMatchCount > bestMatchCount) {
+        // Creer un objet team temporaire
+        bestTeam = {
+          id: "meta_" + bestMetaTeam.squad.join("_").substring(0, 30),
+          name: bestMetaTeam.squad.slice(0, 3).join(" + ") + "...",
+          memberIds: bestMetaTeam.squad,
+          isMetaTeam: true,
+          popularity: bestMetaTeam.popularity
+        };
+        bestMatchCount = bestMetaMatchCount;
+      }
+    }
+
+    // Calculer la confiance
+    const confidence = bestTeam
+      ? Math.round((bestMatchCount / Math.min(5, charIds.length)) * 100)
+      : 0;
+
+    return {
+      team: bestTeam,
+      matchedMembers: characterNames,
+      matchCount: bestMatchCount,
+      confidence: confidence
+    };
+  }
+
+  /**
+   * Recupere les counters pour une equipe
+   */
+  getCountersForTeam(teamId, enemyPower = null) {
+    if (!teamId || !this.countersData[teamId]) {
+      return [];
+    }
+
+    const counters = this.countersData[teamId].map(counter => {
+      const counterTeam = this.teamsData.find(t => t.id === counter.team);
+      const minPower = enemyPower ? Math.round(enemyPower * counter.minPowerRatio) : null;
+
+      return {
+        teamId: counter.team,
+        teamName: counterTeam ? counterTeam.name : counter.team,
+        confidence: counter.confidence,
+        minPowerRatio: counter.minPowerRatio,
+        minPower: minPower,
+        notes: counter.notes || null
+      };
+    });
+
+    return counters.sort((a, b) => b.confidence - a.confidence);
+  }
+
+  /**
+   * Analyse complete d'une equipe ennemie depuis des noms OCR
+   */
+  analyzeEnemyTeam(characterNames, enemyPower = null) {
+    const teamResult = this.identifyTeamFromNames(characterNames);
+
+    if (!teamResult.team) {
+      return {
+        identified: false,
+        characters: characterNames,
+        team: null,
+        counters: [],
+        message: "Equipe non identifiee"
+      };
+    }
+
+    const counters = this.getCountersForTeam(teamResult.team.id, enemyPower);
+
+    return {
+      identified: true,
+      characters: characterNames,
+      team: {
+        id: teamResult.team.id,
+        name: teamResult.team.name,
+        nameFr: teamResult.team.nameFr
+      },
+      matchConfidence: teamResult.confidence,
+      counters: counters,
+      message: `${teamResult.team.name} identifie (${teamResult.confidence}%)`
+    };
+  }
+
+  /**
+   * Analyse un screenshot de guerre avec zones configurees
+   */
+  async analyzeWarScreenshot(imageDataUrl, zones, onProgress = null) {
+    await this.init();
+
+    const results = [];
+
+    for (let i = 0; i < zones.length; i++) {
+      const zone = zones[i];
+      if (onProgress) onProgress(`Analyse zone ${i + 1}/${zones.length}...`);
+
+      try {
+        // Extraire les noms de la zone (suppose 5 sous-zones pour les noms)
+        const names = [];
+
+        if (zone.nameZones) {
+          // Si des sous-zones sont definies pour chaque nom
+          for (const nameZone of zone.nameZones) {
+            const text = await this.extractTextFromZone(imageDataUrl, nameZone);
+            if (text) {
+              const match = this.findBestMatch(text);
+              if (match) {
+                names.push(match.name);
+              } else {
+                names.push(text);
+              }
+            }
+          }
+        } else if (zone.fullTextZone) {
+          // Zone de texte complete a parser
+          const fullText = await this.extractTextFromZone(imageDataUrl, zone.fullTextZone);
+          // Parser le texte pour extraire les noms (separes par newline ou autre)
+          const lines = fullText.split(/[\n\r]+/).filter(l => l.trim());
+          for (const line of lines) {
+            const match = this.findBestMatch(line);
+            if (match) {
+              names.push(match.name);
+            }
+          }
+        }
+
+        // Analyser l'equipe
+        const analysis = this.analyzeEnemyTeam(names, zone.power || null);
+        results.push({
+          zoneIndex: i,
+          zoneName: zone.name || `Zone ${i + 1}`,
+          ...analysis
+        });
+
+      } catch (e) {
+        console.error(`[WarAnalyzer] Erreur zone ${i}:`, e);
+        results.push({
+          zoneIndex: i,
+          zoneName: zone.name || `Zone ${i + 1}`,
+          error: e.message
+        });
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * Libere les ressources
+   */
+  async terminate() {
+    if (this.ocrWorker) {
+      await this.ocrWorker.terminate();
+      this.ocrWorker = null;
+    }
+    this.initialized = false;
+  }
+}
+
+// Export global
+if (typeof window !== "undefined") {
+  window.WarAnalyzer = WarAnalyzer;
+}

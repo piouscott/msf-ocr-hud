@@ -1,0 +1,4498 @@
+{
+  "description": "MSF War meta teams from API",
+  "version": 1,
+  "lastUpdate": "2026-01-19",
+  "source": "api.marvelstrikeforce.com/game/v1/analysis/teamOrder/war",
+  "teams": [
+    {
+      "squad": [
+        "CaptainAmerica",
+        "BlackKnight",
+        "CaptainCarter",
+        "StarBrand",
+        "CosmicGhostRider"
+      ],
+      "popularity": 8709
+    },
+    {
+      "squad": [
+        "Hulk",
+        "RedHulk",
+        "Abomination",
+        "AmadeusCho",
+        "SheHulk"
+      ],
+      "popularity": 7369
+    },
+    {
+      "squad": [
+        "Thing",
+        "Coulson",
+        "Ronin",
+        "Mockingbird",
+        "Tigra"
+      ],
+      "popularity": 7287
+    },
+    {
+      "squad": [
+        "Kahhori",
+        "Ironheart",
+        "Medusa",
+        "Wasp",
+        "MsMarvelClassic"
+      ],
+      "popularity": 6682
+    },
+    {
+      "squad": [
+        "Falcon",
+        "ScarletWitch",
+        "Vision",
+        "InvisibleWoman",
+        "Hercules"
+      ],
+      "popularity": 6446
+    },
+    {
+      "squad": [
+        "Deathpool",
+        "Daken",
+        "OldManLogan",
+        "Deadpool",
+        "PandaPool"
+      ],
+      "popularity": 6425
+    },
+    {
+      "squad": [
+        "MistyKnight",
+        "IronFist",
+        "LukeCage",
+        "ColleenWing",
+        "ShangChi"
+      ],
+      "popularity": 5889
+    },
+    {
+      "squad": [
+        "BlackPantherBC",
+        "Okoye",
+        "BlackPanther",
+        "Nakia",
+        "Shuri"
+      ],
+      "popularity": 5661
+    },
+    {
+      "squad": [
+        "Kingpin",
+        "UltGreenGoblin",
+        "MrNegative",
+        "Nobu",
+        "Taskmaster"
+      ],
+      "popularity": 5641
+    },
+    {
+      "squad": [
+        "OmegaRed",
+        "LadyDeathstrike",
+        "Sabretooth",
+        "Wolverine",
+        "SilverSamurai"
+      ],
+      "popularity": 5559
+    },
+    {
+      "squad": [
+        "Electro",
+        "DoctorOctopus",
+        "Swarm",
+        "Mysterio",
+        "Rhino"
+      ],
+      "popularity": 5434
+    },
+    {
+      "squad": [
+        "PeggyCarter",
+        "FalconJoaquin",
+        "WarMachine",
+        "Patriot",
+        "SamWilson"
+      ],
+      "popularity": 5361
+    },
+    {
+      "squad": [
+        "Cosmo",
+        "StarLord_Annihilation",
+        "Nova",
+        "Thor_InfinityWar",
+        "Korg"
+      ],
+      "popularity": 5308
+    },
+    {
+      "squad": [
+        "BaronMordo",
+        "DoctorVoodoo",
+        "GhostRider",
+        "Morbius",
+        "ElsaBloodstone"
+      ],
+      "popularity": 5014
+    },
+    {
+      "squad": [
+        "KateBishop",
+        "AmericaChavez",
+        "Echo",
+        "SquirrelGirl",
+        "MsMarvel"
+      ],
+      "popularity": 4385
+    },
+    {
+      "squad": [
+        "MrSinister",
+        "Sabretooth",
+        "MadelynePryor",
+        "Mystique",
+        "Stryfe"
+      ],
+      "popularity": 4319
+    },
+    {
+      "squad": [
+        "SpiderManBigTime",
+        "AntMan",
+        "BlackWidow",
+        "Yellowjacket",
+        "Swarm"
+      ],
+      "popularity": 3739
+    },
+    {
+      "squad": [
+        "",
+        "JessicaJones",
+        "SpiderWoman",
+        "NicoMinoru",
+        "CaptainMarvel"
+      ],
+      "popularity": 3632
+    },
+    {
+      "squad": [
+        "PhantomRider",
+        "Quake",
+        "Domino",
+        "Negasonic",
+        "YoYo"
+      ],
+      "popularity": 2015
+    },
+    {
+      "squad": [
+        "",
+        "ZombieScarletWitch",
+        "Hela",
+        "ZombieIronMan",
+        "ZombieJuggernaut"
+      ],
+      "popularity": 1912
+    },
+    {
+      "squad": [
+        "Scorpion",
+        "Yellowjacket",
+        "BlackWidow",
+        "AntMan",
+        "SpiderManBigTime"
+      ],
+      "popularity": 1647
+    },
+    {
+      "squad": [
+        "Hellcat",
+        "ElsaBloodstone",
+        "DaimonHellstrom",
+        "StrangeSupreme",
+        "LivingMummy"
+      ],
+      "popularity": 1646
+    },
+    {
+      "squad": [
+        "AbsorbingMan",
+        "Titania",
+        "Ultron",
+        "Moonstone",
+        "KangTheConqueror"
+      ],
+      "popularity": 1634
+    },
+    {
+      "squad": [
+        "DarkBeast",
+        "Magneto",
+        "Archangel",
+        "Psylocke",
+        "Nemesis"
+      ],
+      "popularity": 1481
+    },
+    {
+      "squad": [
+        "Darkhawk",
+        "IronManInfinityWar",
+        "Sybil",
+        "Rescue",
+        "IronheartMCU"
+      ],
+      "popularity": 1387
+    },
+    {
+      "squad": [
+        "ZombieKestrel",
+        "ZombieJuggernaut",
+        "ZombieIronMan",
+        "Hela",
+        "ZombieScarletWitch"
+      ],
+      "popularity": 1318
+    },
+    {
+      "squad": [
+        "CaptainBritain",
+        "BlackBolt",
+        "BlackPantherShuri",
+        "MrFantastic",
+        "HankPym"
+      ],
+      "popularity": 1296
+    },
+    {
+      "squad": [
+        "BlackKnight",
+        "CaptainAmerica",
+        "StarBrand",
+        "CosmicGhostRider",
+        "CaptainCarter"
+      ],
+      "popularity": 1160
+    },
+    {
+      "squad": [
+        "Darkhawk",
+        "Rescue",
+        "Sybil",
+        "IronManInfinityWar",
+        "IronheartMCU"
+      ],
+      "popularity": 1109
+    },
+    {
+      "squad": [
+        "PeniParker",
+        "SpiderManNoir",
+        "GhostSpider",
+        "PeterBParker",
+        "SpiderManPavitr"
+      ],
+      "popularity": 1062
+    },
+    {
+      "squad": [
+        "Mockingbird",
+        "Ronin",
+        "Coulson",
+        "Thing",
+        "Tigra"
+      ],
+      "popularity": 1055
+    },
+    {
+      "squad": [
+        "Sif",
+        "Heimdall",
+        "JaneThor",
+        "Valkyrie",
+        "Thor"
+      ],
+      "popularity": 1027
+    },
+    {
+      "squad": [
+        "AgathaHarkness",
+        "Blade",
+        "Oath",
+        "MoonKnight",
+        "ManThing"
+      ],
+      "popularity": 994
+    },
+    {
+      "squad": [
+        "AmadeusCho",
+        "Abomination",
+        "SheHulk",
+        "RedHulk",
+        "Hulk"
+      ],
+      "popularity": 992
+    },
+    {
+      "squad": [
+        "Korg",
+        "Cosmo",
+        "Nova",
+        "Thor_InfinityWar",
+        "StarLord_Annihilation"
+      ],
+      "popularity": 955
+    },
+    {
+      "squad": [
+        "MsMarvel",
+        "Echo",
+        "AmericaChavez",
+        "KateBishop",
+        "SquirrelGirl"
+      ],
+      "popularity": 949
+    },
+    {
+      "squad": [
+        "Medusa",
+        "Kahhori",
+        "Ironheart",
+        "Wasp",
+        "MsMarvelClassic"
+      ],
+      "popularity": 944
+    },
+    {
+      "squad": [
+        "Northstar",
+        "Sunfire",
+        "Guardian",
+        "Wolverine",
+        "Sasquatch"
+      ],
+      "popularity": 933
+    },
+    {
+      "squad": [
+        "Daken",
+        "Deathpool",
+        "Deadpool",
+        "OldManLogan",
+        "PandaPool"
+      ],
+      "popularity": 929
+    },
+    {
+      "squad": [
+        "Gladiator",
+        "ThanosEndgame",
+        "SilverSurfer",
+        "Ultimus",
+        "Gorr"
+      ],
+      "popularity": 909
+    },
+    {
+      "squad": [
+        "OldManLogan",
+        "Daken",
+        "Deathpool",
+        "Deadpool",
+        "PandaPool"
+      ],
+      "popularity": 899
+    },
+    {
+      "squad": [
+        "AgathaHarkness",
+        "Oath",
+        "Blade",
+        "MoonKnight",
+        "ManThing"
+      ],
+      "popularity": 882
+    },
+    {
+      "squad": [
+        "Northstar",
+        "Guardian",
+        "Sunfire",
+        "Wolverine",
+        "Sasquatch"
+      ],
+      "popularity": 868
+    },
+    {
+      "squad": [
+        "Hulkbuster",
+        "Vision",
+        "Deathlok",
+        "IronMan",
+        "VivVision"
+      ],
+      "popularity": 867
+    },
+    {
+      "squad": [
+        "AgathaHarkness",
+        "MorganLeFay",
+        "StrangeSupreme",
+        "ScarletWitch",
+        "Wong"
+      ],
+      "popularity": 810
+    },
+    {
+      "squad": [
+        "LadyDeathstrike",
+        "ScientistSupreme",
+        "OmegaSentinel",
+        "Nimrod",
+        "Sentinel"
+      ],
+      "popularity": 804
+    },
+    {
+      "squad": [
+        "CullObsidian",
+        "Thanos",
+        "CorvusGlaive",
+        "ProximaMidnight",
+        "EbonyMaw"
+      ],
+      "popularity": 801
+    },
+    {
+      "squad": [
+        "Korg",
+        "Cosmo",
+        "Nova",
+        "StarLord_Annihilation",
+        "Thor_InfinityWar"
+      ],
+      "popularity": 790
+    },
+    {
+      "squad": [
+        "DaredevilModern",
+        "Elektra",
+        "SilverSable",
+        "Punisher",
+        "HitMonkey"
+      ],
+      "popularity": 788
+    },
+    {
+      "squad": [
+        "Firestar",
+        "Dagger",
+        "Deathpool",
+        "Cloak",
+        "Gwenpool"
+      ],
+      "popularity": 781
+    },
+    {
+      "squad": [
+        "Forge",
+        "Cyclops",
+        "Gambit",
+        "Nightcrawler",
+        "Sunspot"
+      ],
+      "popularity": 779
+    },
+    {
+      "squad": [
+        "Nebula",
+        "Gamora",
+        "AdamWarlock",
+        "Moondragon",
+        "PhylaVell"
+      ],
+      "popularity": 743
+    },
+    {
+      "squad": [
+        "BuckyBarnes",
+        "CaptainAmericaWW2",
+        "NickFury",
+        "UnionJack",
+        "IronFistOrson"
+      ],
+      "popularity": 710
+    },
+    {
+      "squad": [
+        "Cosmo",
+        "StarLord_Annihilation",
+        "Thor_InfinityWar",
+        "Nova",
+        "Korg"
+      ],
+      "popularity": 702
+    },
+    {
+      "squad": [
+        "CullObsidian",
+        "CorvusGlaive",
+        "Thanos",
+        "ProximaMidnight",
+        "EbonyMaw"
+      ],
+      "popularity": 690
+    },
+    {
+      "squad": [
+        "Firestar",
+        "Cloak",
+        "Deathpool",
+        "Dagger",
+        "Gwenpool"
+      ],
+      "popularity": 688
+    },
+    {
+      "squad": [
+        "Carnage",
+        "Venom",
+        "RedGoblin",
+        "Gwenom",
+        "SymbioteSilverSurfer"
+      ],
+      "popularity": 675
+    },
+    {
+      "squad": [
+        "MoonKnight",
+        "Daredevil",
+        "Elektra",
+        "WhiteTiger",
+        "NightNurse"
+      ],
+      "popularity": 672
+    },
+    {
+      "squad": [
+        "Nimrod",
+        "OmegaSentinel",
+        "ScientistSupreme",
+        "LadyDeathstrike",
+        "Sentinel"
+      ],
+      "popularity": 662
+    },
+    {
+      "squad": [
+        "Hercules",
+        "Falcon",
+        "Beast",
+        "Storm",
+        "JeanGrey"
+      ],
+      "popularity": 660
+    },
+    {
+      "squad": [
+        "Lizard",
+        "DoctorOctopus",
+        "GreenGoblinGlider",
+        "KravenTheHunter",
+        "SpiderSlayer"
+      ],
+      "popularity": 660
+    },
+    {
+      "squad": [
+        "DaredevilModern",
+        "Elektra",
+        "Punisher",
+        "SilverSable",
+        "HitMonkey"
+      ],
+      "popularity": 646
+    },
+    {
+      "squad": [
+        "Sif",
+        "Heimdall",
+        "Thor",
+        "JaneThor",
+        "Valkyrie"
+      ],
+      "popularity": 644
+    },
+    {
+      "squad": [
+        "Hulk",
+        "Abomination",
+        "RedHulk",
+        "AmadeusCho",
+        "SheHulk"
+      ],
+      "popularity": 643
+    },
+    {
+      "squad": [
+        "Daken",
+        "OldManLogan",
+        "Deathpool",
+        "Deadpool",
+        "PandaPool"
+      ],
+      "popularity": 643
+    },
+    {
+      "squad": [
+        "Deathlok",
+        "VivVision",
+        "IronMan",
+        "Vision",
+        "Hulkbuster"
+      ],
+      "popularity": 634
+    },
+    {
+      "squad": [
+        "BlackKnight",
+        "StarBrand",
+        "CaptainCarter",
+        "CosmicGhostRider",
+        "CaptainAmerica"
+      ],
+      "popularity": 633
+    },
+    {
+      "squad": [
+        "Lizard",
+        "KravenTheHunter",
+        "DoctorOctopus",
+        "GreenGoblinGlider",
+        "SpiderSlayer"
+      ],
+      "popularity": 627
+    },
+    {
+      "squad": [
+        "RavagerSupport_Heal",
+        "RavagerDmg_AoE",
+        "Yondu",
+        "TChalla",
+        "RavagerTank_Taunt"
+      ],
+      "popularity": 627
+    },
+    {
+      "squad": [
+        "Archangel",
+        "Psylocke",
+        "Magneto",
+        "DarkBeast",
+        "Nemesis"
+      ],
+      "popularity": 625
+    },
+    {
+      "squad": [
+        "Forge",
+        "Nightcrawler",
+        "Cyclops",
+        "Gambit",
+        "Sunspot"
+      ],
+      "popularity": 623
+    },
+    {
+      "squad": [
+        "RedGoblin",
+        "Carnage",
+        "Venom",
+        "Gwenom",
+        "SymbioteSilverSurfer"
+      ],
+      "popularity": 616
+    },
+    {
+      "squad": [
+        "Groot",
+        "RocketRaccoon",
+        "Havok",
+        "HowardTheDuck",
+        "Lilandra"
+      ],
+      "popularity": 613
+    },
+    {
+      "squad": [
+        "Korg",
+        "StarLord_Annihilation",
+        "Nova",
+        "Cosmo",
+        "Thor_InfinityWar"
+      ],
+      "popularity": 609
+    },
+    {
+      "squad": [
+        "Hyperion",
+        "Ghost",
+        "VictoriaHand",
+        "Taskmaster",
+        "Songbird"
+      ],
+      "popularity": 608
+    },
+    {
+      "squad": [
+        "ScarletWitch",
+        "StrangeSupreme",
+        "MorganLeFay",
+        "AgathaHarkness",
+        "Wong"
+      ],
+      "popularity": 596
+    },
+    {
+      "squad": [
+        "IronManInfinityWar",
+        "Darkhawk",
+        "IronheartMCU",
+        "Sybil",
+        "Rescue"
+      ],
+      "popularity": 596
+    },
+    {
+      "squad": [
+        "Lizard",
+        "GreenGoblinGlider",
+        "DoctorOctopus",
+        "KravenTheHunter",
+        "SpiderSlayer"
+      ],
+      "popularity": 592
+    },
+    {
+      "squad": [
+        "DarkBeast",
+        "Archangel",
+        "Magneto",
+        "Psylocke",
+        "Nemesis"
+      ],
+      "popularity": 581
+    },
+    {
+      "squad": [
+        "Medusa",
+        "Ironheart",
+        "Kahhori",
+        "Wasp",
+        "MsMarvelClassic"
+      ],
+      "popularity": 579
+    },
+    {
+      "squad": [
+        "Hulk",
+        "AmadeusCho",
+        "RedHulk",
+        "Abomination",
+        "SheHulk"
+      ],
+      "popularity": 577
+    },
+    {
+      "squad": [
+        "HitMonkey",
+        "Punisher",
+        "DaredevilModern",
+        "Elektra",
+        "SilverSable"
+      ],
+      "popularity": 576
+    },
+    {
+      "squad": [
+        "Gladiator",
+        "Ultimus",
+        "SilverSurfer",
+        "ThanosEndgame",
+        "Gorr"
+      ],
+      "popularity": 573
+    },
+    {
+      "squad": [
+        "Archangel",
+        "DarkBeast",
+        "Magneto",
+        "Psylocke",
+        "Nemesis"
+      ],
+      "popularity": 569
+    },
+    {
+      "squad": [
+        "JaneThor",
+        "Valkyrie",
+        "Thor",
+        "Heimdall",
+        "Sif"
+      ],
+      "popularity": 568
+    },
+    {
+      "squad": [
+        "IronManInfinityWar",
+        "Darkhawk",
+        "Sybil",
+        "IronheartMCU",
+        "Rescue"
+      ],
+      "popularity": 567
+    },
+    {
+      "squad": [
+        "FranklinRichards",
+        "HumanTorch",
+        "InvisibleWomanMCU",
+        "Thing",
+        "MrFantasticMCU"
+      ],
+      "popularity": 563
+    },
+    {
+      "squad": [
+        "GhostSpider",
+        "SpiderManNoir",
+        "PeniParker",
+        "SpiderManPavitr",
+        "PeterBParker"
+      ],
+      "popularity": 555
+    },
+    {
+      "squad": [
+        "AdamWarlock",
+        "PhylaVell",
+        "Gamora",
+        "Nebula",
+        "Moondragon"
+      ],
+      "popularity": 552
+    },
+    {
+      "squad": [
+        "Domino",
+        "Cable",
+        "Deadpool",
+        "Negasonic",
+        "X23"
+      ],
+      "popularity": 544
+    },
+    {
+      "squad": [
+        "Stature",
+        "AntMan",
+        "Ghost",
+        "Wasp",
+        "Yellowjacket"
+      ],
+      "popularity": 544
+    },
+    {
+      "squad": [
+        "LukeCage",
+        "MistyKnight",
+        "IronFist",
+        "ColleenWing",
+        "ShangChi"
+      ],
+      "popularity": 542
+    },
+    {
+      "squad": [
+        "Hyperion",
+        "Taskmaster",
+        "VictoriaHand",
+        "Ghost",
+        "Songbird"
+      ],
+      "popularity": 534
+    },
+    {
+      "squad": [
+        "PeniParker",
+        "SpiderManNoir",
+        "GhostSpider",
+        "SpiderManPavitr",
+        "PeterBParker"
+      ],
+      "popularity": 532
+    },
+    {
+      "squad": [
+        "AbsorbingMan",
+        "Titania",
+        "Ultron",
+        "KangTheConqueror",
+        "Moonstone"
+      ],
+      "popularity": 531
+    },
+    {
+      "squad": [
+        "PeniParker",
+        "PeterBParker",
+        "GhostSpider",
+        "SpiderManNoir",
+        "SpiderManPavitr"
+      ],
+      "popularity": 531
+    },
+    {
+      "squad": [
+        "BetaRayBill",
+        "Loki",
+        "Vahl",
+        "LokiTeen",
+        "Sylvie"
+      ],
+      "popularity": 529
+    },
+    {
+      "squad": [
+        "Heimdall",
+        "JaneThor",
+        "Thor",
+        "Valkyrie",
+        "Sif"
+      ],
+      "popularity": 524
+    },
+    {
+      "squad": [
+        "RavagerTank_Taunt",
+        "RavagerDmg_AoE",
+        "Yondu",
+        "RavagerSupport_Heal",
+        "TChalla"
+      ],
+      "popularity": 522
+    },
+    {
+      "squad": [
+        "RavagerTank_Taunt",
+        "RavagerSupport_Heal",
+        "RavagerDmg_AoE",
+        "Yondu",
+        "TChalla"
+      ],
+      "popularity": 519
+    },
+    {
+      "squad": [
+        "BetaRayBill",
+        "LokiTeen",
+        "Vahl",
+        "Loki",
+        "Sylvie"
+      ],
+      "popularity": 515
+    },
+    {
+      "squad": [
+        "BaronMordo",
+        "DoctorVoodoo",
+        "GhostRider",
+        "ElsaBloodstone",
+        "Morbius"
+      ],
+      "popularity": 506
+    },
+    {
+      "squad": [
+        "Heimdall",
+        "Valkyrie",
+        "Thor",
+        "JaneThor",
+        "Sif"
+      ],
+      "popularity": 503
+    },
+    {
+      "squad": [
+        "Deathlok",
+        "Vision",
+        "IronMan",
+        "VivVision",
+        "Hulkbuster"
+      ],
+      "popularity": 502
+    },
+    {
+      "squad": [
+        "AbsorbingMan",
+        "KangTheConqueror",
+        "Ultron",
+        "Titania",
+        "Moonstone"
+      ],
+      "popularity": 501
+    },
+    {
+      "squad": [
+        "BetaRayBill",
+        "Vahl",
+        "Loki",
+        "LokiTeen",
+        "Sylvie"
+      ],
+      "popularity": 499
+    },
+    {
+      "squad": [
+        "IronFistOrson",
+        "CaptainAmericaWW2",
+        "NickFury",
+        "BuckyBarnes",
+        "UnionJack"
+      ],
+      "popularity": 498
+    },
+    {
+      "squad": [
+        "PeggyCarter",
+        "Patriot",
+        "FalconJoaquin",
+        "WarMachine",
+        "SamWilson"
+      ],
+      "popularity": 498
+    },
+    {
+      "squad": [
+        "Ironheart",
+        "IronMan",
+        "Falcon",
+        "WarMachine",
+        "Rescue"
+      ],
+      "popularity": 497
+    },
+    {
+      "squad": [
+        "DoctorStrange",
+        "ShadowKing",
+        "Moondragon",
+        "AncientOne",
+        "EmmaFrostXMen"
+      ],
+      "popularity": 497
+    },
+    {
+      "squad": [
+        "Archangel",
+        "Nemesis",
+        "Magneto",
+        "Psylocke",
+        "DarkBeast"
+      ],
+      "popularity": 496
+    },
+    {
+      "squad": [
+        "LadyDeathstrike",
+        "Sabretooth",
+        "OmegaRed",
+        "Wolverine",
+        "SilverSamurai"
+      ],
+      "popularity": 486
+    },
+    {
+      "squad": [
+        "StrangeSupreme",
+        "AgathaHarkness",
+        "MorganLeFay",
+        "ScarletWitch",
+        "Wong"
+      ],
+      "popularity": 480
+    },
+    {
+      "squad": [
+        "Forge",
+        "Nightcrawler",
+        "Gambit",
+        "Cyclops",
+        "Sunspot"
+      ],
+      "popularity": 479
+    },
+    {
+      "squad": [
+        "Coulson",
+        "NickFury",
+        "YoYo",
+        "Quake",
+        "Hawkeye"
+      ],
+      "popularity": 476
+    },
+    {
+      "squad": [
+        "GreenGoblinGlider",
+        "SpiderSlayer",
+        "DoctorOctopus",
+        "KravenTheHunter",
+        "Lizard"
+      ],
+      "popularity": 476
+    },
+    {
+      "squad": [
+        "Gambit",
+        "Cyclops",
+        "Sunspot",
+        "Forge",
+        "Nightcrawler"
+      ],
+      "popularity": 475
+    },
+    {
+      "squad": [
+        "Abomination",
+        "AmadeusCho",
+        "SheHulk",
+        "RedHulk",
+        "Hulk"
+      ],
+      "popularity": 475
+    },
+    {
+      "squad": [
+        "GreenGoblinGlider",
+        "KravenTheHunter",
+        "DoctorOctopus",
+        "SpiderSlayer",
+        "Lizard"
+      ],
+      "popularity": 473
+    },
+    {
+      "squad": [
+        "BetaRayBill",
+        "LokiTeen",
+        "Loki",
+        "Vahl",
+        "Sylvie"
+      ],
+      "popularity": 467
+    },
+    {
+      "squad": [
+        "DarkBeast",
+        "Psylocke",
+        "Archangel",
+        "Magneto",
+        "Nemesis"
+      ],
+      "popularity": 459
+    },
+    {
+      "squad": [
+        "Darkhawk",
+        "IronheartMCU",
+        "Sybil",
+        "Rescue",
+        "IronManInfinityWar"
+      ],
+      "popularity": 457
+    },
+    {
+      "squad": [
+        "Sif",
+        "JaneThor",
+        "Thor",
+        "Heimdall",
+        "Valkyrie"
+      ],
+      "popularity": 455
+    },
+    {
+      "squad": [
+        "DaredevilModern",
+        "Elektra",
+        "Punisher",
+        "HitMonkey",
+        "SilverSable"
+      ],
+      "popularity": 454
+    },
+    {
+      "squad": [
+        "IronFist",
+        "ColleenWing",
+        "LukeCage",
+        "MistyKnight",
+        "ShangChi"
+      ],
+      "popularity": 450
+    },
+    {
+      "squad": [
+        "AntMan",
+        "Swarm",
+        "SpiderManBigTime",
+        "BlackWidow",
+        "Yellowjacket"
+      ],
+      "popularity": 449
+    },
+    {
+      "squad": [
+        "AbsorbingMan",
+        "Titania",
+        "KangTheConqueror",
+        "Moonstone",
+        "Ultron"
+      ],
+      "popularity": 449
+    },
+    {
+      "squad": [
+        "RachelSummers",
+        "Azazel",
+        "MadelynePryor",
+        "EmmaFrost",
+        "SebastianShaw"
+      ],
+      "popularity": 447
+    },
+    {
+      "squad": [
+        "KangTheConqueror",
+        "Titania",
+        "Ultron",
+        "AbsorbingMan",
+        "Moonstone"
+      ],
+      "popularity": 446
+    },
+    {
+      "squad": [
+        "BlackBolt",
+        "YoYo",
+        "Karnak",
+        "Crystal",
+        "Quake"
+      ],
+      "popularity": 446
+    },
+    {
+      "squad": [
+        "Falcon",
+        "Vision",
+        "ScarletWitch",
+        "InvisibleWoman",
+        "Hercules"
+      ],
+      "popularity": 445
+    },
+    {
+      "squad": [
+        "FalconJoaquin",
+        "WarMachine",
+        "SamWilson",
+        "PeggyCarter",
+        "Patriot"
+      ],
+      "popularity": 442
+    },
+    {
+      "squad": [
+        "Cosmo",
+        "Thor_InfinityWar",
+        "Nova",
+        "StarLord_Annihilation",
+        "Korg"
+      ],
+      "popularity": 441
+    },
+    {
+      "squad": [
+        "BlackKnight",
+        "CaptainAmerica",
+        "CaptainCarter",
+        "CosmicGhostRider",
+        "StarBrand"
+      ],
+      "popularity": 438
+    },
+    {
+      "squad": [
+        "Moondragon",
+        "Nebula",
+        "AdamWarlock",
+        "Gamora",
+        "PhylaVell"
+      ],
+      "popularity": 437
+    },
+    {
+      "squad": [
+        "FranklinRichards",
+        "HumanTorch",
+        "Thing",
+        "InvisibleWomanMCU",
+        "MrFantasticMCU"
+      ],
+      "popularity": 435
+    },
+    {
+      "squad": [
+        "IronFistOrson",
+        "BuckyBarnes",
+        "NickFury",
+        "CaptainAmericaWW2",
+        "UnionJack"
+      ],
+      "popularity": 433
+    },
+    {
+      "squad": [
+        "RachelSummers",
+        "MadelynePryor",
+        "Azazel",
+        "EmmaFrost",
+        "SebastianShaw"
+      ],
+      "popularity": 429
+    },
+    {
+      "squad": [
+        "SpiderManBigTime",
+        "Yellowjacket",
+        "BlackWidow",
+        "AntMan",
+        "Swarm"
+      ],
+      "popularity": 428
+    },
+    {
+      "squad": [
+        "Juggernaut",
+        "BaronMordo",
+        "Hellverine",
+        "Satana",
+        "TheHood"
+      ],
+      "popularity": 427
+    },
+    {
+      "squad": [
+        "LokiTeen",
+        "Sylvie",
+        "Loki",
+        "BetaRayBill",
+        "Vahl"
+      ],
+      "popularity": 426
+    },
+    {
+      "squad": [
+        "BlackPantherBC",
+        "Okoye",
+        "BlackPanther",
+        "Shuri",
+        "Nakia"
+      ],
+      "popularity": 426
+    },
+    {
+      "squad": [
+        "Rogue",
+        "Fantomex",
+        "Gambit",
+        "Dazzler",
+        "Sunfire"
+      ],
+      "popularity": 421
+    },
+    {
+      "squad": [
+        "DarkBeast",
+        "Psylocke",
+        "Magneto",
+        "Archangel",
+        "Nemesis"
+      ],
+      "popularity": 420
+    },
+    {
+      "squad": [
+        "BetaRayBill",
+        "Vahl",
+        "Loki",
+        "Sylvie",
+        "LokiTeen"
+      ],
+      "popularity": 418
+    },
+    {
+      "squad": [
+        "AgathaHarkness",
+        "StrangeSupreme",
+        "MorganLeFay",
+        "ScarletWitch",
+        "Wong"
+      ],
+      "popularity": 417
+    },
+    {
+      "squad": [
+        "Medusa",
+        "Wasp",
+        "Kahhori",
+        "Ironheart",
+        "MsMarvelClassic"
+      ],
+      "popularity": 417
+    },
+    {
+      "squad": [
+        "Gamora",
+        "Moondragon",
+        "AdamWarlock",
+        "PhylaVell",
+        "Nebula"
+      ],
+      "popularity": 415
+    },
+    {
+      "squad": [
+        "Abomination",
+        "AmadeusCho",
+        "RedHulk",
+        "SheHulk",
+        "Hulk"
+      ],
+      "popularity": 414
+    },
+    {
+      "squad": [
+        "RavagerTank_Taunt",
+        "RavagerSupport_Heal",
+        "Yondu",
+        "RavagerDmg_AoE",
+        "TChalla"
+      ],
+      "popularity": 413
+    },
+    {
+      "squad": [
+        "IronManInfinityWar",
+        "IronheartMCU",
+        "Sybil",
+        "Darkhawk",
+        "Rescue"
+      ],
+      "popularity": 413
+    },
+    {
+      "squad": [
+        "Groot",
+        "Lilandra",
+        "HowardTheDuck",
+        "Havok",
+        "RocketRaccoon"
+      ],
+      "popularity": 412
+    },
+    {
+      "squad": [
+        "InvisibleWoman",
+        "MrFantastic",
+        "Thing",
+        "HumanTorch",
+        ""
+      ],
+      "popularity": 407
+    },
+    {
+      "squad": [
+        "AdamWarlock",
+        "Nebula",
+        "Gamora",
+        "PhylaVell",
+        "Moondragon"
+      ],
+      "popularity": 406
+    },
+    {
+      "squad": [
+        "Nimrod",
+        "ScientistSupreme",
+        "LadyDeathstrike",
+        "Sentinel",
+        "OmegaSentinel"
+      ],
+      "popularity": 405
+    },
+    {
+      "squad": [
+        "Cable",
+        "Polaris",
+        "Beast",
+        "Storm",
+        "JeanGrey"
+      ],
+      "popularity": 400
+    },
+    {
+      "squad": [
+        "BlackPantherBC",
+        "Okoye",
+        "Shuri",
+        "BlackPanther",
+        "Nakia"
+      ],
+      "popularity": 399
+    },
+    {
+      "squad": [
+        "Taskmaster",
+        "Deadpool",
+        "Bullseye",
+        "Killmonger",
+        "Korath"
+      ],
+      "popularity": 396
+    },
+    {
+      "squad": [
+        "Daken",
+        "Deadpool",
+        "Deathpool",
+        "OldManLogan",
+        "PandaPool"
+      ],
+      "popularity": 394
+    },
+    {
+      "squad": [
+        "Northstar",
+        "Sunfire",
+        "Wolverine",
+        "Guardian",
+        "Sasquatch"
+      ],
+      "popularity": 393
+    },
+    {
+      "squad": [
+        "Fantomex",
+        "Rogue",
+        "Gambit",
+        "Dazzler",
+        "Sunfire"
+      ],
+      "popularity": 392
+    },
+    {
+      "squad": [
+        "AbsorbingMan",
+        "Moonstone",
+        "Ultron",
+        "Titania",
+        "KangTheConqueror"
+      ],
+      "popularity": 390
+    },
+    {
+      "squad": [
+        "DoctorVoodoo",
+        "ElsaBloodstone",
+        "GhostRider",
+        "BaronMordo",
+        "Morbius"
+      ],
+      "popularity": 390
+    },
+    {
+      "squad": [
+        "Echo",
+        "AmericaChavez",
+        "MsMarvel",
+        "SquirrelGirl",
+        "KateBishop"
+      ],
+      "popularity": 390
+    },
+    {
+      "squad": [
+        "CullObsidian",
+        "ProximaMidnight",
+        "Thanos",
+        "CorvusGlaive",
+        "EbonyMaw"
+      ],
+      "popularity": 389
+    },
+    {
+      "squad": [
+        "IronFist",
+        "ColleenWing",
+        "ShangChi",
+        "MistyKnight",
+        "LukeCage"
+      ],
+      "popularity": 383
+    },
+    {
+      "squad": [
+        "Sasquatch",
+        "Wolverine",
+        "Guardian",
+        "Northstar",
+        "Sunfire"
+      ],
+      "popularity": 382
+    },
+    {
+      "squad": [
+        "StrangeSupreme",
+        "ScarletWitch",
+        "MorganLeFay",
+        "AgathaHarkness",
+        "Wong"
+      ],
+      "popularity": 382
+    },
+    {
+      "squad": [
+        "ManThing",
+        "MoonKnight",
+        "AgathaHarkness",
+        "Blade",
+        "Oath"
+      ],
+      "popularity": 381
+    },
+    {
+      "squad": [
+        "Mockingbird",
+        "Coulson",
+        "Thing",
+        "Ronin",
+        "Tigra"
+      ],
+      "popularity": 381
+    },
+    {
+      "squad": [
+        "Falcon",
+        "Storm",
+        "JeanGrey",
+        "Beast",
+        "Hercules"
+      ],
+      "popularity": 379
+    },
+    {
+      "squad": [
+        "Photon",
+        "NicoMinoru",
+        "CaptainMarvel",
+        "JessicaJones",
+        "SpiderWoman"
+      ],
+      "popularity": 378
+    },
+    {
+      "squad": [
+        "AgentVenom",
+        "CaptainCarter",
+        "CaptainAmerica",
+        "WinterSoldier",
+        "USAgent"
+      ],
+      "popularity": 377
+    },
+    {
+      "squad": [
+        "Echo",
+        "SquirrelGirl",
+        "MsMarvel",
+        "AmericaChavez",
+        "KateBishop"
+      ],
+      "popularity": 376
+    },
+    {
+      "squad": [
+        "Dazzler",
+        "Sunfire",
+        "Gambit",
+        "Fantomex",
+        "Rogue"
+      ],
+      "popularity": 376
+    },
+    {
+      "squad": [
+        "Juggernaut",
+        "Hellverine",
+        "BaronMordo",
+        "Satana",
+        "TheHood"
+      ],
+      "popularity": 375
+    },
+    {
+      "squad": [
+        "Daken",
+        "Deathpool",
+        "OldManLogan",
+        "Deadpool",
+        "PandaPool"
+      ],
+      "popularity": 374
+    },
+    {
+      "squad": [
+        "CaptainBritain",
+        "MrFantastic",
+        "BlackBolt",
+        "BlackPantherShuri",
+        "HankPym"
+      ],
+      "popularity": 374
+    },
+    {
+      "squad": [
+        "KangTheConqueror",
+        "AbsorbingMan",
+        "Ultron",
+        "Titania",
+        "Moonstone"
+      ],
+      "popularity": 370
+    },
+    {
+      "squad": [
+        "Mockingbird",
+        "Thing",
+        "Coulson",
+        "Ronin",
+        "Tigra"
+      ],
+      "popularity": 368
+    },
+    {
+      "squad": [
+        "BlackKnight",
+        "CaptainAmerica",
+        "CaptainCarter",
+        "StarBrand",
+        "CosmicGhostRider"
+      ],
+      "popularity": 365
+    },
+    {
+      "squad": [
+        "ManThing",
+        "Blade",
+        "AgathaHarkness",
+        "MoonKnight",
+        "Oath"
+      ],
+      "popularity": 364
+    },
+    {
+      "squad": [
+        "Moondragon",
+        "Gamora",
+        "AdamWarlock",
+        "Nebula",
+        "PhylaVell"
+      ],
+      "popularity": 364
+    },
+    {
+      "squad": [
+        "DoctorOctopus",
+        "GreenGoblinGlider",
+        "KravenTheHunter",
+        "SpiderSlayer",
+        "Lizard"
+      ],
+      "popularity": 360
+    },
+    {
+      "squad": [
+        "KateBishop",
+        "Echo",
+        "AmericaChavez",
+        "SquirrelGirl",
+        "MsMarvel"
+      ],
+      "popularity": 360
+    },
+    {
+      "squad": [
+        "MercDmg_General",
+        "Killmonger",
+        "Punisher",
+        "RedGuardian",
+        "Yelena"
+      ],
+      "popularity": 357
+    },
+    {
+      "squad": [
+        "Elektra",
+        "Nobu",
+        "HandControl_HealBlock",
+        "HandSupport_Heal",
+        "HandTank_Stealth"
+      ],
+      "popularity": 357
+    },
+    {
+      "squad": [
+        "Ronin",
+        "Mockingbird",
+        "Coulson",
+        "Thing",
+        "Tigra"
+      ],
+      "popularity": 357
+    },
+    {
+      "squad": [
+        "Groot",
+        "RocketRaccoon",
+        "Lilandra",
+        "HowardTheDuck",
+        "Havok"
+      ],
+      "popularity": 357
+    },
+    {
+      "squad": [
+        "CaptainAmericaWW2",
+        "BuckyBarnes",
+        "NickFury",
+        "UnionJack",
+        "IronFistOrson"
+      ],
+      "popularity": 357
+    },
+    {
+      "squad": [
+        "Nimrod",
+        "ScientistSupreme",
+        "LadyDeathstrike",
+        "OmegaSentinel",
+        "Sentinel"
+      ],
+      "popularity": 357
+    },
+    {
+      "squad": [
+        "CullObsidian",
+        "CorvusGlaive",
+        "Thanos",
+        "EbonyMaw",
+        "ProximaMidnight"
+      ],
+      "popularity": 355
+    },
+    {
+      "squad": [
+        "Northstar",
+        "Wolverine",
+        "Sunfire",
+        "Guardian",
+        "Sasquatch"
+      ],
+      "popularity": 354
+    },
+    {
+      "squad": [
+        "IronFist",
+        "MistyKnight",
+        "ShangChi",
+        "ColleenWing",
+        "LukeCage"
+      ],
+      "popularity": 350
+    },
+    {
+      "squad": [
+        "BaronMordo",
+        "DoctorVoodoo",
+        "Morbius",
+        "GhostRider",
+        "ElsaBloodstone"
+      ],
+      "popularity": 349
+    },
+    {
+      "squad": [
+        "StarLord_Annihilation",
+        "Cosmo",
+        "Nova",
+        "Korg",
+        "Thor_InfinityWar"
+      ],
+      "popularity": 349
+    },
+    {
+      "squad": [
+        "Archangel",
+        "Psylocke",
+        "Magneto",
+        "Nemesis",
+        "DarkBeast"
+      ],
+      "popularity": 349
+    },
+    {
+      "squad": [
+        "ScarletSpider",
+        "UltSpiderMan",
+        "SpiderMan",
+        "GhostSpider",
+        "SpiderPunk"
+      ],
+      "popularity": 349
+    },
+    {
+      "squad": [
+        "KateBishop",
+        "SquirrelGirl",
+        "Echo",
+        "AmericaChavez",
+        "MsMarvel"
+      ],
+      "popularity": 348
+    },
+    {
+      "squad": [
+        "KamalaKhan",
+        "BlackCat",
+        "DoctorStrange",
+        "GhostRiderRobbie",
+        "Photon"
+      ],
+      "popularity": 346
+    },
+    {
+      "squad": [
+        "BlackPantherBC",
+        "BlackPanther",
+        "Shuri",
+        "Okoye",
+        "Nakia"
+      ],
+      "popularity": 345
+    },
+    {
+      "squad": [
+        "Darkhawk",
+        "Rescue",
+        "Sybil",
+        "IronheartMCU",
+        "IronManInfinityWar"
+      ],
+      "popularity": 345
+    },
+    {
+      "squad": [
+        "Guardian",
+        "Sunfire",
+        "Wolverine",
+        "Northstar",
+        "Sasquatch"
+      ],
+      "popularity": 344
+    },
+    {
+      "squad": [
+        "BlackKnight",
+        "CosmicGhostRider",
+        "CaptainCarter",
+        "StarBrand",
+        "CaptainAmerica"
+      ],
+      "popularity": 343
+    },
+    {
+      "squad": [
+        "AmadeusCho",
+        "Abomination",
+        "RedHulk",
+        "SheHulk",
+        "Hulk"
+      ],
+      "popularity": 342
+    },
+    {
+      "squad": [
+        "Abomination",
+        "SheHulk",
+        "Hulk",
+        "AmadeusCho",
+        "RedHulk"
+      ],
+      "popularity": 341
+    },
+    {
+      "squad": [
+        "Korg",
+        "Thor_InfinityWar",
+        "Nova",
+        "Cosmo",
+        "StarLord_Annihilation"
+      ],
+      "popularity": 340
+    },
+    {
+      "squad": [
+        "CaptainAmericaWW2",
+        "BuckyBarnes",
+        "NickFury",
+        "IronFistOrson",
+        "UnionJack"
+      ],
+      "popularity": 340
+    },
+    {
+      "squad": [
+        "MrNegative",
+        "Nobu",
+        "Kingpin",
+        "UltGreenGoblin",
+        "Taskmaster"
+      ],
+      "popularity": 339
+    },
+    {
+      "squad": [
+        "AgathaHarkness",
+        "ScarletWitch",
+        "MorganLeFay",
+        "StrangeSupreme",
+        "Wong"
+      ],
+      "popularity": 336
+    },
+    {
+      "squad": [
+        "RavagerSupport_Heal",
+        "Yondu",
+        "TChalla",
+        "RavagerDmg_AoE",
+        "RavagerTank_Taunt"
+      ],
+      "popularity": 336
+    },
+    {
+      "squad": [
+        "DoctorStrange",
+        "Moondragon",
+        "AncientOne",
+        "EmmaFrostXMen",
+        "ShadowKing"
+      ],
+      "popularity": 335
+    },
+    {
+      "squad": [
+        "Ronin",
+        "Coulson",
+        "Thing",
+        "Mockingbird",
+        "Tigra"
+      ],
+      "popularity": 335
+    },
+    {
+      "squad": [
+        "Forge",
+        "Gambit",
+        "Nightcrawler",
+        "Cyclops",
+        "Sunspot"
+      ],
+      "popularity": 334
+    },
+    {
+      "squad": [
+        "Graviton",
+        "ScientistSupreme",
+        "AimDmg_Offense",
+        "AimSupport_Heal",
+        "AimTank_Taunt"
+      ],
+      "popularity": 334
+    },
+    {
+      "squad": [
+        "DoctorVoodoo",
+        "BaronMordo",
+        "GhostRider",
+        "ElsaBloodstone",
+        "Morbius"
+      ],
+      "popularity": 333
+    },
+    {
+      "squad": [
+        "IronFist",
+        "MistyKnight",
+        "LukeCage",
+        "ColleenWing",
+        "ShangChi"
+      ],
+      "popularity": 333
+    },
+    {
+      "squad": [
+        "Hyperion",
+        "Ghost",
+        "Taskmaster",
+        "VictoriaHand",
+        "Songbird"
+      ],
+      "popularity": 332
+    },
+    {
+      "squad": [
+        "BetaRayBill",
+        "Loki",
+        "Vahl",
+        "Sylvie",
+        "LokiTeen"
+      ],
+      "popularity": 332
+    },
+    {
+      "squad": [
+        "Hulkbuster",
+        "Vision",
+        "IronMan",
+        "Deathlok",
+        "VivVision"
+      ],
+      "popularity": 331
+    },
+    {
+      "squad": [
+        "OmegaRed",
+        "LadyDeathstrike",
+        "Wolverine",
+        "Sabretooth",
+        "SilverSamurai"
+      ],
+      "popularity": 330
+    },
+    {
+      "squad": [
+        "RachelSummers",
+        "MadelynePryor",
+        "EmmaFrost",
+        "Azazel",
+        "SebastianShaw"
+      ],
+      "popularity": 330
+    },
+    {
+      "squad": [
+        "Abomination",
+        "RedHulk",
+        "Hulk",
+        "SheHulk",
+        "AmadeusCho"
+      ],
+      "popularity": 329
+    },
+    {
+      "squad": [
+        "LadyDeathstrike",
+        "OmegaRed",
+        "Sabretooth",
+        "Wolverine",
+        "SilverSamurai"
+      ],
+      "popularity": 327
+    },
+    {
+      "squad": [
+        "Abomination",
+        "SheHulk",
+        "RedHulk",
+        "Hulk",
+        "AmadeusCho"
+      ],
+      "popularity": 327
+    },
+    {
+      "squad": [
+        "AgathaHarkness",
+        "MorganLeFay",
+        "ScarletWitch",
+        "StrangeSupreme",
+        "Wong"
+      ],
+      "popularity": 327
+    },
+    {
+      "squad": [
+        "Beast",
+        "Jubilee",
+        "Iceman",
+        "KittyPryde",
+        "Bishop"
+      ],
+      "popularity": 326
+    },
+    {
+      "squad": [
+        "Gamora",
+        "PhylaVell",
+        "AdamWarlock",
+        "Moondragon",
+        "Nebula"
+      ],
+      "popularity": 326
+    },
+    {
+      "squad": [
+        "BlackKnight",
+        "CosmicGhostRider",
+        "StarBrand",
+        "CaptainCarter",
+        "CaptainAmerica"
+      ],
+      "popularity": 325
+    },
+    {
+      "squad": [
+        "OmegaSentinel",
+        "Nimrod",
+        "LadyDeathstrike",
+        "ScientistSupreme",
+        "Sentinel"
+      ],
+      "popularity": 323
+    },
+    {
+      "squad": [
+        "ColleenWing",
+        "ShangChi",
+        "LukeCage",
+        "IronFist",
+        "MistyKnight"
+      ],
+      "popularity": 321
+    },
+    {
+      "squad": [
+        "Beast",
+        "KittyPryde",
+        "Jubilee",
+        "Iceman",
+        "Bishop"
+      ],
+      "popularity": 320
+    },
+    {
+      "squad": [
+        "Abomination",
+        "SheHulk",
+        "Hulk",
+        "RedHulk",
+        "AmadeusCho"
+      ],
+      "popularity": 319
+    },
+    {
+      "squad": [
+        "IronManInfinityWar",
+        "Rescue",
+        "Sybil",
+        "Darkhawk",
+        "IronheartMCU"
+      ],
+      "popularity": 318
+    },
+    {
+      "squad": [
+        "CorvusGlaive",
+        "ProximaMidnight",
+        "Thanos",
+        "EbonyMaw",
+        "CullObsidian"
+      ],
+      "popularity": 316
+    },
+    {
+      "squad": [
+        "BlackPantherBC",
+        "Shuri",
+        "BlackPanther",
+        "Okoye",
+        "Nakia"
+      ],
+      "popularity": 315
+    },
+    {
+      "squad": [
+        "Gladiator",
+        "ThanosEndgame",
+        "Ultimus",
+        "SilverSurfer",
+        "Gorr"
+      ],
+      "popularity": 314
+    },
+    {
+      "squad": [
+        "CullObsidian",
+        "EbonyMaw",
+        "Thanos",
+        "CorvusGlaive",
+        "ProximaMidnight"
+      ],
+      "popularity": 314
+    },
+    {
+      "squad": [
+        "BlackPantherBC",
+        "Nakia",
+        "BlackPanther",
+        "Okoye",
+        "Shuri"
+      ],
+      "popularity": 311
+    },
+    {
+      "squad": [
+        "BetaRayBill",
+        "LokiTeen",
+        "Vahl",
+        "Sylvie",
+        "Loki"
+      ],
+      "popularity": 310
+    },
+    {
+      "squad": [
+        "Apocalypse",
+        "Archangel",
+        "MorganLeFay",
+        "RedHulk",
+        "Rogue"
+      ],
+      "popularity": 310
+    },
+    {
+      "squad": [
+        "AbsorbingMan",
+        "Titania",
+        "KangTheConqueror",
+        "Ultron",
+        "Moonstone"
+      ],
+      "popularity": 309
+    },
+    {
+      "squad": [
+        "PeniParker",
+        "SpiderManPavitr",
+        "GhostSpider",
+        "SpiderManNoir",
+        "PeterBParker"
+      ],
+      "popularity": 306
+    },
+    {
+      "squad": [
+        "ManThing",
+        "MoonKnight",
+        "Blade",
+        "AgathaHarkness",
+        "Oath"
+      ],
+      "popularity": 303
+    },
+    {
+      "squad": [
+        "Kingpin",
+        "Nobu",
+        "MrNegative",
+        "UltGreenGoblin",
+        "Taskmaster"
+      ],
+      "popularity": 303
+    },
+    {
+      "squad": [
+        "CaptainAmerica",
+        "WinterSoldier",
+        "USAgent",
+        "AgentVenom",
+        "CaptainCarter"
+      ],
+      "popularity": 301
+    },
+    {
+      "squad": [
+        "ElsaBloodstone",
+        "BaronMordo",
+        "GhostRider",
+        "DoctorVoodoo",
+        "Morbius"
+      ],
+      "popularity": 300
+    },
+    {
+      "squad": [
+        "AntMan",
+        "BlackWidow",
+        "SpiderManBigTime",
+        "Swarm",
+        "Yellowjacket"
+      ],
+      "popularity": 300
+    },
+    {
+      "squad": [
+        "BuckyBarnes",
+        "UnionJack",
+        "IronFistOrson",
+        "CaptainAmericaWW2",
+        "NickFury"
+      ],
+      "popularity": 300
+    },
+    {
+      "squad": [
+        "AdamWarlock",
+        "PhylaVell",
+        "Gamora",
+        "Moondragon",
+        "Nebula"
+      ],
+      "popularity": 298
+    },
+    {
+      "squad": [
+        "AdamWarlock",
+        "Nebula",
+        "Gamora",
+        "Moondragon",
+        "PhylaVell"
+      ],
+      "popularity": 298
+    },
+    {
+      "squad": [
+        "Daken",
+        "PandaPool",
+        "Deathpool",
+        "Deadpool",
+        "OldManLogan"
+      ],
+      "popularity": 296
+    },
+    {
+      "squad": [
+        "Medusa",
+        "Kahhori",
+        "Wasp",
+        "Ironheart",
+        "MsMarvelClassic"
+      ],
+      "popularity": 295
+    },
+    {
+      "squad": [
+        "BlackPantherBC",
+        "Nakia",
+        "BlackPanther",
+        "Shuri",
+        "Okoye"
+      ],
+      "popularity": 294
+    },
+    {
+      "squad": [
+        "Hela",
+        "ZombieScarletWitch",
+        "ZombieKestrel",
+        "ZombieIronMan",
+        "ZombieJuggernaut"
+      ],
+      "popularity": 294
+    },
+    {
+      "squad": [
+        "Abomination",
+        "AmadeusCho",
+        "Hulk",
+        "SheHulk",
+        "RedHulk"
+      ],
+      "popularity": 293
+    },
+    {
+      "squad": [
+        "Daken",
+        "Deadpool",
+        "Deathpool",
+        "PandaPool",
+        "OldManLogan"
+      ],
+      "popularity": 293
+    },
+    {
+      "squad": [
+        "AntMan",
+        "Yellowjacket",
+        "BlackWidow",
+        "Swarm",
+        "SpiderManBigTime"
+      ],
+      "popularity": 293
+    },
+    {
+      "squad": [
+        "ColleenWing",
+        "IronFist",
+        "LukeCage",
+        "MistyKnight",
+        "ShangChi"
+      ],
+      "popularity": 292
+    },
+    {
+      "squad": [
+        "AncientOne",
+        "DoctorStrange",
+        "Moondragon",
+        "ShadowKing",
+        "EmmaFrostXMen"
+      ],
+      "popularity": 291
+    },
+    {
+      "squad": [
+        "IronheartMCU",
+        "Darkhawk",
+        "Sybil",
+        "IronManInfinityWar",
+        "Rescue"
+      ],
+      "popularity": 289
+    },
+    {
+      "squad": [
+        "AmericaChavez",
+        "SquirrelGirl",
+        "MsMarvel",
+        "KateBishop",
+        "Echo"
+      ],
+      "popularity": 289
+    },
+    {
+      "squad": [
+        "LadyDeathstrike",
+        "Wolverine",
+        "OmegaRed",
+        "Sabretooth",
+        "SilverSamurai"
+      ],
+      "popularity": 289
+    },
+    {
+      "squad": [
+        "BetaRayBill",
+        "Vahl",
+        "LokiTeen",
+        "Sylvie",
+        "Loki"
+      ],
+      "popularity": 289
+    },
+    {
+      "squad": [
+        "IronManInfinityWar",
+        "Darkhawk",
+        "Sybil",
+        "Rescue",
+        "IronheartMCU"
+      ],
+      "popularity": 289
+    },
+    {
+      "squad": [
+        "KravenTheHunter",
+        "SpiderSlayer",
+        "DoctorOctopus",
+        "GreenGoblinGlider",
+        "Lizard"
+      ],
+      "popularity": 289
+    },
+    {
+      "squad": [
+        "Moondragon",
+        "Nebula",
+        "Gamora",
+        "AdamWarlock",
+        "PhylaVell"
+      ],
+      "popularity": 288
+    },
+    {
+      "squad": [
+        "MorganLeFay",
+        "AgathaHarkness",
+        "StrangeSupreme",
+        "ScarletWitch",
+        "Wong"
+      ],
+      "popularity": 288
+    },
+    {
+      "squad": [
+        "Kingpin",
+        "UltGreenGoblin",
+        "Taskmaster",
+        "Nobu",
+        "MrNegative"
+      ],
+      "popularity": 287
+    },
+    {
+      "squad": [
+        "AdamWarlock",
+        "Moondragon",
+        "Gamora",
+        "PhylaVell",
+        "Nebula"
+      ],
+      "popularity": 287
+    },
+    {
+      "squad": [
+        "ColleenWing",
+        "MistyKnight",
+        "LukeCage",
+        "IronFist",
+        "ShangChi"
+      ],
+      "popularity": 286
+    },
+    {
+      "squad": [
+        "RavagerDmg_AoE",
+        "Yondu",
+        "TChalla",
+        "RavagerSupport_Heal",
+        "RavagerTank_Taunt"
+      ],
+      "popularity": 285
+    },
+    {
+      "squad": [
+        "AdamWarlock",
+        "Moondragon",
+        "Gamora",
+        "Nebula",
+        "PhylaVell"
+      ],
+      "popularity": 285
+    },
+    {
+      "squad": [
+        "Hyperion",
+        "VictoriaHand",
+        "Taskmaster",
+        "Ghost",
+        "Songbird"
+      ],
+      "popularity": 284
+    },
+    {
+      "squad": [
+        "CaptainAmericaWW2",
+        "IronFistOrson",
+        "NickFury",
+        "BuckyBarnes",
+        "UnionJack"
+      ],
+      "popularity": 284
+    },
+    {
+      "squad": [
+        "AbsorbingMan",
+        "Ultron",
+        "KangTheConqueror",
+        "Titania",
+        "Moonstone"
+      ],
+      "popularity": 283
+    },
+    {
+      "squad": [
+        "",
+        "Longshot",
+        "Shatterstar",
+        "Polaris",
+        "MultipleMan"
+      ],
+      "popularity": 282
+    },
+    {
+      "squad": [
+        "BaronMordo",
+        "ElsaBloodstone",
+        "GhostRider",
+        "DoctorVoodoo",
+        "Morbius"
+      ],
+      "popularity": 282
+    },
+    {
+      "squad": [
+        "GhostSpider",
+        "ScarletSpider",
+        "SpiderMan",
+        "UltSpiderMan",
+        "SpiderPunk"
+      ],
+      "popularity": 282
+    },
+    {
+      "squad": [
+        "OldManLogan",
+        "Deathpool",
+        "Daken",
+        "Deadpool",
+        "PandaPool"
+      ],
+      "popularity": 282
+    },
+    {
+      "squad": [
+        "Abomination",
+        "Hulk",
+        "RedHulk",
+        "SheHulk",
+        "AmadeusCho"
+      ],
+      "popularity": 281
+    },
+    {
+      "squad": [
+        "Drax",
+        "Mantis",
+        "StarLord",
+        "RocketRaccoon",
+        "Groot"
+      ],
+      "popularity": 281
+    },
+    {
+      "squad": [
+        "ScarletSpider",
+        "GhostSpider",
+        "SpiderMan",
+        "UltSpiderMan",
+        "SpiderPunk"
+      ],
+      "popularity": 280
+    },
+    {
+      "squad": [
+        "Gwenom",
+        "Venom",
+        "SymbioteSilverSurfer",
+        "Carnage",
+        "RedGoblin"
+      ],
+      "popularity": 280
+    },
+    {
+      "squad": [
+        "Gladiator",
+        "SilverSurfer",
+        "Ultimus",
+        "Gorr",
+        "ThanosEndgame"
+      ],
+      "popularity": 279
+    },
+    {
+      "squad": [
+        "MsMarvel",
+        "KateBishop",
+        "AmericaChavez",
+        "Echo",
+        "SquirrelGirl"
+      ],
+      "popularity": 276
+    },
+    {
+      "squad": [
+        "PeniParker",
+        "PeterBParker",
+        "SpiderManNoir",
+        "GhostSpider",
+        "SpiderManPavitr"
+      ],
+      "popularity": 276
+    },
+    {
+      "squad": [
+        "BuckyBarnes",
+        "UnionJack",
+        "NickFury",
+        "CaptainAmericaWW2",
+        "IronFistOrson"
+      ],
+      "popularity": 275
+    },
+    {
+      "squad": [
+        "AbsorbingMan",
+        "Moonstone",
+        "Ultron",
+        "KangTheConqueror",
+        "Titania"
+      ],
+      "popularity": 274
+    },
+    {
+      "squad": [
+        "BlackPanther",
+        "Okoye",
+        "Shuri",
+        "Nakia",
+        "BlackPantherBC"
+      ],
+      "popularity": 273
+    },
+    {
+      "squad": [
+        "HitMonkey",
+        "DaredevilModern",
+        "Punisher",
+        "Elektra",
+        "SilverSable"
+      ],
+      "popularity": 273
+    },
+    {
+      "squad": [
+        "RavagerSupport_Heal",
+        "TChalla",
+        "Yondu",
+        "RavagerDmg_AoE",
+        "RavagerTank_Taunt"
+      ],
+      "popularity": 273
+    },
+    {
+      "squad": [
+        "GhostSpider",
+        "UltSpiderMan",
+        "SpiderMan",
+        "ScarletSpider",
+        "SpiderPunk"
+      ],
+      "popularity": 272
+    },
+    {
+      "squad": [
+        "BaronMordo",
+        "Morbius",
+        "GhostRider",
+        "ElsaBloodstone",
+        "DoctorVoodoo"
+      ],
+      "popularity": 272
+    },
+    {
+      "squad": [
+        "Beast",
+        "Cable",
+        "JeanGrey",
+        "Polaris",
+        "Storm"
+      ],
+      "popularity": 270
+    },
+    {
+      "squad": [
+        "RavagerSupport_Heal",
+        "RavagerDmg_AoE",
+        "TChalla",
+        "Yondu",
+        "RavagerTank_Taunt"
+      ],
+      "popularity": 270
+    },
+    {
+      "squad": [
+        "Guardian",
+        "Northstar",
+        "Wolverine",
+        "Sunfire",
+        "Sasquatch"
+      ],
+      "popularity": 269
+    },
+    {
+      "squad": [
+        "ManThing",
+        "AgathaHarkness",
+        "Blade",
+        "MoonKnight",
+        "Oath"
+      ],
+      "popularity": 268
+    },
+    {
+      "squad": [
+        "RavagerDmg_AoE",
+        "RavagerSupport_Heal",
+        "Yondu",
+        "TChalla",
+        "RavagerTank_Taunt"
+      ],
+      "popularity": 268
+    },
+    {
+      "squad": [
+        "KravenTheHunter",
+        "GreenGoblinGlider",
+        "DoctorOctopus",
+        "SpiderSlayer",
+        "Lizard"
+      ],
+      "popularity": 267
+    },
+    {
+      "squad": [
+        "Negasonic",
+        "Quake",
+        "PhantomRider",
+        "Domino",
+        "YoYo"
+      ],
+      "popularity": 267
+    },
+    {
+      "squad": [
+        "Gamora",
+        "Nebula",
+        "AdamWarlock",
+        "Moondragon",
+        "PhylaVell"
+      ],
+      "popularity": 267
+    },
+    {
+      "squad": [
+        "BaronMordo",
+        "Morbius",
+        "GhostRider",
+        "DoctorVoodoo",
+        "ElsaBloodstone"
+      ],
+      "popularity": 267
+    },
+    {
+      "squad": [
+        "Blade",
+        "MoonKnight",
+        "AgathaHarkness",
+        "Oath",
+        "ManThing"
+      ],
+      "popularity": 267
+    },
+    {
+      "squad": [
+        "Blade",
+        "Oath",
+        "AgathaHarkness",
+        "MoonKnight",
+        "ManThing"
+      ],
+      "popularity": 266
+    },
+    {
+      "squad": [
+        "BetaRayBill",
+        "Sylvie",
+        "Loki",
+        "LokiTeen",
+        "Vahl"
+      ],
+      "popularity": 266
+    },
+    {
+      "squad": [
+        "RavagerSupport_Heal",
+        "Yondu",
+        "RavagerDmg_AoE",
+        "TChalla",
+        "RavagerTank_Taunt"
+      ],
+      "popularity": 266
+    },
+    {
+      "squad": [
+        "Moondragon",
+        "Gamora",
+        "Nebula",
+        "AdamWarlock",
+        "PhylaVell"
+      ],
+      "popularity": 265
+    },
+    {
+      "squad": [
+        "CaptainAmericaWW2",
+        "UnionJack",
+        "NickFury",
+        "BuckyBarnes",
+        "IronFistOrson"
+      ],
+      "popularity": 265
+    },
+    {
+      "squad": [
+        "AbsorbingMan",
+        "KangTheConqueror",
+        "Ultron",
+        "Moonstone",
+        "Titania"
+      ],
+      "popularity": 264
+    },
+    {
+      "squad": [
+        "Nightcrawler",
+        "Cyclops",
+        "Gambit",
+        "Forge",
+        "Sunspot"
+      ],
+      "popularity": 264
+    },
+    {
+      "squad": [
+        "BlackPantherBC",
+        "Shuri",
+        "BlackPanther",
+        "Nakia",
+        "Okoye"
+      ],
+      "popularity": 264
+    },
+    {
+      "squad": [
+        "Deathpool",
+        "Dagger",
+        "Firestar",
+        "Cloak",
+        "Gwenpool"
+      ],
+      "popularity": 264
+    },
+    {
+      "squad": [
+        "Carnage",
+        "RedGoblin",
+        "SymbioteSilverSurfer",
+        "Gwenom",
+        "Venom"
+      ],
+      "popularity": 263
+    },
+    {
+      "squad": [
+        "CaptainBritain",
+        "BlackBolt",
+        "MrFantastic",
+        "BlackPantherShuri",
+        "HankPym"
+      ],
+      "popularity": 263
+    },
+    {
+      "squad": [
+        "AmadeusCho",
+        "SheHulk",
+        "Hulk",
+        "Abomination",
+        "RedHulk"
+      ],
+      "popularity": 263
+    },
+    {
+      "squad": [
+        "GreenGoblinGlider",
+        "Lizard",
+        "DoctorOctopus",
+        "KravenTheHunter",
+        "SpiderSlayer"
+      ],
+      "popularity": 262
+    },
+    {
+      "squad": [
+        "Mockingbird",
+        "Coulson",
+        "Ronin",
+        "Thing",
+        "Tigra"
+      ],
+      "popularity": 262
+    },
+    {
+      "squad": [
+        "Hulk",
+        "RedHulk",
+        "AmadeusCho",
+        "Abomination",
+        "SheHulk"
+      ],
+      "popularity": 261
+    },
+    {
+      "squad": [
+        "CullObsidian",
+        "Thanos",
+        "EbonyMaw",
+        "CorvusGlaive",
+        "ProximaMidnight"
+      ],
+      "popularity": 260
+    },
+    {
+      "squad": [
+        "CorvusGlaive",
+        "EbonyMaw",
+        "Thanos",
+        "ProximaMidnight",
+        "CullObsidian"
+      ],
+      "popularity": 260
+    },
+    {
+      "squad": [
+        "DoctorStrange",
+        "Photon",
+        "GhostRiderRobbie",
+        "BlackCat",
+        "KamalaKhan"
+      ],
+      "popularity": 260
+    },
+    {
+      "squad": [
+        "Hobgoblin",
+        "Shocker",
+        "SuperiorSpiderMan",
+        "Vulture",
+        "Scorpion"
+      ],
+      "popularity": 259
+    },
+    {
+      "squad": [
+        "PeterBParker",
+        "SpiderManNoir",
+        "GhostSpider",
+        "PeniParker",
+        "SpiderManPavitr"
+      ],
+      "popularity": 258
+    },
+    {
+      "squad": [
+        "Sylvie",
+        "LokiTeen",
+        "BetaRayBill",
+        "Loki",
+        "Vahl"
+      ],
+      "popularity": 258
+    },
+    {
+      "squad": [
+        "RavagerTank_Taunt",
+        "RavagerSupport_Heal",
+        "TChalla",
+        "RavagerDmg_AoE",
+        "Yondu"
+      ],
+      "popularity": 257
+    },
+    {
+      "squad": [
+        "BlackPantherBC",
+        "BlackPanther",
+        "Okoye",
+        "Nakia",
+        "Shuri"
+      ],
+      "popularity": 257
+    },
+    {
+      "squad": [
+        "ZombieJuggernaut",
+        "ZombieIronMan",
+        "Hela",
+        "ZombieScarletWitch",
+        "ZombieKestrel"
+      ],
+      "popularity": 257
+    },
+    {
+      "squad": [
+        "Hobgoblin",
+        "SuperiorSpiderMan",
+        "Scorpion",
+        "Shocker",
+        "Vulture"
+      ],
+      "popularity": 257
+    },
+    {
+      "squad": [
+        "Moondragon",
+        "AdamWarlock",
+        "Gamora",
+        "Nebula",
+        "PhylaVell"
+      ],
+      "popularity": 257
+    },
+    {
+      "squad": [
+        "Nimrod",
+        "OmegaSentinel",
+        "LadyDeathstrike",
+        "ScientistSupreme",
+        "Sentinel"
+      ],
+      "popularity": 256
+    },
+    {
+      "squad": [
+        "Forge",
+        "Gambit",
+        "Cyclops",
+        "Nightcrawler",
+        "Sunspot"
+      ],
+      "popularity": 255
+    },
+    {
+      "squad": [
+        "Patriot",
+        "FalconJoaquin",
+        "PeggyCarter",
+        "WarMachine",
+        "SamWilson"
+      ],
+      "popularity": 252
+    },
+    {
+      "squad": [
+        "BlackKnight",
+        "CosmicGhostRider",
+        "CaptainAmerica",
+        "CaptainCarter",
+        "StarBrand"
+      ],
+      "popularity": 251
+    },
+    {
+      "squad": [
+        "Gladiator",
+        "Ultimus",
+        "SilverSurfer",
+        "Gorr",
+        "ThanosEndgame"
+      ],
+      "popularity": 250
+    },
+    {
+      "squad": [
+        "RavagerDmg_AoE",
+        "RavagerSupport_Heal",
+        "TChalla",
+        "Yondu",
+        "RavagerTank_Taunt"
+      ],
+      "popularity": 250
+    },
+    {
+      "squad": [
+        "OmegaSentinel",
+        "Nimrod",
+        "ScientistSupreme",
+        "LadyDeathstrike",
+        "Sentinel"
+      ],
+      "popularity": 249
+    },
+    {
+      "squad": [
+        "Ikaris",
+        "Cloak",
+        "Deathpool",
+        "Dagger",
+        "Sersi"
+      ],
+      "popularity": 249
+    },
+    {
+      "squad": [
+        "Gorr",
+        "Ultimus",
+        "SilverSurfer",
+        "Gladiator",
+        "ThanosEndgame"
+      ],
+      "popularity": 249
+    },
+    {
+      "squad": [
+        "GreenGoblinGlider",
+        "SpiderSlayer",
+        "DoctorOctopus",
+        "Lizard",
+        "KravenTheHunter"
+      ],
+      "popularity": 248
+    },
+    {
+      "squad": [
+        "Gwenom",
+        "Carnage",
+        "Venom",
+        "SymbioteSilverSurfer",
+        "RedGoblin"
+      ],
+      "popularity": 248
+    },
+    {
+      "squad": [
+        "MrSinister",
+        "EmmaFrost",
+        "MadelynePryor",
+        "Mystique",
+        "Stryfe"
+      ],
+      "popularity": 248
+    },
+    {
+      "squad": [
+        "AbsorbingMan",
+        "Moonstone",
+        "KangTheConqueror",
+        "Titania",
+        "Ultron"
+      ],
+      "popularity": 246
+    },
+    {
+      "squad": [
+        "Hulkbuster",
+        "Vision",
+        "Deathlok",
+        "VivVision",
+        "IronMan"
+      ],
+      "popularity": 246
+    },
+    {
+      "squad": [
+        "GhostSpider",
+        "UltSpiderMan",
+        "ScarletSpider",
+        "SpiderPunk",
+        "SpiderMan"
+      ],
+      "popularity": 245
+    },
+    {
+      "squad": [
+        "Sasquatch",
+        "Guardian",
+        "Wolverine",
+        "Northstar",
+        "Sunfire"
+      ],
+      "popularity": 245
+    },
+    {
+      "squad": [
+        "FranklinRichards",
+        "InvisibleWomanMCU",
+        "HumanTorch",
+        "Thing",
+        "MrFantasticMCU"
+      ],
+      "popularity": 245
+    },
+    {
+      "squad": [
+        "AbsorbingMan",
+        "Ultron",
+        "KangTheConqueror",
+        "Moonstone",
+        "Titania"
+      ],
+      "popularity": 244
+    },
+    {
+      "squad": [
+        "RavagerTank_Taunt",
+        "RavagerDmg_AoE",
+        "TChalla",
+        "RavagerSupport_Heal",
+        "Yondu"
+      ],
+      "popularity": 244
+    },
+    {
+      "squad": [
+        "ColleenWing",
+        "MistyKnight",
+        "IronFist",
+        "ShangChi",
+        "LukeCage"
+      ],
+      "popularity": 242
+    },
+    {
+      "squad": [
+        "StarLord_Annihilation",
+        "Korg",
+        "Nova",
+        "Cosmo",
+        "Thor_InfinityWar"
+      ],
+      "popularity": 239
+    },
+    {
+      "squad": [
+        "RachelSummers",
+        "Azazel",
+        "EmmaFrost",
+        "MadelynePryor",
+        "SebastianShaw"
+      ],
+      "popularity": 238
+    },
+    {
+      "squad": [
+        "Nimrod",
+        "Sentinel",
+        "LadyDeathstrike",
+        "ScientistSupreme",
+        "OmegaSentinel"
+      ],
+      "popularity": 238
+    },
+    {
+      "squad": [
+        "ColleenWing",
+        "IronFist",
+        "LukeCage",
+        "ShangChi",
+        "MistyKnight"
+      ],
+      "popularity": 237
+    },
+    {
+      "squad": [
+        "GhostRiderRobbie",
+        "DoctorStrange",
+        "Photon",
+        "BlackCat",
+        "KamalaKhan"
+      ],
+      "popularity": 237
+    },
+    {
+      "squad": [
+        "Echo",
+        "KateBishop",
+        "AmericaChavez",
+        "SquirrelGirl",
+        "MsMarvel"
+      ],
+      "popularity": 237
+    },
+    {
+      "squad": [
+        "AmadeusCho",
+        "Abomination",
+        "Hulk",
+        "RedHulk",
+        "SheHulk"
+      ],
+      "popularity": 236
+    },
+    {
+      "squad": [
+        "Havok",
+        "RocketRaccoon",
+        "Lilandra",
+        "Groot",
+        "HowardTheDuck"
+      ],
+      "popularity": 236
+    },
+    {
+      "squad": [
+        "Gladiator",
+        "Ultimus",
+        "ThanosEndgame",
+        "SilverSurfer",
+        "Gorr"
+      ],
+      "popularity": 236
+    },
+    {
+      "squad": [
+        "LukeCage",
+        "ColleenWing",
+        "IronFist",
+        "MistyKnight",
+        "ShangChi"
+      ],
+      "popularity": 236
+    },
+    {
+      "squad": [
+        "Dazzler",
+        "Gambit",
+        "Rogue",
+        "Fantomex",
+        "Sunfire"
+      ],
+      "popularity": 235
+    },
+    {
+      "squad": [
+        "Beast",
+        "Jubilee",
+        "Bishop",
+        "Iceman",
+        "KittyPryde"
+      ],
+      "popularity": 235
+    },
+    {
+      "squad": [
+        "ColleenWing",
+        "MistyKnight",
+        "ShangChi",
+        "IronFist",
+        "LukeCage"
+      ],
+      "popularity": 235
+    },
+    {
+      "squad": [
+        "LukeCage",
+        "IronFist",
+        "ShangChi",
+        "ColleenWing",
+        "MistyKnight"
+      ],
+      "popularity": 235
+    },
+    {
+      "squad": [
+        "MoonKnight",
+        "NightNurse",
+        "Daredevil",
+        "Elektra",
+        "WhiteTiger"
+      ],
+      "popularity": 234
+    },
+    {
+      "squad": [
+        "OmegaSentinel",
+        "ScientistSupreme",
+        "LadyDeathstrike",
+        "Nimrod",
+        "Sentinel"
+      ],
+      "popularity": 234
+    },
+    {
+      "squad": [
+        "BuckyBarnes",
+        "IronFistOrson",
+        "NickFury",
+        "CaptainAmericaWW2",
+        "UnionJack"
+      ],
+      "popularity": 234
+    },
+    {
+      "squad": [
+        "IronheartMCU",
+        "IronManInfinityWar",
+        "Sybil",
+        "Darkhawk",
+        "Rescue"
+      ],
+      "popularity": 234
+    },
+    {
+      "squad": [
+        "ScarletWitch",
+        "AgathaHarkness",
+        "MorganLeFay",
+        "StrangeSupreme",
+        "Wong"
+      ],
+      "popularity": 233
+    },
+    {
+      "squad": [
+        "Northstar",
+        "Guardian",
+        "Wolverine",
+        "Sunfire",
+        "Sasquatch"
+      ],
+      "popularity": 233
+    },
+    {
+      "squad": [
+        "Dazzler",
+        "Fantomex",
+        "Rogue",
+        "Gambit",
+        "Sunfire"
+      ],
+      "popularity": 232
+    },
+    {
+      "squad": [
+        "Gladiator",
+        "ThanosEndgame",
+        "Ultimus",
+        "Gorr",
+        "SilverSurfer"
+      ],
+      "popularity": 231
+    },
+    {
+      "squad": [
+        "Patriot",
+        "PeggyCarter",
+        "FalconJoaquin",
+        "WarMachine",
+        "SamWilson"
+      ],
+      "popularity": 231
+    },
+    {
+      "squad": [
+        "Colossus",
+        "Phoenix",
+        "Magik",
+        "Storm",
+        "Cyclops"
+      ],
+      "popularity": 231
+    },
+    {
+      "squad": [
+        "Drax",
+        "Groot",
+        "Mantis",
+        "RocketRaccoon",
+        "StarLord"
+      ],
+      "popularity": 230
+    },
+    {
+      "squad": [
+        "Falcon",
+        "ScarletWitch",
+        "InvisibleWoman",
+        "Vision",
+        "Hercules"
+      ],
+      "popularity": 229
+    },
+    {
+      "squad": [
+        "Mockingbird",
+        "Ronin",
+        "Thing",
+        "Coulson",
+        "Tigra"
+      ],
+      "popularity": 229
+    },
+    {
+      "squad": [
+        "CaptainBritain",
+        "BlackPantherShuri",
+        "BlackBolt",
+        "MrFantastic",
+        "HankPym"
+      ],
+      "popularity": 228
+    },
+    {
+      "squad": [
+        "Moonstone",
+        "AbsorbingMan",
+        "Ultron",
+        "KangTheConqueror",
+        "Titania"
+      ],
+      "popularity": 228
+    },
+    {
+      "squad": [
+        "Ikaris",
+        "Dagger",
+        "Deathpool",
+        "Cloak",
+        "Sersi"
+      ],
+      "popularity": 227
+    },
+    {
+      "squad": [
+        "Hyperion",
+        "Ghost",
+        "Taskmaster",
+        "Songbird",
+        "VictoriaHand"
+      ],
+      "popularity": 227
+    },
+    {
+      "squad": [
+        "Havok",
+        "Groot",
+        "Lilandra",
+        "RocketRaccoon",
+        "HowardTheDuck"
+      ],
+      "popularity": 226
+    },
+    {
+      "squad": [
+        "ScientistSupreme",
+        "Nimrod",
+        "LadyDeathstrike",
+        "OmegaSentinel",
+        "Sentinel"
+      ],
+      "popularity": 226
+    },
+    {
+      "squad": [
+        "GhostSpider",
+        "SpiderPunk",
+        "ScarletSpider",
+        "UltSpiderMan",
+        "SpiderMan"
+      ],
+      "popularity": 226
+    },
+    {
+      "squad": [
+        "AgentVenom",
+        "WinterSoldier",
+        "CaptainAmerica",
+        "CaptainCarter",
+        "USAgent"
+      ],
+      "popularity": 226
+    },
+    {
+      "squad": [
+        "JaneThor",
+        "Heimdall",
+        "Thor",
+        "Valkyrie",
+        "Sif"
+      ],
+      "popularity": 226
+    },
+    {
+      "squad": [
+        "DaredevilModern",
+        "Elektra",
+        "HitMonkey",
+        "Punisher",
+        "SilverSable"
+      ],
+      "popularity": 225
+    },
+    {
+      "squad": [
+        "EmmaFrost",
+        "MadelynePryor",
+        "MrSinister",
+        "Mystique",
+        "Stryfe"
+      ],
+      "popularity": 225
+    },
+    {
+      "squad": [
+        "RavagerSupport_Heal",
+        "RavagerDmg_AoE",
+        "Yondu",
+        "RavagerTank_Taunt",
+        "TChalla"
+      ],
+      "popularity": 225
+    },
+    {
+      "squad": [
+        "BaronMordo",
+        "ElsaBloodstone",
+        "GhostRider",
+        "Morbius",
+        "DoctorVoodoo"
+      ],
+      "popularity": 224
+    },
+    {
+      "squad": [
+        "CaptainCarter",
+        "WinterSoldier",
+        "CaptainAmerica",
+        "AgentVenom",
+        "USAgent"
+      ],
+      "popularity": 222
+    },
+    {
+      "squad": [
+        "Cloak",
+        "Gwenpool",
+        "Deathpool",
+        "Firestar",
+        "Dagger"
+      ],
+      "popularity": 222
+    },
+    {
+      "squad": [
+        "AbsorbingMan",
+        "Moonstone",
+        "KangTheConqueror",
+        "Ultron",
+        "Titania"
+      ],
+      "popularity": 222
+    },
+    {
+      "squad": [
+        "LadyDeathstrike",
+        "Sabretooth",
+        "Wolverine",
+        "SilverSamurai",
+        "OmegaRed"
+      ],
+      "popularity": 220
+    },
+    {
+      "squad": [
+        "MrSinister",
+        "Mystique",
+        "EmmaFrost",
+        "MadelynePryor",
+        "Stryfe"
+      ],
+      "popularity": 219
+    },
+    {
+      "squad": [
+        "AmadeusCho",
+        "Abomination",
+        "RedHulk",
+        "Hulk",
+        "SheHulk"
+      ],
+      "popularity": 219
+    },
+    {
+      "squad": [
+        "Gwenom",
+        "Carnage",
+        "SymbioteSilverSurfer",
+        "Venom",
+        "RedGoblin"
+      ],
+      "popularity": 219
+    },
+    {
+      "squad": [
+        "Firestar",
+        "Deathpool",
+        "Dagger",
+        "Cloak",
+        "Gwenpool"
+      ],
+      "popularity": 218
+    },
+    {
+      "squad": [
+        "BuckyBarnes",
+        "CaptainAmericaWW2",
+        "NickFury",
+        "IronFistOrson",
+        "UnionJack"
+      ],
+      "popularity": 218
+    },
+    {
+      "squad": [
+        "Juggernaut",
+        "BaronMordo",
+        "Hellverine",
+        "TheHood",
+        "Satana"
+      ],
+      "popularity": 218
+    },
+    {
+      "squad": [
+        "Fantomex",
+        "Dazzler",
+        "Gambit",
+        "Sunfire",
+        "Rogue"
+      ],
+      "popularity": 218
+    },
+    {
+      "squad": [
+        "AgathaHarkness",
+        "StrangeSupreme",
+        "ScarletWitch",
+        "MorganLeFay",
+        "Wong"
+      ],
+      "popularity": 218
+    },
+    {
+      "squad": [
+        "Guardian",
+        "Wolverine",
+        "Sunfire",
+        "Northstar",
+        "Sasquatch"
+      ],
+      "popularity": 217
+    },
+    {
+      "squad": [
+        "Bishop",
+        "KittyPryde",
+        "Jubilee",
+        "Beast",
+        "Iceman"
+      ],
+      "popularity": 215
+    },
+    {
+      "squad": [
+        "MrNegative",
+        "UltGreenGoblin",
+        "Kingpin",
+        "Nobu",
+        "Taskmaster"
+      ],
+      "popularity": 215
+    },
+    {
+      "squad": [
+        "MoonKnight",
+        "Elektra",
+        "Daredevil",
+        "NightNurse",
+        "WhiteTiger"
+      ],
+      "popularity": 215
+    },
+    {
+      "squad": [
+        "LukeCage",
+        "IronFist",
+        "ColleenWing",
+        "MistyKnight",
+        "ShangChi"
+      ],
+      "popularity": 215
+    },
+    {
+      "squad": [
+        "BlackKnight",
+        "CaptainCarter",
+        "CaptainAmerica",
+        "CosmicGhostRider",
+        "StarBrand"
+      ],
+      "popularity": 215
+    },
+    {
+      "squad": [
+        "Forge",
+        "Sunspot",
+        "Gambit",
+        "Cyclops",
+        "Nightcrawler"
+      ],
+      "popularity": 215
+    },
+    {
+      "squad": [
+        "Korg",
+        "Nova",
+        "Thor_InfinityWar",
+        "Cosmo",
+        "StarLord_Annihilation"
+      ],
+      "popularity": 214
+    },
+    {
+      "squad": [
+        "Cosmo",
+        "Thor_InfinityWar",
+        "Nova",
+        "Korg",
+        "StarLord_Annihilation"
+      ],
+      "popularity": 214
+    },
+    {
+      "squad": [
+        "JaneThor",
+        "Heimdall",
+        "Thor",
+        "Sif",
+        "Valkyrie"
+      ],
+      "popularity": 214
+    },
+    {
+      "squad": [
+        "Gladiator",
+        "SilverSurfer",
+        "ThanosEndgame",
+        "Ultimus",
+        "Gorr"
+      ],
+      "popularity": 213
+    },
+    {
+      "squad": [
+        "BlackKnight",
+        "CaptainAmerica",
+        "StarBrand",
+        "CaptainCarter",
+        "CosmicGhostRider"
+      ],
+      "popularity": 213
+    },
+    {
+      "squad": [
+        "Deathpool",
+        "Daken",
+        "Deadpool",
+        "OldManLogan",
+        "PandaPool"
+      ],
+      "popularity": 212
+    },
+    {
+      "squad": [
+        "Photon",
+        "JessicaJones",
+        "CaptainMarvel",
+        "NicoMinoru",
+        "SpiderWoman"
+      ],
+      "popularity": 210
+    },
+    {
+      "squad": [
+        "Ronin",
+        "Thing",
+        "Coulson",
+        "Mockingbird",
+        "Tigra"
+      ],
+      "popularity": 210
+    },
+    {
+      "squad": [
+        "BetaRayBill",
+        "LokiTeen",
+        "Loki",
+        "Sylvie",
+        "Vahl"
+      ],
+      "popularity": 210
+    },
+    {
+      "squad": [
+        "Korg",
+        "Nova",
+        "StarLord_Annihilation",
+        "Cosmo",
+        "Thor_InfinityWar"
+      ],
+      "popularity": 210
+    },
+    {
+      "squad": [
+        "PeggyCarter",
+        "FalconJoaquin",
+        "Patriot",
+        "WarMachine",
+        "SamWilson"
+      ],
+      "popularity": 210
+    },
+    {
+      "squad": [
+        "CaptainBritain",
+        "MrFantastic",
+        "BlackPantherShuri",
+        "BlackBolt",
+        "HankPym"
+      ],
+      "popularity": 210
+    },
+    {
+      "squad": [
+        "Gorr",
+        "SilverSurfer",
+        "Ultimus",
+        "Gladiator",
+        "ThanosEndgame"
+      ],
+      "popularity": 210
+    },
+    {
+      "squad": [
+        "Hulk",
+        "SheHulk",
+        "AmadeusCho",
+        "Abomination",
+        "RedHulk"
+      ],
+      "popularity": 209
+    },
+    {
+      "squad": [
+        "Nakia",
+        "BlackPantherBC",
+        "BlackPanther",
+        "Shuri",
+        "Okoye"
+      ],
+      "popularity": 209
+    },
+    {
+      "squad": [
+        "BlackPantherBC",
+        "BlackPanther",
+        "Nakia",
+        "Okoye",
+        "Shuri"
+      ],
+      "popularity": 209
+    },
+    {
+      "squad": [
+        "Abomination",
+        "SheHulk",
+        "RedHulk",
+        "AmadeusCho",
+        "Hulk"
+      ],
+      "popularity": 208
+    },
+    {
+      "squad": [
+        "Hellcat",
+        "DaimonHellstrom",
+        "StrangeSupreme",
+        "ElsaBloodstone",
+        "LivingMummy"
+      ],
+      "popularity": 208
+    },
+    {
+      "squad": [
+        "Guardian",
+        "Northstar",
+        "Sunfire",
+        "Wolverine",
+        "Sasquatch"
+      ],
+      "popularity": 207
+    },
+    {
+      "squad": [
+        "NicoMinoru",
+        "JessicaJones",
+        "CaptainMarvel",
+        "SpiderWoman",
+        "Photon"
+      ],
+      "popularity": 207
+    },
+    {
+      "squad": [
+        "CosmicGhostRider",
+        "BlackKnight",
+        "CaptainAmerica",
+        "CaptainCarter",
+        "StarBrand"
+      ],
+      "popularity": 206
+    },
+    {
+      "squad": [
+        "Archangel",
+        "MorganLeFay",
+        "Apocalypse",
+        "RedHulk",
+        "Rogue"
+      ],
+      "popularity": 206
+    },
+    {
+      "squad": [
+        "Kingpin",
+        "Nobu",
+        "Taskmaster",
+        "UltGreenGoblin",
+        "MrNegative"
+      ],
+      "popularity": 206
+    },
+    {
+      "squad": [
+        "MrSinister",
+        "MadelynePryor",
+        "EmmaFrost",
+        "Mystique",
+        "Stryfe"
+      ],
+      "popularity": 205
+    },
+    {
+      "squad": [
+        "DoctorVoodoo",
+        "GhostRider",
+        "BaronMordo",
+        "ElsaBloodstone",
+        "Morbius"
+      ],
+      "popularity": 205
+    },
+    {
+      "squad": [
+        "ElsaBloodstone",
+        "DoctorVoodoo",
+        "GhostRider",
+        "BaronMordo",
+        "Morbius"
+      ],
+      "popularity": 205
+    },
+    {
+      "squad": [
+        "BetaRayBill",
+        "Sylvie",
+        "Vahl",
+        "LokiTeen",
+        "Loki"
+      ],
+      "popularity": 205
+    },
+    {
+      "squad": [
+        "Cloak",
+        "Firestar",
+        "Deathpool",
+        "Gwenpool",
+        "Dagger"
+      ],
+      "popularity": 205
+    },
+    {
+      "squad": [
+        "FranklinRichards",
+        "InvisibleWomanMCU",
+        "Thing",
+        "HumanTorch",
+        "MrFantasticMCU"
+      ],
+      "popularity": 204
+    },
+    {
+      "squad": [
+        "OmegaSentinel",
+        "ScientistSupreme",
+        "Nimrod",
+        "LadyDeathstrike",
+        "Sentinel"
+      ],
+      "popularity": 204
+    },
+    {
+      "squad": [
+        "Moondragon",
+        "PhylaVell",
+        "AdamWarlock",
+        "Gamora",
+        "Nebula"
+      ],
+      "popularity": 204
+    },
+    {
+      "squad": [
+        "JaneThor",
+        "Sif",
+        "Thor",
+        "Heimdall",
+        "Valkyrie"
+      ],
+      "popularity": 204
+    },
+    {
+      "squad": [
+        "EmmaFrostXMen",
+        "AncientOne",
+        "Moondragon",
+        "DoctorStrange",
+        "ShadowKing"
+      ],
+      "popularity": 203
+    },
+    {
+      "squad": [
+        "KateBishop",
+        "SquirrelGirl",
+        "AmericaChavez",
+        "Echo",
+        "MsMarvel"
+      ],
+      "popularity": 202
+    },
+    {
+      "squad": [
+        "Okoye",
+        "BlackPantherBC",
+        "BlackPanther",
+        "Nakia",
+        "Shuri"
+      ],
+      "popularity": 202
+    },
+    {
+      "squad": [
+        "Hulkbuster",
+        "Deathlok",
+        "IronMan",
+        "Vision",
+        "VivVision"
+      ],
+      "popularity": 202
+    },
+    {
+      "squad": [
+        "MadelynePryor",
+        "EmmaFrost",
+        "MrSinister",
+        "Mystique",
+        "Stryfe"
+      ],
+      "popularity": 202
+    },
+    {
+      "squad": [
+        "Echo",
+        "SquirrelGirl",
+        "AmericaChavez",
+        "KateBishop",
+        "MsMarvel"
+      ],
+      "popularity": 201
+    },
+    {
+      "squad": [
+        "PeniParker",
+        "GhostSpider",
+        "SpiderManNoir",
+        "PeterBParker",
+        "SpiderManPavitr"
+      ],
+      "popularity": 200
+    },
+    {
+      "squad": [
+        "GreenGoblinGlider",
+        "Lizard",
+        "DoctorOctopus",
+        "SpiderSlayer",
+        "KravenTheHunter"
+      ],
+      "popularity": 200
+    }
+  ]
+}

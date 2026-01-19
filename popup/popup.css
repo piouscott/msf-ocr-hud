@@ -445,3 +445,102 @@ button:active {
   color: #888;
   cursor: not-allowed;
 }
+
+/* War Button */
+.btn-war {
+  background: #ff922b;
+  color: #1a1a2e;
+  flex: 0.8;
+}
+
+.btn-war:hover {
+  background: #fd7e14;
+}
+
+/* War Panel */
+#war-panel {
+  background: #2d2d44;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.war-form {
+  margin-bottom: 10px;
+}
+
+.war-textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: #1a1a2e;
+  color: #fff;
+  font-size: 12px;
+  font-family: inherit;
+  resize: vertical;
+  margin-bottom: 4px;
+}
+
+.war-textarea:focus {
+  outline: none;
+  border-color: #ff922b;
+}
+
+.war-power-row {
+  margin-bottom: 10px;
+}
+
+.war-result {
+  margin-top: 10px;
+  padding: 10px;
+  background: #1a1a2e;
+  border-radius: 6px;
+}
+
+.war-team-identified {
+  color: #51cf66;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.war-team-unknown {
+  color: #ff6b6b;
+  font-style: italic;
+  margin-bottom: 8px;
+}
+
+.war-counters-list {
+  margin-top: 8px;
+}
+
+.war-counter-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #333;
+}
+
+.war-counter-item:last-child {
+  border-bottom: none;
+}
+
+.war-counter-name {
+  color: #00d4ff;
+  font-weight: 500;
+}
+
+.war-counter-meta {
+  display: flex;
+  gap: 10px;
+  font-size: 11px;
+}
+
+.war-counter-confidence {
+  color: #ffd43b;
+}
+
+.war-counter-power {
+  color: #888;
+}
