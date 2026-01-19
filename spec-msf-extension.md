@@ -48,8 +48,8 @@
 ```
 
 **Logique** :
-- Si ≥3 personnages matchent → identification confirmée
-- Si <3 → "Custom team" + liste des personnages
+- **Match exact 5/5 requis** pour identifier une équipe (un personnage différent = counter différent)
+- Sinon → "Equipe custom" + liste des personnages identifiés
 
 ### 2.3 Suggestion de counters
 **Base de données counters** :
@@ -248,26 +248,30 @@ Min Power : [1.1]x
 
 ## 7. Étapes de développement
 
-### Phase 1 : Calibrateur (ACTUEL) ✅
+### Phase 1 : Calibrateur ✅
 - [x] Créer l'outil de sélection de zones
-- [x] Sauvegarder les coordonnées
-- [ ] Tester sur différentes résolutions
+- [x] Sauvegarder les coordonnées dans `browser.storage.local`
+- [x] Calibrateur pas-à-pas (24 zones : 4 slots × 6 zones)
+- [x] Contrôles : ENTREE=valider, S=passer, ESC=quitter
 
-### Phase 2 : Extraction
-- [ ] Capturer screenshot
-- [ ] Cropper les 4 zones d'équipes
-- [ ] Extraire portraits (pHash)
-- [ ] Extraire puissance (OCR)
+### Phase 2 : Extraction ✅
+- [x] Capturer screenshot via `captureVisibleTab()`
+- [x] Cropper les 4 zones d'équipes (ZoneCropper)
+- [x] Extraire puissance (OCR Tesseract.js avec prétraitement 3x)
+- [x] Puissance éditable manuellement (correction erreurs OCR)
 
-### Phase 3 : Identification
-- [ ] Créer `teams.json` (10 équipes test)
-- [ ] Algorithme de matching
-- [ ] Afficher résultats dans popup
+### Phase 3 : Identification ✅
+- [x] Créer `data/teams.json` (10 équipes)
+- [x] Créer `data/portraits.json` (structure hash → nom)
+- [x] Hash perceptuel (pHash 8x8) pour portraits
+- [x] Algorithme de matching **5/5 exact requis**
+- [x] Clic sur portrait pour l'enregistrer dans la base
+- [x] Afficher nom d'équipe dans popup
 
-### Phase 4 : Counters
-- [ ] Créer `counters.json`
+### Phase 4 : Counters (EN COURS)
+- [ ] Créer `data/counters.json`
 - [ ] Logique de suggestion
-- [ ] Interface de résultats
+- [ ] Afficher counters recommandés dans popup
 
 ### Phase 5 : Gestion
 - [ ] Interface d'ajout de counters
@@ -316,6 +320,4 @@ Min Power : [1.1]x
 
 ---
 
-**Prochaine étape** : Intégrer le calibrateur dans l'extension actuelle et tester l'extraction des zones sur ton écran.
-
-Des questions sur cette spec ? Quelle partie veux-tu qu'on attaque en premier ?
+**Prochaine étape** : Phase 4 - Créer `counters.json` et afficher les suggestions.

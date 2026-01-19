@@ -1,0 +1,64 @@
+{
+  "teams": [
+    {
+      "id": "darkhold",
+      "name": "Darkhold",
+      "members": ["Scarlet Witch", "Wong", "Agatha Harkness", "Morgan Le Fay", "Dormammu"],
+      "tags": ["darkhold", "mystic", "raid"]
+    },
+    {
+      "id": "gamma",
+      "name": "Gamma",
+      "members": ["Red Hulk", "She-Hulk", "Hulk", "Abomination", "Brawn"],
+      "tags": ["gamma", "bio", "war"]
+    },
+    {
+      "id": "unlimited_xmen",
+      "name": "Unlimited X-Men",
+      "members": ["Rogue", "Gambit", "Fantomex", "Sunfire", "Dazzler"],
+      "tags": ["xmen", "mutant", "raid"]
+    },
+    {
+      "id": "hero_asgardians",
+      "name": "Hero Asgardians",
+      "members": ["Thor", "Mighty Thor", "Sif", "Heimdall", "Valkyrie"],
+      "tags": ["asgardian", "mystic", "hero"]
+    },
+    {
+      "id": "black_order",
+      "name": "Black Order",
+      "members": ["Thanos", "Ebony Maw", "Proxima Midnight", "Corvus Glaive", "Cull Obsidian"],
+      "tags": ["black_order", "villain", "cosmic"]
+    },
+    {
+      "id": "eternals",
+      "name": "Eternals",
+      "members": ["Ikaris", "Sersi", "Kingo", "Thena", "Ajak"],
+      "tags": ["eternal", "cosmic", "raid"]
+    },
+    {
+      "id": "orchis",
+      "name": "Orchis",
+      "members": ["Nimrod", "Omega Sentinel", "Dr. Stasis", "Feilong", "Moira X"],
+      "tags": ["orchis", "tech", "villain"]
+    },
+    {
+      "id": "rebirth",
+      "name": "Rebirth",
+      "members": ["Captain America (Sam)", "Bucky Barnes", "Captain Carter", "Red Guardian", "US Agent"],
+      "tags": ["rebirth", "skill", "hero"]
+    },
+    {
+      "id": "young_avengers",
+      "name": "Young Avengers",
+      "members": ["Ms. Marvel", "America Chavez", "Kate Bishop", "Squirrel Girl", "Echo"],
+      "tags": ["young_avengers", "hero"]
+    },
+    {
+      "id": "cabal",
+      "name": "Cabal",
+      "members": ["Green Goblin (Classic)", "Doctor Octopus", "Electro", "Kraven", "Rhino"],
+      "tags": ["cabal", "sinister_six", "villain"]
+    }
+  ]
+}

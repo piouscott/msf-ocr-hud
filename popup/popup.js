@@ -68,24 +68,108 @@ function displayResults(slots) {
     const slotDiv = document.createElement("div");
     slotDiv.className = "slot-result";
 
-    const powerText = slot.power ? formatPower(slot.power) : "N/A";
+    const powerValue = slot.power || 0;
+
+    // Nom de l'equipe identifiee ou "Equipe custom"
+    const teamName = slot.team ? slot.team.name : "Equipe custom";
+    const teamBadge = slot.team ? "match-exact" : "";
+
+    // Titres des portraits avec noms identifies
+    const portraitTitles = slot.identifiedPortraits || [];
 
     slotDiv.innerHTML = `
       <div class="slot-header">
-        <span class="slot-title">Slot ${slot.slotNumber}</span>
-        <span class="slot-power">${powerText}</span>
+        <div class="slot-info">
+          <span class="slot-title">Slot ${slot.slotNumber}</span>
+          <span class="team-name">${teamName}${teamConfidence}</span>
+        </div>
+        <div class="slot-power-edit">
+          <input type="text"
+                 class="power-input"
+                 value="${formatPower(powerValue)}"
+                 data-slot="${slot.slotNumber}"
+                 data-raw="${powerValue}"
+                 title="Cliquer pour modifier">
+        </div>
       </div>
       <div class="portraits">
-        ${slot.portraits.map((p, i) =>
-          `<img src="${p}" alt="Portrait ${i + 1}" class="portrait-thumb" title="Portrait ${i + 1}">`
-        ).join("")}
+        ${slot.portraits.map((p, i) => {
+          const identified = portraitTitles[i];
+          const name = identified && identified.name ? identified.name : `Inconnu`;
+          const sim = identified && identified.similarity ? ` (${identified.similarity}%)` : "";
+          const hash = identified && identified.hash ? identified.hash : "";
+          return `<img src="${p}" alt="${name}" class="portrait-thumb" title="${name}${sim}" data-hash="${hash}" data-name="${name}">`;
+        }).join("")}
       </div>
     `;
 
     resultsSection.appendChild(slotDiv);
   });
 
+  // Ajouter les event listeners pour les inputs de puissance
+  resultsSection.querySelectorAll(".power-input").forEach(input => {
+    input.addEventListener("focus", () => input.select());
+    input.addEventListener("blur", () => {
+      const rawValue = parseFormattedNumber(input.value);
+      input.dataset.raw = rawValue;
+      input.value = formatPower(rawValue);
+    });
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") input.blur();
+    });
+  });
+
+  // Ajouter les event listeners pour nommer les portraits
+  resultsSection.querySelectorAll(".portrait-thumb").forEach(img => {
+    img.style.cursor = "pointer";
+    img.addEventListener("click", async () => {
+      const currentName = img.dataset.name;
+      const hash = img.dataset.hash;
+
+      if (!hash) {
+        alert("Hash non disponible pour ce portrait");
+        return;
+      }
+
+      const name = prompt("Nom du personnage :", currentName === "Inconnu" ? "" : currentName);
+
+      if (name && name.trim()) {
+        await savePortraitHash(hash, name.trim());
+        img.dataset.name = name.trim();
+        img.title = name.trim();
+        img.style.borderColor = "#51cf66";
+        setTimeout(() => img.style.borderColor = "", 1000);
+      }
+    });
+  });
+
   resultsSection.classList.remove("hidden");
+}
+
+/**
+ * Sauvegarde le hash d'un portrait dans le storage
+ */
+async function savePortraitHash(hash, name) {
+  try {
+    const stored = await ext.storage.local.get("msfPortraits");
+    const portraits = stored.msfPortraits || {};
+    portraits[hash] = name;
+    await ext.storage.local.set({ msfPortraits: portraits });
+    console.log(`[Popup] Portrait enregistre: ${name} = ${hash}`);
+  } catch (e) {
+    console.error("[Popup] Erreur sauvegarde portrait:", e);
+  }
+}
+
+/**
+ * Parse un nombre formaté (ex: "3 986 869" ou "3,986,869") en nombre
+ */
+function parseFormattedNumber(str) {
+  if (!str) return 0;
+  // Supprimer tous les separateurs (espaces, virgules, points)
+  const cleaned = str.replace(/[\s,.\u00A0]/g, "");
+  const num = parseInt(cleaned, 10);
+  return isNaN(num) ? 0 : num;
 }
 
 // ============================================

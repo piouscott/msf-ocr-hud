@@ -132,15 +132,60 @@ button:active {
   margin-bottom: 8px;
 }
 
+.slot-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .slot-title {
   font-weight: 600;
   color: #00d4ff;
+  font-size: 12px;
+}
+
+.team-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
 }
 
 .slot-power {
   font-size: 13px;
   color: #ffd43b;
   font-weight: 500;
+}
+
+.slot-power-edit {
+  display: flex;
+  align-items: center;
+}
+
+.power-input {
+  width: 100px;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: #ffd43b;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  text-align: right;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.power-input:hover {
+  border-color: #444;
+  background: #1a1a2e;
+}
+
+.power-input:focus {
+  outline: none;
+  border-color: #00d4ff;
+  background: #1a1a2e;
+  cursor: text;
 }
 
 .portraits {

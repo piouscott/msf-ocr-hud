@@ -30,6 +30,7 @@
   "web_accessible_resources": [
     "msf-zones-config.json",
     "lib/tesseract/*",
-    "modules/*"
+    "modules/*",
+    "data/*"
   ]
 }

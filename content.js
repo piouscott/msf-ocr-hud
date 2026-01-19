@@ -113,6 +113,12 @@ class OCREngine {
     await this.worker.loadLanguage(this.options.lang);
     await this.worker.initialize(this.options.lang);
 
+    // Configurer pour reconnaitre uniquement les chiffres
+    await this.worker.setParameters({
+      tessedit_char_whitelist: "0123456789 ",
+      tessedit_pageseg_mode: "7" // Single line mode
+    });
+
     this.initialized = true;
     console.log("[OCR] Worker pret");
   }
@@ -126,8 +132,34 @@ class OCREngine {
     return text.trim();
   }
 
+  // Pretraitement simple : agrandir l'image pour meilleure precision
+  preprocessImage(imageDataUrl) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        // Agrandir l'image 3x pour meilleure precision OCR
+        const scale = 3;
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+
+        // Dessiner avec lissage pour de meilleurs contours
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        resolve(canvas.toDataURL("image/png"));
+      };
+      img.src = imageDataUrl;
+    });
+  }
+
   async extractPower(imageDataUrl) {
-    const text = await this.recognize(imageDataUrl);
+    // Pretraiter l'image avant OCR (agrandissement)
+    const processedImage = await this.preprocessImage(imageDataUrl);
+    const text = await this.recognize(processedImage);
     console.log("[OCR] Texte brut:", text);
 
     const matches = text.match(/[\d,.\s]+/g);
@@ -156,6 +188,221 @@ class OCREngine {
       this.initialized = false;
       console.log("[OCR] Worker termine");
     }
+  }
+}
+
+// ============================================
+// PerceptualHash - Hash perceptuel pour portraits
+// ============================================
+
+class PerceptualHash {
+  constructor() {
+    this.hashSize = 8;
+    this.sampleSize = 32;
+  }
+
+  async compute(imageDataUrl) {
+    const imageData = await this.getImageData(imageDataUrl);
+    const grayscale = this.toGrayscale(imageData);
+    const resized = this.resize(grayscale, this.sampleSize, this.sampleSize);
+    const hash = this.computeHash(resized);
+    return hash;
+  }
+
+  getImageData(dataUrl) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = this.sampleSize;
+        canvas.height = this.sampleSize;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, this.sampleSize, this.sampleSize);
+        const data = ctx.getImageData(0, 0, this.sampleSize, this.sampleSize);
+        resolve(data);
+      };
+      img.onerror = () => reject(new Error("Echec chargement image"));
+      img.src = dataUrl;
+    });
+  }
+
+  toGrayscale(imageData) {
+    const pixels = imageData.data;
+    const gray = new Float32Array(this.sampleSize * this.sampleSize);
+    for (let i = 0; i < gray.length; i++) {
+      const offset = i * 4;
+      gray[i] = 0.299 * pixels[offset] + 0.587 * pixels[offset + 1] + 0.114 * pixels[offset + 2];
+    }
+    return gray;
+  }
+
+  resize(gray, srcWidth, srcHeight) {
+    const result = new Float32Array(this.hashSize * this.hashSize);
+    const blockW = srcWidth / this.hashSize;
+    const blockH = srcHeight / this.hashSize;
+
+    for (let y = 0; y < this.hashSize; y++) {
+      for (let x = 0; x < this.hashSize; x++) {
+        let sum = 0;
+        let count = 0;
+        const startY = Math.floor(y * blockH);
+        const endY = Math.floor((y + 1) * blockH);
+        const startX = Math.floor(x * blockW);
+        const endX = Math.floor((x + 1) * blockW);
+
+        for (let py = startY; py < endY; py++) {
+          for (let px = startX; px < endX; px++) {
+            sum += gray[py * srcWidth + px];
+            count++;
+          }
+        }
+        result[y * this.hashSize + x] = count > 0 ? sum / count : 0;
+      }
+    }
+    return result;
+  }
+
+  computeHash(values) {
+    const sorted = [...values].sort((a, b) => a - b);
+    const median = sorted[Math.floor(sorted.length / 2)];
+    let hash = "";
+    for (let i = 0; i < values.length; i++) {
+      hash += values[i] > median ? "1" : "0";
+    }
+    return this.binaryToHex(hash);
+  }
+
+  binaryToHex(binary) {
+    let hex = "";
+    for (let i = 0; i < binary.length; i += 4) {
+      hex += parseInt(binary.substr(i, 4), 2).toString(16);
+    }
+    return hex;
+  }
+
+  distance(hash1, hash2) {
+    if (hash1.length !== hash2.length) return Infinity;
+    let distance = 0;
+    for (let i = 0; i < hash1.length; i++) {
+      const n1 = parseInt(hash1[i], 16);
+      const n2 = parseInt(hash2[i], 16);
+      let xor = n1 ^ n2;
+      while (xor) {
+        distance += xor & 1;
+        xor >>= 1;
+      }
+    }
+    return distance;
+  }
+
+  similarity(hash1, hash2) {
+    const maxBits = hash1.length * 4;
+    const dist = this.distance(hash1, hash2);
+    return Math.round((1 - dist / maxBits) * 100);
+  }
+
+  findMatch(hash, database, threshold = 70) {
+    let bestMatch = null;
+    let bestSimilarity = 0;
+    for (const [dbHash, name] of Object.entries(database)) {
+      const sim = this.similarity(hash, dbHash);
+      if (sim > bestSimilarity && sim >= threshold) {
+        bestSimilarity = sim;
+        bestMatch = { name, similarity: sim };
+      }
+    }
+    return bestMatch;
+  }
+}
+
+// ============================================
+// TeamIdentifier - Identification des equipes
+// ============================================
+
+class TeamIdentifier {
+  constructor(teamsDb, portraitsDb) {
+    this.teams = teamsDb.teams || [];
+    this.portraits = portraitsDb.portraits || {};
+    this.phash = new PerceptualHash();
+  }
+
+  static async load() {
+    const teamsUrl = ext.runtime.getURL("data/teams.json");
+    const portraitsUrl = ext.runtime.getURL("data/portraits.json");
+
+    const [teamsRes, portraitsRes] = await Promise.all([
+      fetch(teamsUrl),
+      fetch(portraitsUrl)
+    ]);
+
+    const teamsDb = await teamsRes.json();
+    const portraitsDb = await portraitsRes.json();
+
+    // Charger aussi les portraits depuis storage si disponibles
+    try {
+      const stored = await ext.storage.local.get("msfPortraits");
+      if (stored.msfPortraits) {
+        Object.assign(portraitsDb.portraits, stored.msfPortraits);
+      }
+    } catch (e) {
+      console.log("[MSF] Pas de portraits en storage");
+    }
+
+    return new TeamIdentifier(teamsDb, portraitsDb);
+  }
+
+  async identifyPortraits(portraitDataUrls) {
+    const identified = [];
+
+    for (const dataUrl of portraitDataUrls) {
+      const hash = await this.phash.compute(dataUrl);
+      const match = this.phash.findMatch(hash, this.portraits);
+
+      if (match) {
+        identified.push({
+          name: match.name,
+          similarity: match.similarity,
+          hash
+        });
+      } else {
+        identified.push({
+          name: null,
+          hash
+        });
+      }
+    }
+
+    return identified;
+  }
+
+  identifyTeam(memberNames) {
+    // Filtrer les noms null
+    const knownNames = memberNames.filter(n => n !== null);
+
+    // On doit avoir exactement 5 personnages identifies
+    if (knownNames.length !== 5) {
+      return { team: null, confidence: 0, matchedCount: knownNames.length };
+    }
+
+    for (const team of this.teams) {
+      const matchCount = knownNames.filter(name =>
+        team.members.some(member =>
+          member.toLowerCase() === name.toLowerCase()
+        )
+      ).length;
+
+      // Match exact 5/5 requis
+      if (matchCount === 5) {
+        return {
+          team: team,
+          matchedCount: 5,
+          confidence: 100
+        };
+      }
+    }
+
+    // Pas de match exact - retourner les noms identifies pour info
+    return { team: null, confidence: 0, matchedCount: knownNames.length, members: knownNames };
   }
 }
 
@@ -225,22 +472,55 @@ async function handleExtraction(dataUrl) {
   const slotData = cropper.extractAllSlots(img);
   console.log("[MSF] Zones extraites:", slotData.length, "slots");
 
-  // 4. Initialiser OCR
+  // 4. Initialiser OCR et TeamIdentifier
   const ocr = new OCREngine();
   await ocr.init();
 
-  // 5. Extraire les puissances pour chaque slot
+  let identifier = null;
+  try {
+    identifier = await TeamIdentifier.load();
+    console.log("[MSF] TeamIdentifier charge");
+  } catch (e) {
+    console.log("[MSF] TeamIdentifier non disponible:", e.message);
+  }
+
+  // 5. Extraire les puissances et identifier les equipes
   const results = [];
   for (const slot of slotData) {
-    console.log("[MSF] OCR slot", slot.slotNumber);
+    console.log("[MSF] Traitement slot", slot.slotNumber);
+
+    // OCR puissance
     let power = null;
     if (slot.team_power) {
       power = await ocr.extractPower(slot.team_power);
     }
+
+    // Identification des personnages et equipe
+    let identifiedPortraits = [];
+    let teamInfo = null;
+
+    if (identifier && slot.portraits.length > 0) {
+      identifiedPortraits = await identifier.identifyPortraits(slot.portraits);
+      const memberNames = identifiedPortraits.map(p => p.name);
+      const teamResult = identifier.identifyTeam(memberNames);
+
+      if (teamResult.team) {
+        teamInfo = {
+          id: teamResult.team.id,
+          name: teamResult.team.name,
+          confidence: teamResult.confidence,
+          matchedCount: teamResult.matchedCount
+        };
+        console.log(`[MSF] Equipe identifiee: ${teamInfo.name} (${teamInfo.confidence}%)`);
+      }
+    }
+
     results.push({
       slotNumber: slot.slotNumber,
       power: power,
-      portraits: slot.portraits
+      portraits: slot.portraits,
+      identifiedPortraits: identifiedPortraits,
+      team: teamInfo
     });
   }
 
