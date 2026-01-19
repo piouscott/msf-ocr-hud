@@ -911,8 +911,6 @@ window.startCropCalibrator = startCropCalibrator;
 
 function startPortraitCapture(options) {
   const { dataUrl, count } = options;
-  const capturedPortraits = [];
-  let currentIndex = 0;
 
   // Charger l'image de fond
   const bgImage = new Image();
@@ -922,31 +920,54 @@ function startPortraitCapture(options) {
   bgImage.src = dataUrl;
 
   function createCaptureOverlay() {
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+
     const overlay = document.createElement("div");
     overlay.id = "msf-portrait-capture";
-    overlay.style.cssText = "position:fixed;inset:0;z-index:2147483647;cursor:crosshair;background:rgba(0,0,0,0.5)";
+    overlay.style.cssText = "position:fixed;inset:0;z-index:2147483647;cursor:crosshair";
 
-    // Canvas avec le screenshot
-    const canvas = document.createElement("canvas");
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    canvas.style.cssText = "position:absolute;inset:0;pointer-events:none";
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
-    overlay.appendChild(canvas);
+    // Image de fond
+    const bgImg = document.createElement("img");
+    bgImg.src = dataUrl;
+    bgImg.style.cssText = `position:absolute;left:0;top:0;width:${W}px;height:${H}px;pointer-events:none;user-select:none`;
+    overlay.appendChild(bgImg);
 
-    // Box de selection
+    // Overlay semi-transparent
+    const dimmer = document.createElement("div");
+    dimmer.style.cssText = "position:absolute;inset:0;background:rgba(0,0,0,0.3);pointer-events:none";
+    overlay.appendChild(dimmer);
+
+    // Box de selection principale
     const box = document.createElement("div");
-    box.style.cssText = "position:absolute;border:3px solid #ff922b;background:rgba(255,146,43,0.2);box-sizing:border-box;pointer-events:none";
+    box.style.cssText = "position:absolute;border:3px solid #ff922b;background:rgba(255,146,43,0.1);box-sizing:border-box;pointer-events:none";
     overlay.appendChild(box);
+
+    // Lignes de separation (pour montrer les 5 colonnes)
+    const separators = [];
+    for (let i = 1; i < count; i++) {
+      const sep = document.createElement("div");
+      sep.style.cssText = "position:absolute;width:2px;background:#ff922b;opacity:0.7;pointer-events:none;display:none";
+      box.appendChild(sep);
+      separators.push(sep);
+    }
 
     // Instructions
     const info = document.createElement("div");
-    info.style.cssText = "position:fixed;left:50%;top:20px;transform:translateX(-50%);background:rgba(0,0,0,0.95);color:#fff;padding:16px 24px;border-radius:12px;font:14px sans-serif;text-align:center;max-width:450px;z-index:10";
-    updateInfo();
+    info.style.cssText = "position:fixed;left:50%;top:20px;transform:translateX(-50%);background:rgba(0,0,0,0.95);color:#fff;padding:16px 24px;border-radius:12px;font:14px sans-serif;text-align:center;max-width:500px;z-index:10";
+    info.innerHTML = `
+      <div style="color:#ff922b;font-weight:bold;font-size:16px;margin-bottom:8px">
+        Capture des ${count} portraits
+      </div>
+      <div style="margin-bottom:12px">Selectionnez la zone contenant les ${count} portraits alignes horizontalement</div>
+      <div style="font-size:12px;color:#888">
+        La zone sera decoupee automatiquement en ${count} colonnes<br>
+        <b>ENTREE</b> = Valider | <b>ESC</b> = Annuler
+      </div>
+    `;
     overlay.appendChild(info);
 
-    // Mini previews des portraits captures
+    // Mini previews
     const previewsContainer = document.createElement("div");
     previewsContainer.style.cssText = "position:fixed;left:50%;bottom:20px;transform:translateX(-50%);display:flex;gap:8px;background:rgba(0,0,0,0.9);padding:12px;border-radius:8px;z-index:10";
     for (let i = 0; i < count; i++) {
@@ -960,24 +981,9 @@ function startPortraitCapture(options) {
 
     document.body.appendChild(overlay);
 
-    function updateInfo() {
-      info.innerHTML = `
-        <div style="color:#ff922b;font-weight:bold;font-size:16px;margin-bottom:8px">
-          Portrait ${currentIndex + 1} / ${count}
-        </div>
-        <div style="margin-bottom:12px">Selectionnez le portrait du personnage ${currentIndex + 1}</div>
-        <div style="font-size:12px;color:#888">
-          Dessinez un carre autour du portrait<br>
-          <b>ENTREE</b> = Valider | <b>ESC</b> = Terminer | <b>RETOUR</b> = Annuler dernier
-        </div>
-      `;
-    }
-
     let startX = 0, startY = 0, endX = 0, endY = 0;
     let dragging = false;
     let hasSelection = false;
-    const W = window.innerWidth;
-    const H = window.innerHeight;
 
     function clamp(v, min, max) {
       return Math.max(min, Math.min(max, v));
@@ -988,104 +994,91 @@ function startPortraitCapture(options) {
       const y = Math.min(startY, endY);
       const w = Math.abs(endX - startX);
       const h = Math.abs(endY - startY);
-      // Forcer un carre (utiliser la plus petite dimension)
-      const size = Math.min(w, h);
+
       box.style.left = x + "px";
       box.style.top = y + "px";
-      box.style.width = size + "px";
-      box.style.height = size + "px";
+      box.style.width = w + "px";
+      box.style.height = h + "px";
+
+      // Mettre a jour les separateurs
+      const colW = w / count;
+      separators.forEach((sep, i) => {
+        sep.style.display = w > 50 ? "block" : "none";
+        sep.style.left = (colW * (i + 1)) + "px";
+        sep.style.top = "0";
+        sep.style.height = h + "px";
+      });
     }
 
-    function captureCurrentSelection() {
+    function captureAllPortraits() {
       const x = Math.min(startX, endX);
       const y = Math.min(startY, endY);
       const w = Math.abs(endX - startX);
       const h = Math.abs(endY - startY);
-      const size = Math.min(w, h);
 
-      if (size < 10) return null;
-
-      // Creer un canvas pour le portrait
-      const portraitCanvas = document.createElement("canvas");
-      portraitCanvas.width = size;
-      portraitCanvas.height = size;
-      const pCtx = portraitCanvas.getContext("2d");
+      if (w < 50 || h < 20) return null;
 
       // Calculer les coordonnees dans l'image originale
       const scaleX = bgImage.naturalWidth / W;
       const scaleY = bgImage.naturalHeight / H;
+
       const srcX = x * scaleX;
       const srcY = y * scaleY;
-      const srcSize = size * Math.max(scaleX, scaleY);
+      const srcW = w * scaleX;
+      const srcH = h * scaleY;
 
-      pCtx.drawImage(bgImage, srcX, srcY, srcSize, srcSize, 0, 0, size, size);
+      const colW = srcW / count;
+      const portraits = [];
 
-      return portraitCanvas.toDataURL("image/png");
-    }
+      // Decoupe en colonnes carrees (prendre la hauteur comme cote du carre)
+      const squareSize = Math.min(colW, srcH);
+      const outSize = Math.max(64, Math.round(squareSize));
 
-    function updatePreview(index, dataUrl) {
-      const preview = document.getElementById(`portrait-preview-${index}`);
-      if (preview && dataUrl) {
-        preview.innerHTML = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover">`;
-        preview.style.borderStyle = "solid";
-        preview.style.borderColor = "#51cf66";
+      for (let i = 0; i < count; i++) {
+        const portraitCanvas = document.createElement("canvas");
+        portraitCanvas.width = outSize;
+        portraitCanvas.height = outSize;
+        const pCtx = portraitCanvas.getContext("2d");
+
+        // Centrer le carre dans chaque colonne
+        const colX = srcX + i * colW + (colW - squareSize) / 2;
+        const colY = srcY + (srcH - squareSize) / 2;
+
+        pCtx.drawImage(bgImage, colX, colY, squareSize, squareSize, 0, 0, outSize, outSize);
+
+        portraits.push({ dataUrl: portraitCanvas.toDataURL("image/png") });
       }
+
+      return portraits;
     }
 
-    function saveAndNext() {
-      const dataUrl = captureCurrentSelection();
-      if (!dataUrl) return;
-
-      capturedPortraits[currentIndex] = { dataUrl };
-      updatePreview(currentIndex, dataUrl);
-
-      currentIndex++;
-      hasSelection = false;
-      box.style.width = "0";
-      box.style.height = "0";
-
-      if (currentIndex >= count) {
-        finishCapture();
-      } else {
-        updateInfo();
-      }
-    }
-
-    function undoLast() {
-      if (currentIndex > 0) {
-        currentIndex--;
-        capturedPortraits[currentIndex] = null;
-        const preview = document.getElementById(`portrait-preview-${currentIndex}`);
-        if (preview) {
-          preview.innerHTML = currentIndex + 1;
-          preview.style.borderStyle = "dashed";
-          preview.style.borderColor = "#555";
+    function updatePreviews(portraits) {
+      portraits.forEach((p, i) => {
+        const preview = document.getElementById(`portrait-preview-${i}`);
+        if (preview && p.dataUrl) {
+          preview.innerHTML = `<img src="${p.dataUrl}" style="width:100%;height:100%;object-fit:cover">`;
+          preview.style.borderStyle = "solid";
+          preview.style.borderColor = "#51cf66";
         }
-        updateInfo();
-      }
+      });
     }
 
-    function finishCapture() {
+    function finishCapture(portraits) {
       overlay.remove();
 
-      // Filtrer les portraits valides
-      const validPortraits = capturedPortraits.filter(p => p && p.dataUrl);
-
-      if (validPortraits.length > 0) {
-        // Envoyer les portraits au background pour relayer au popup
+      if (portraits && portraits.length > 0) {
         ext.runtime.sendMessage({
           type: "MSF_PORTRAITS_CAPTURED",
-          portraits: capturedPortraits // Garder les nulls pour la position
+          portraits: portraits
         });
-
-        console.log(`[MSF] ${validPortraits.length} portraits captures`);
+        console.log(`[MSF] ${portraits.length} portraits captures`);
       } else {
         alert("Aucun portrait capture");
       }
     }
 
     overlay.addEventListener("mousedown", function(e) {
-      if (e.target === info || e.target === previewsContainer || e.target.closest("#portrait-preview-0")) return;
+      if (e.target === info || e.target === previewsContainer) return;
       dragging = true;
       hasSelection = false;
       startX = clamp(e.clientX, 0, W);
@@ -1100,10 +1093,18 @@ function startPortraitCapture(options) {
       endX = clamp(e.clientX, 0, W);
       endY = clamp(e.clientY, 0, H);
       updateBox();
+
+      // Preview en temps reel
+      if (Math.abs(endX - startX) > 50 && Math.abs(endY - startY) > 20) {
+        const portraits = captureAllPortraits();
+        if (portraits) {
+          updatePreviews(portraits);
+        }
+      }
     });
 
     overlay.addEventListener("mouseup", function() {
-      if (dragging && Math.abs(endX - startX) > 10 && Math.abs(endY - startY) > 10) {
+      if (dragging && Math.abs(endX - startX) > 50 && Math.abs(endY - startY) > 20) {
         hasSelection = true;
       }
       dragging = false;
@@ -1112,12 +1113,11 @@ function startPortraitCapture(options) {
     window.addEventListener("keydown", function handler(e) {
       if (e.key === "Escape") {
         window.removeEventListener("keydown", handler);
-        finishCapture();
+        overlay.remove();
       } else if (e.key === "Enter" && hasSelection) {
-        saveAndNext();
-      } else if (e.key === "Backspace") {
-        e.preventDefault();
-        undoLast();
+        window.removeEventListener("keydown", handler);
+        const portraits = captureAllPortraits();
+        finishCapture(portraits);
       }
     });
   }
