@@ -324,7 +324,8 @@ Min Power : [1.1]x
 - [x] OCR automatique des noms de personnages (Tesseract.js)
 - [x] Export JSON compatible avec `data/portraits.json`
 - [x] Bouton "Auto-params" pour détection automatique de la grille
-- [x] Paramètres par défaut optimisés pour cartes MSF (portrait 75%×55%, nom à 82%)
+- [x] Paramètres par défaut optimisés pour cartes MSF (portrait 70%×50%, nom à 80%)
+- [x] Paramètres de marge (startX, startY, gridWidth, gridHeight) pour ajuster la zone de grille
 
 ---
 

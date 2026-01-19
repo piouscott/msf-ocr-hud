@@ -293,6 +293,7 @@
   </div>
 
   <div class="config-panel" id="config-panel">
+    <div style="font-size:12px; color:#51cf66; margin-bottom:8px;">Zone de la grille (marges):</div>
     <div class="config-row">
       <div class="config-item">
         <label>Colonnes:</label>
@@ -305,26 +306,54 @@
     </div>
     <div class="config-row">
       <div class="config-item">
-        <label>Offset X:</label>
-        <input type="range" id="cfg-offsetX" value="50" min="0" max="100">
-        <span id="cfg-offsetX-val">50%</span>
+        <label>Marge gauche:</label>
+        <input type="range" id="cfg-startX" value="0" min="0" max="30">
+        <span id="cfg-startX-val">0%</span>
       </div>
       <div class="config-item">
-        <label>Offset Y:</label>
-        <input type="range" id="cfg-offsetY" value="8" min="0" max="100">
-        <span id="cfg-offsetY-val">8%</span>
+        <label>Marge haute:</label>
+        <input type="range" id="cfg-startY" value="0" min="0" max="30">
+        <span id="cfg-startY-val">0%</span>
       </div>
     </div>
     <div class="config-row">
       <div class="config-item">
-        <label>Largeur %:</label>
-        <input type="range" id="cfg-widthPct" value="75" min="20" max="100">
-        <span id="cfg-widthPct-val">75%</span>
+        <label>Largeur grille:</label>
+        <input type="range" id="cfg-gridWidth" value="100" min="70" max="100">
+        <span id="cfg-gridWidth-val">100%</span>
       </div>
       <div class="config-item">
-        <label>Hauteur %:</label>
-        <input type="range" id="cfg-heightPct" value="55" min="20" max="100">
-        <span id="cfg-heightPct-val">55%</span>
+        <label>Hauteur grille:</label>
+        <input type="range" id="cfg-gridHeight" value="100" min="70" max="100">
+        <span id="cfg-gridHeight-val">100%</span>
+      </div>
+    </div>
+
+    <div style="margin-top:15px; padding-top:15px; border-top:1px solid #444;">
+      <div style="font-size:12px; color:#00d4ff; margin-bottom:8px;">Position portrait dans la cellule:</div>
+      <div class="config-row">
+        <div class="config-item">
+          <label>Offset X:</label>
+          <input type="range" id="cfg-offsetX" value="50" min="0" max="100">
+          <span id="cfg-offsetX-val">50%</span>
+        </div>
+        <div class="config-item">
+          <label>Offset Y:</label>
+          <input type="range" id="cfg-offsetY" value="8" min="0" max="100">
+          <span id="cfg-offsetY-val">8%</span>
+        </div>
+      </div>
+      <div class="config-row">
+        <div class="config-item">
+          <label>Largeur %:</label>
+          <input type="range" id="cfg-widthPct" value="75" min="20" max="100">
+          <span id="cfg-widthPct-val">75%</span>
+        </div>
+        <div class="config-item">
+          <label>Hauteur %:</label>
+          <input type="range" id="cfg-heightPct" value="55" min="20" max="100">
+          <span id="cfg-heightPct-val">55%</span>
+        </div>
       </div>
     </div>
     <button class="btn-secondary" id="btn-preview-grid" style="margin-top:10px">Previsualiser grille</button>
@@ -385,6 +414,10 @@
     const config = {
       cols: 12,
       rows: 5,
+      startX: 0,        // % marge gauche avant la grille
+      startY: 0,        // % marge haute avant la grille
+      gridWidth: 100,   // % largeur totale de la grille (100 = toute l'image)
+      gridHeight: 100,  // % hauteur totale de la grille
       portraitSize: 80, // % (legacy, non utilise si widthPct/heightPct definis)
       offsetX: 50,      // % position horizontale du centre dans la cellule
       offsetY: 8,       // % position verticale du haut dans la cellule (petit decalage)
@@ -478,6 +511,25 @@
       config.rows = parseInt(e.target.value) || 5;
     });
 
+    // Marges de grille
+    document.getElementById('cfg-startX').addEventListener('input', (e) => {
+      config.startX = parseInt(e.target.value);
+      document.getElementById('cfg-startX-val').textContent = config.startX + '%';
+    });
+    document.getElementById('cfg-startY').addEventListener('input', (e) => {
+      config.startY = parseInt(e.target.value);
+      document.getElementById('cfg-startY-val').textContent = config.startY + '%';
+    });
+    document.getElementById('cfg-gridWidth').addEventListener('input', (e) => {
+      config.gridWidth = parseInt(e.target.value);
+      document.getElementById('cfg-gridWidth-val').textContent = config.gridWidth + '%';
+    });
+    document.getElementById('cfg-gridHeight').addEventListener('input', (e) => {
+      config.gridHeight = parseInt(e.target.value);
+      document.getElementById('cfg-gridHeight-val').textContent = config.gridHeight + '%';
+    });
+
+    // Position portrait dans cellule
     document.getElementById('cfg-offsetX').addEventListener('input', (e) => {
       config.offsetX = parseInt(e.target.value);
       document.getElementById('cfg-offsetX-val').textContent = config.offsetX + '%';
@@ -559,14 +611,31 @@
 
     function applyMSFDefaults() {
       // Appliquer les valeurs optimisees pour MSF
+      // Marges de grille (l'image MSF a un peu de marge)
+      config.startX = 1;
+      config.startY = 0;
+      config.gridWidth = 98;
+      config.gridHeight = 100;
+
+      // Position portrait dans cellule
       config.offsetX = 50;
-      config.offsetY = 8;
-      config.widthPct = 75;
-      config.heightPct = 55;
-      config.nameOffsetY = 82;
+      config.offsetY = 5;
+      config.widthPct = 70;
+      config.heightPct = 50;
+      config.nameOffsetY = 80;
       config.nameHeight = 10;
 
-      // Mettre a jour les sliders
+      // Mettre a jour les sliders - marges
+      document.getElementById('cfg-startX').value = config.startX;
+      document.getElementById('cfg-startX-val').textContent = config.startX + '%';
+      document.getElementById('cfg-startY').value = config.startY;
+      document.getElementById('cfg-startY-val').textContent = config.startY + '%';
+      document.getElementById('cfg-gridWidth').value = config.gridWidth;
+      document.getElementById('cfg-gridWidth-val').textContent = config.gridWidth + '%';
+      document.getElementById('cfg-gridHeight').value = config.gridHeight;
+      document.getElementById('cfg-gridHeight-val').textContent = config.gridHeight + '%';
+
+      // Mettre a jour les sliders - portrait
       document.getElementById('cfg-offsetX').value = config.offsetX;
       document.getElementById('cfg-offsetX-val').textContent = config.offsetX + '%';
       document.getElementById('cfg-offsetY').value = config.offsetY;
@@ -665,8 +734,14 @@
       const ctx = gridOverlay.getContext('2d');
       ctx.clearRect(0, 0, gridOverlay.width, gridOverlay.height);
 
-      const cellW = loadedImage.width / config.cols;
-      const cellH = loadedImage.height / config.rows;
+      // Zone de grille (avec marges)
+      const gridStartX = loadedImage.width * (config.startX / 100);
+      const gridStartY = loadedImage.height * (config.startY / 100);
+      const gridW = loadedImage.width * (config.gridWidth / 100);
+      const gridH = loadedImage.height * (config.gridHeight / 100);
+
+      const cellW = gridW / config.cols;
+      const cellH = gridH / config.rows;
 
       // Utiliser widthPct/heightPct pour les dimensions
       const pW = cellW * (config.widthPct / 100);
@@ -676,10 +751,17 @@
       const nameY = cellH * (config.nameOffsetY / 100);
       const nameH = cellH * (config.nameHeight / 100);
 
+      // Dessiner le contour de la zone de grille (vert)
+      ctx.strokeStyle = '#51cf66';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 5]);
+      ctx.strokeRect(gridStartX, gridStartY, gridW, gridH);
+      ctx.setLineDash([]);
+
       for (let row = 0; row < config.rows; row++) {
         for (let col = 0; col < config.cols; col++) {
-          const cellX = col * cellW;
-          const cellY = row * cellH;
+          const cellX = gridStartX + col * cellW;
+          const cellY = gridStartY + row * cellH;
 
           // offsetX: 50% = centre, offsetY: 0% = haut
           const x = cellX + (config.offsetX / 100) * cellW - pW / 2;
@@ -711,8 +793,14 @@
       setStatus('Detection en cours...', 'info');
       extractedPortraits = [];
 
-      const cellW = loadedImage.width / config.cols;
-      const cellH = loadedImage.height / config.rows;
+      // Zone de grille (avec marges)
+      const gridStartX = loadedImage.width * (config.startX / 100);
+      const gridStartY = loadedImage.height * (config.startY / 100);
+      const gridW = loadedImage.width * (config.gridWidth / 100);
+      const gridH = loadedImage.height * (config.gridHeight / 100);
+
+      const cellW = gridW / config.cols;
+      const cellH = gridH / config.rows;
 
       // Utiliser widthPct/heightPct pour les dimensions
       const pW = Math.floor(cellW * (config.widthPct / 100));
@@ -720,8 +808,8 @@
 
       for (let row = 0; row < config.rows; row++) {
         for (let col = 0; col < config.cols; col++) {
-          const cellX = col * cellW;
-          const cellY = row * cellH;
+          const cellX = gridStartX + col * cellW;
+          const cellY = gridStartY + row * cellH;
 
           // offsetX: 50% = centre, offsetY: 0% = haut
           const x = Math.floor(cellX + (config.offsetX / 100) * cellW - pW / 2);
@@ -789,8 +877,14 @@
           });
         }
 
-        const cellW = loadedImage.width / config.cols;
-        const cellH = loadedImage.height / config.rows;
+        // Zone de grille (avec marges)
+        const gridStartX = loadedImage.width * (config.startX / 100);
+        const gridStartY = loadedImage.height * (config.startY / 100);
+        const gridW = loadedImage.width * (config.gridWidth / 100);
+        const gridH = loadedImage.height * (config.gridHeight / 100);
+
+        const cellW = gridW / config.cols;
+        const cellH = gridH / config.rows;
         const nameY = cellH * (config.nameOffsetY / 100);
         const nameH = cellH * (config.nameHeight / 100);
 
@@ -804,8 +898,8 @@
           setStatus(`OCR ${recognized + 1}/${total}...`, 'info');
 
           // Calculer la zone de texte pour ce portrait
-          const cellX = p.col * cellW;
-          const cellY = p.row * cellH;
+          const cellX = gridStartX + p.col * cellW;
+          const cellY = gridStartY + p.row * cellH;
           const textX = Math.floor(cellX + cellW * 0.05);
           const textY = Math.floor(cellY + nameY);
           const textW = Math.floor(cellW * 0.9);
