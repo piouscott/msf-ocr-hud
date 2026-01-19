@@ -369,6 +369,18 @@
       <div style="font-size:12px; color:#ffd43b; margin-bottom:8px;">Zone texte (nom du personnage):</div>
       <div class="config-row">
         <div class="config-item">
+          <label>Offset X nom:</label>
+          <input type="range" id="cfg-nameOffsetX" value="5" min="0" max="30">
+          <span id="cfg-nameOffsetX-val">5%</span>
+        </div>
+        <div class="config-item">
+          <label>Largeur nom:</label>
+          <input type="range" id="cfg-nameWidth" value="90" min="50" max="100">
+          <span id="cfg-nameWidth-val">90%</span>
+        </div>
+      </div>
+      <div class="config-row">
+        <div class="config-item">
           <label>Offset Y nom:</label>
           <input type="range" id="cfg-nameOffsetY" value="82" min="50" max="100">
           <span id="cfg-nameOffsetY-val">82%</span>
@@ -431,6 +443,8 @@
       offsetY: 8,       // % position verticale du haut dans la cellule (petit decalage)
       widthPct: 75,     // % largeur du portrait par rapport a la cellule
       heightPct: 55,    // % hauteur du portrait par rapport a la cellule (carre visuellement)
+      nameOffsetX: 5,   // % position X du texte du nom dans la cellule
+      nameWidth: 90,    // % largeur de la zone de texte
       nameOffsetY: 82,  // % position Y du texte du nom dans la cellule
       nameHeight: 10    // % hauteur de la zone de texte
     };
@@ -558,6 +572,14 @@
       config.heightPct = parseInt(e.target.value);
       document.getElementById('cfg-heightPct-val').textContent = config.heightPct + '%';
     });
+    document.getElementById('cfg-nameOffsetX').addEventListener('input', (e) => {
+      config.nameOffsetX = parseInt(e.target.value);
+      document.getElementById('cfg-nameOffsetX-val').textContent = config.nameOffsetX + '%';
+    });
+    document.getElementById('cfg-nameWidth').addEventListener('input', (e) => {
+      config.nameWidth = parseInt(e.target.value);
+      document.getElementById('cfg-nameWidth-val').textContent = config.nameWidth + '%';
+    });
     document.getElementById('cfg-nameOffsetY').addEventListener('input', (e) => {
       config.nameOffsetY = parseInt(e.target.value);
       document.getElementById('cfg-nameOffsetY-val').textContent = config.nameOffsetY + '%';
@@ -635,6 +657,10 @@
       config.offsetY = 5;
       config.widthPct = 70;
       config.heightPct = 50;
+
+      // Zone texte (nom)
+      config.nameOffsetX = 5;
+      config.nameWidth = 90;
       config.nameOffsetY = 80;
       config.nameHeight = 10;
 
@@ -659,6 +685,12 @@
       document.getElementById('cfg-widthPct-val').textContent = config.widthPct + '%';
       document.getElementById('cfg-heightPct').value = config.heightPct;
       document.getElementById('cfg-heightPct-val').textContent = config.heightPct + '%';
+
+      // Mettre a jour les sliders - zone texte
+      document.getElementById('cfg-nameOffsetX').value = config.nameOffsetX;
+      document.getElementById('cfg-nameOffsetX-val').textContent = config.nameOffsetX + '%';
+      document.getElementById('cfg-nameWidth').value = config.nameWidth;
+      document.getElementById('cfg-nameWidth-val').textContent = config.nameWidth + '%';
       document.getElementById('cfg-nameOffsetY').value = config.nameOffsetY;
       document.getElementById('cfg-nameOffsetY-val').textContent = config.nameOffsetY + '%';
       document.getElementById('cfg-nameHeight').value = config.nameHeight;
@@ -763,6 +795,8 @@
       const pH = cellH * (config.heightPct / 100);
 
       // Zone de texte (nom)
+      const nameX = cellW * (config.nameOffsetX / 100);
+      const nameW = cellW * (config.nameWidth / 100);
       const nameY = cellH * (config.nameOffsetY / 100);
       const nameH = cellH * (config.nameHeight / 100);
 
@@ -794,7 +828,7 @@
           // Rectangle zone texte (jaune)
           ctx.strokeStyle = '#ffd43b';
           ctx.lineWidth = 1;
-          ctx.strokeRect(cellX + cellW * 0.05, cellY + nameY, cellW * 0.9, nameH);
+          ctx.strokeRect(cellX + nameX, cellY + nameY, nameW, nameH);
         }
       }
     }
@@ -907,6 +941,8 @@
 
         const cellW = gridW / config.cols;
         const cellH = gridH / config.rows;
+        const nameX = cellW * (config.nameOffsetX / 100);
+        const nameW = cellW * (config.nameWidth / 100);
         const nameY = cellH * (config.nameOffsetY / 100);
         const nameH = cellH * (config.nameHeight / 100);
         const rowGapPx = cellH * (config.rowGap / 100);
@@ -923,9 +959,9 @@
           // Calculer la zone de texte pour ce portrait
           const cellX = gridStartX + p.col * cellW;
           const cellY = gridStartY + p.row * cellH + p.row * rowGapPx;
-          const textX = Math.floor(cellX + cellW * 0.05);
+          const textX = Math.floor(cellX + nameX);
           const textY = Math.floor(cellY + nameY);
-          const textW = Math.floor(cellW * 0.9);
+          const textW = Math.floor(nameW);
           const textH = Math.floor(nameH);
 
           // Extraire la zone de texte avec agrandissement 3x pour meilleur OCR
