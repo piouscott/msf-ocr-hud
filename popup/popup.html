@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=350">
+  <title>MSF Counter</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>MSF Counter</h1>
+    </header>
+
+    <section id="actions">
+      <button id="btn-analyze" class="btn-primary">Analyser l'ecran</button>
+      <button id="btn-calibrate" class="btn-secondary">Calibrer zones</button>
+    </section>
+
+    <section id="status">
+      <div id="spinner" class="hidden"></div>
+      <span id="status-text"></span>
+    </section>
+
+    <section id="results" class="hidden">
+      <!-- Genere dynamiquement par popup.js -->
+    </section>
+  </div>
+
+  <script src="../lib/tesseract/tesseract.min.js"></script>
+  <script src="../modules/zone-cropper.js"></script>
+  <script src="../modules/ocr-engine.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

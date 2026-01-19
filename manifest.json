@@ -1,14 +1,15 @@
 {
   "manifest_version": 2,
-  "name": "MSF Screenshot",
-  "version": "1.0",
+  "name": "MSF Counter",
+  "version": "1.1",
 
   "background": {
     "scripts": ["bg.js"]
   },
 
   "browser_action": {
-    "default_title": "Screenshot MSF"
+    "default_title": "MSF Counter",
+    "default_popup": "popup/popup.html"
   },
 
   "content_scripts": [{
@@ -22,6 +23,13 @@
     "activeTab",
     "tabs",
     "webNavigation",
+    "storage",
     "<all_urls>"
+  ],
+
+  "web_accessible_resources": [
+    "msf-zones-config.json",
+    "lib/tesseract/*",
+    "modules/*"
   ]
 }
