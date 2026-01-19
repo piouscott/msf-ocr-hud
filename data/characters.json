@@ -1,0 +1,1976 @@
+{
+  "characters": {
+    "ABOMINATION": {
+      "en": "Abomination",
+      "fr": "Abomination"
+    },
+    "ABSORBINGMAN": {
+      "en": "Absorbing Man",
+      "fr": "Homme-absorbant"
+    },
+    "ADAMWARLOCK": {
+      "en": "Adam Warlock",
+      "fr": "Adam Warlock"
+    },
+    "AGATHAHARKNESS": {
+      "en": "Agatha Harkness",
+      "fr": "Agatha Harkness"
+    },
+    "AGENTVENOM": {
+      "en": "Agent Venom",
+      "fr": "Agent Venom"
+    },
+    "AIMCONTROL_INFECT": {
+      "en": "A.I.M. Infector",
+      "fr": "Infestateur de l’A.I.M."
+    },
+    "AIMDMG_OFFENSE": {
+      "en": "A.I.M. Monstrosity",
+      "fr": "Monstruosité de l’A.I.M."
+    },
+    "AIMDMG_SPEED": {
+      "en": "A.I.M. Assaulter",
+      "fr": "Assaillant de l’A.I.M."
+    },
+    "AIMOPERATOR": {
+      "en": "A.I.M. Operator",
+      "fr": "Meneur de l’A.I.M."
+    },
+    "AIMSUPPORT_HEAL": {
+      "en": "A.I.M. Researcher",
+      "fr": "Chercheuse de l’A.I.M."
+    },
+    "AIMTANK_TAUNT": {
+      "en": "A.I.M. Security",
+      "fr": "Surveillante de l’A.I.M."
+    },
+    "AMADEUSCHO": {
+      "en": "Brawn",
+      "fr": "Brawn"
+    },
+    "AMERICACHAVEZ": {
+      "en": "America Chavez",
+      "fr": "America Chavez"
+    },
+    "ANCIENTONE": {
+      "en": "Ancient One",
+      "fr": "Ancien"
+    },
+    "ANNIHILUS": {
+      "en": "Annihilus",
+      "fr": "Annihilus"
+    },
+    "ANNIHILUSBUG": {
+      "en": "Insectoid Devourer",
+      "fr": "Dévoreur insectoïde"
+    },
+    "ANTIVENOM": {
+      "en": "Anti-Venom",
+      "fr": "Anti-Venom"
+    },
+    "ANTMAN": {
+      "en": "Ant-Man",
+      "fr": "Ant-Man"
+    },
+    "APOCALYPSE": {
+      "en": "Apocalypse",
+      "fr": "Apocalypse"
+    },
+    "ARCHANGEL": {
+      "en": "Archangel",
+      "fr": "Archangel"
+    },
+    "ARES": {
+      "en": "Ares",
+      "fr": "Arès"
+    },
+    "AZAZEL": {
+      "en": "Azazel",
+      "fr": "Azazel"
+    },
+    "BARONMORDO": {
+      "en": "Mordo",
+      "fr": "Mordo"
+    },
+    "BEAST": {
+      "en": "Beast",
+      "fr": "Fauve"
+    },
+    "BETARAYBILL": {
+      "en": "Beta Ray Bill",
+      "fr": "Beta Ray Bill"
+    },
+    "BISHOP": {
+      "en": "Bishop",
+      "fr": "Bishop"
+    },
+    "BLACKBOLT": {
+      "en": "Black Bolt",
+      "fr": "Black Bolt"
+    },
+    "BLACKCAT": {
+      "en": "Black Cat",
+      "fr": "Chatte noire"
+    },
+    "BLACKKNIGHT": {
+      "en": "Black Knight",
+      "fr": "Chevalier noir"
+    },
+    "BLACKPANTHER": {
+      "en": "Black Panther",
+      "fr": "Black Panther"
+    },
+    "BLACKPANTHERBC": {
+      "en": "Black Panther (1MM)",
+      "fr": "Black Panther (1MM)"
+    },
+    "BLACKPANTHERSHURI": {
+      "en": "Black Panther (Shuri)",
+      "fr": "Black Panther (Shuri)"
+    },
+    "BLACKWIDOW": {
+      "en": "Black Widow",
+      "fr": "Black Widow"
+    },
+    "BLACKWIDOWOPERATOR": {
+      "en": "Black Widow",
+      "fr": "Black Widow"
+    },
+    "BLADE": {
+      "en": "Blade",
+      "fr": "Blade"
+    },
+    "BLASTAAR": {
+      "en": "Blastaar",
+      "fr": "Blastaar"
+    },
+    "BLASTAAR1": {
+      "en": "Blastaar",
+      "fr": "Blastaar"
+    },
+    "BLASTAAR2": {
+      "en": "Blastaar",
+      "fr": "Blastaar"
+    },
+    "BLASTAAR3": {
+      "en": "Blastaar",
+      "fr": "Blastaar"
+    },
+    "BLOB": {
+      "en": "Blob",
+      "fr": "Colosse"
+    },
+    "BLUEMARVEL": {
+      "en": "Blue Marvel",
+      "fr": "Blue Marvel"
+    },
+    "BUCKYBARNES": {
+      "en": "Bucky Barnes",
+      "fr": "Bucky Barnes"
+    },
+    "BUDDY": {
+      "en": "Doctor Doom",
+      "fr": "Docteur Fatalis"
+    },
+    "BULLSEYE": {
+      "en": "Bullseye",
+      "fr": "Bullseye"
+    },
+    "CABLE": {
+      "en": "Cable",
+      "fr": "Cable"
+    },
+    "CANNONBALL": {
+      "en": "Cannonball",
+      "fr": "Rocket"
+    },
+    "CAPTAINAMERICA": {
+      "en": "Captain America",
+      "fr": "Captain America"
+    },
+    "CAPTAINAMERICAWW2": {
+      "en": "Captain America (WWII)",
+      "fr": "Captain America (2GM)"
+    },
+    "CAPTAINBRITAIN": {
+      "en": "Captain Britain",
+      "fr": "Captain Britain"
+    },
+    "CAPTAINCARTER": {
+      "en": "Captain Carter",
+      "fr": "Captain Carter"
+    },
+    "CAPTAINMARVEL": {
+      "en": "Captain Marvel",
+      "fr": "Captain Marvel"
+    },
+    "CARNAGE": {
+      "en": "Carnage",
+      "fr": "Carnage"
+    },
+    "CARNAGEKNULLSUMMON": {
+      "en": "Carnage (Enraged)",
+      "fr": "Carnage (enragé)"
+    },
+    "CLOAK": {
+      "en": "Cloak",
+      "fr": "Cape"
+    },
+    "COLLEENWING": {
+      "en": "Colleen Wing",
+      "fr": "Colleen Wing"
+    },
+    "COLOSSUS": {
+      "en": "Colossus",
+      "fr": "Colossus"
+    },
+    "CORVUSGLAIVE": {
+      "en": "Corvus Glaive",
+      "fr": "Corvus Glaive"
+    },
+    "COSMICGHOSTRIDER": {
+      "en": "Cosmic Ghost Rider",
+      "fr": "Cosmic Ghost Rider"
+    },
+    "COSMO": {
+      "en": "Cosmo",
+      "fr": "Cosmo"
+    },
+    "COULSON": {
+      "en": "Agent Coulson",
+      "fr": "Agent Coulson"
+    },
+    "CROSSBONES": {
+      "en": "Crossbones",
+      "fr": "Crossbones"
+    },
+    "CRYSTAL": {
+      "en": "Crystal",
+      "fr": "Crystal"
+    },
+    "CULLOBSIDIAN": {
+      "en": "Cull Obsidian",
+      "fr": "Cull Obsidian"
+    },
+    "CYCLOPS": {
+      "en": "Cyclops",
+      "fr": "Cyclope"
+    },
+    "CYCLOPSXAVIERSUMMON": {
+      "en": "Cyclops (Age of X)",
+      "fr": "Cyclope (L'ère X)"
+    },
+    "DAGGER": {
+      "en": "Dagger",
+      "fr": "Épée"
+    },
+    "DAIMONHELLSTROM": {
+      "en": "Daimon Hellstrom",
+      "fr": "Daimon Hellstrom"
+    },
+    "DAKEN": {
+      "en": "Daken",
+      "fr": "Daken"
+    },
+    "DAREDEVIL": {
+      "en": "Daredevil",
+      "fr": "Daredevil"
+    },
+    "DAREDEVILMODERN": {
+      "en": "Daredevil (Modern)",
+      "fr": "Daredevil (Moderne)"
+    },
+    "DARKBEAST": {
+      "en": "Dark Beast",
+      "fr": "Fauve noir"
+    },
+    "DARKHAWK": {
+      "en": "Darkhawk",
+      "fr": "Darkhawk"
+    },
+    "DARKPHOENIX": {
+      "en": "Dark Phoenix",
+      "fr": "Phénix noir"
+    },
+    "DARKSTAR": {
+      "en": "Darkstar",
+      "fr": "Darkstar"
+    },
+    "DAZZLER": {
+      "en": "Dazzler",
+      "fr": "Dazzler"
+    },
+    "DEADPOOL": {
+      "en": "Deadpool",
+      "fr": "Deadpool"
+    },
+    "DEATHLOK": {
+      "en": "Deathlok",
+      "fr": "Deathlok"
+    },
+    "DEATHPOOL": {
+      "en": "Deathpool",
+      "fr": "Deathpool"
+    },
+    "DOCTOROCTOPUS": {
+      "en": "Doctor Octopus",
+      "fr": "Docteur Octopus"
+    },
+    "DOCTORSTRANGE": {
+      "en": "Doctor Strange",
+      "fr": "Docteur Strange"
+    },
+    "DOCTORSTRANGEOPERATOR": {
+      "en": "Doctor Strange",
+      "fr": "Docteur Strange"
+    },
+    "DOCTORVOODOO": {
+      "en": "Doctor Voodoo",
+      "fr": "Docteur Vaudou"
+    },
+    "DOMINO": {
+      "en": "Domino",
+      "fr": "Domino"
+    },
+    "DOOM": {
+      "en": "Doctor Doom",
+      "fr": "Docteur Fatalis"
+    },
+    "DOOMBOT": {
+      "en": "Doombot",
+      "fr": "Fatalibot"
+    },
+    "DORMAMMU": {
+      "en": "Dormammu",
+      "fr": "Dormammu"
+    },
+    "DRAX": {
+      "en": "Drax",
+      "fr": "Drax"
+    },
+    "EBONYMAW": {
+      "en": "Ebony Maw",
+      "fr": "Ebony Maw"
+    },
+    "ECHO": {
+      "en": "Echo",
+      "fr": "Echo"
+    },
+    "ELECTRO": {
+      "en": "Electro",
+      "fr": "Electro"
+    },
+    "ELEKTRA": {
+      "en": "Elektra",
+      "fr": "Elektra"
+    },
+    "ELSABLOODSTONE": {
+      "en": "Elsa Bloodstone",
+      "fr": "Elsa Bloodstone"
+    },
+    "EMMAFROST": {
+      "en": "Emma Frost",
+      "fr": "Emma Frost"
+    },
+    "EMMAFROSTXMEN": {
+      "en": "Emma Frost (X-Men)",
+      "fr": "Emma Frost (X-Men)"
+    },
+    "FALCON": {
+      "en": "Falcon",
+      "fr": "Falcon"
+    },
+    "FALCONJOAQUIN": {
+      "en": "Falcon (Joaquin)",
+      "fr": "Falcon (Joaquin)"
+    },
+    "FANTOMEX": {
+      "en": "Fantomex",
+      "fr": "Fantomex"
+    },
+    "FIRESTAR": {
+      "en": "Firestar",
+      "fr": "Firestar"
+    },
+    "FORGE": {
+      "en": "Forge",
+      "fr": "Forge"
+    },
+    "FRANKLINRICHARDS": {
+      "en": "Franklin Richards",
+      "fr": "Franklin Richards"
+    },
+    "GAMBIT": {
+      "en": "Gambit",
+      "fr": "Gambit"
+    },
+    "GAMORA": {
+      "en": "Gamora",
+      "fr": "Gamora"
+    },
+    "GHOST": {
+      "en": "Ghost",
+      "fr": "Fantôme"
+    },
+    "GHOSTRIDER": {
+      "en": "Ghost Rider",
+      "fr": "Ghost Rider"
+    },
+    "GHOSTRIDERROBBIE": {
+      "en": "Ghost Rider (Robbie)",
+      "fr": "Ghost Rider (Robbie)"
+    },
+    "GHOSTSPIDER": {
+      "en": "Ghost-Spider",
+      "fr": "Ghost-Spider"
+    },
+    "GLADIATOR": {
+      "en": "Gladiator",
+      "fr": "Gladiator"
+    },
+    "GORR": {
+      "en": "Gorr",
+      "fr": "Gorr"
+    },
+    "GRAVITON": {
+      "en": "Graviton",
+      "fr": "Graviton"
+    },
+    "GREENGOBLINGLIDER": {
+      "en": "Green Goblin (Classic)",
+      "fr": "Bouffon vert (classique)"
+    },
+    "GREG": {
+      "en": "Undead Asgardian",
+      "fr": "Asgardien mort-vivant"
+    },
+    "GROOT": {
+      "en": "Groot",
+      "fr": "Groot"
+    },
+    "GT_HANDCONTROL_HEALBLOCK": {
+      "en": "Hand Assassin",
+      "fr": "Assassin de la Main"
+    },
+    "GT_HANDDMG_BONUS": {
+      "en": "Hand Blademaster",
+      "fr": "Maître-lame de la Main"
+    },
+    "GT_HANDDMG_UNBUFF": {
+      "en": "Hand Archer",
+      "fr": "Archer de la Main"
+    },
+    "GT_HANDSUPPORT_HEAL": {
+      "en": "Hand Sorceress",
+      "fr": "Ensorceleuse de la Main"
+    },
+    "GT_HANDTANK_STEALTH": {
+      "en": "Hand Sentry",
+      "fr": "Factionnaire de la Main"
+    },
+    "GUARDIAN": {
+      "en": "Guardian",
+      "fr": "Guardian"
+    },
+    "GWENOM": {
+      "en": "Gwenom",
+      "fr": "Gwenom"
+    },
+    "GWENPOOL": {
+      "en": "Gwenpool",
+      "fr": "Gwenpool"
+    },
+    "HANDCONTROL_HEALBLOCK": {
+      "en": "Hand Assassin",
+      "fr": "Assassin de la Main"
+    },
+    "HANDDMG_BONUS": {
+      "en": "Hand Blademaster",
+      "fr": "Maître-lame de la Main"
+    },
+    "HANDDMG_UNBUFF": {
+      "en": "Hand Archer",
+      "fr": "Archer de la Main"
+    },
+    "HANDOPERATOR": {
+      "en": "Hand Operator",
+      "fr": "Meneuse de la Main"
+    },
+    "HANDSUPPORT_HEAL": {
+      "en": "Hand Sorceress",
+      "fr": "Ensorceleuse de la Main"
+    },
+    "HANDTANK_STEALTH": {
+      "en": "Hand Sentry",
+      "fr": "Factionnaire de la Main"
+    },
+    "HANKPYM": {
+      "en": "Hank Pym",
+      "fr": "Hank Pym"
+    },
+    "HAVOK": {
+      "en": "Havok",
+      "fr": "Havok"
+    },
+    "HAWKEYE": {
+      "en": "Hawkeye",
+      "fr": "Hawkeye"
+    },
+    "HEIMDALL": {
+      "en": "Heimdall",
+      "fr": "Heimdall"
+    },
+    "HEIMDALLOPERATOR": {
+      "en": "Heimdall",
+      "fr": "Heimdall"
+    },
+    "HELA": {
+      "en": "Hela",
+      "fr": "Hela"
+    },
+    "HELLCAT": {
+      "en": "Hellcat",
+      "fr": "Hellcat"
+    },
+    "HELLVERINE": {
+      "en": "Hellverine",
+      "fr": "Hellverine"
+    },
+    "HERCULES": {
+      "en": "Hercules",
+      "fr": "Hercule"
+    },
+    "HITMONKEY": {
+      "en": "Hit-Monkey",
+      "fr": "Hit-Monkey"
+    },
+    "HOBGOBLIN": {
+      "en": "Hobgoblin",
+      "fr": "Super-Bouffon"
+    },
+    "HOWARDTHEDUCK": {
+      "en": "Howard The Duck",
+      "fr": "Howard le Canard"
+    },
+    "HULK": {
+      "en": "Hulk",
+      "fr": "Hulk"
+    },
+    "HULKBUSTER": {
+      "en": "Hulkbuster",
+      "fr": "Hulkbuster"
+    },
+    "HUMANTORCH": {
+      "en": "Human Torch",
+      "fr": "Torche humaine"
+    },
+    "HYDRADMG_AOE": {
+      "en": "Hydra Grenadier",
+      "fr": "Grenadier d’Hydra"
+    },
+    "HYDRADMG_BUFF": {
+      "en": "Hydra Rifle Trooper",
+      "fr": "Fusilier d’Hydra"
+    },
+    "HYDRADMG_SINGLE": {
+      "en": "Hydra Sniper",
+      "fr": "Sniper d’Hydra"
+    },
+    "HYDRAOPERATOR": {
+      "en": "Hydra Operator",
+      "fr": "Meneur d’Hydra"
+    },
+    "HYDRASUPPORT_HEAL": {
+      "en": "Hydra Scientist",
+      "fr": "Scientifique d’Hydra"
+    },
+    "HYDRATANK_TAUNT": {
+      "en": "Hydra Armored Guard",
+      "fr": "Garde cuirassé d’Hydra"
+    },
+    "HYPERION": {
+      "en": "Hyperion",
+      "fr": "Hypérion"
+    },
+    "ICEMAN": {
+      "en": "Iceman",
+      "fr": "Iceman"
+    },
+    "IKARIS": {
+      "en": "Ikaris",
+      "fr": "Ikaris"
+    },
+    "INNERDEMON_CYCLOPS": {
+      "en": "Inner Demon (Cyclops)",
+      "fr": "Démon intérieur (Cyclope)"
+    },
+    "INNERDEMON_DEMON": {
+      "en": "Inner Demon (Demon)",
+      "fr": "Démon intérieur (démon)"
+    },
+    "INNERDEMON_DRAGON": {
+      "en": "Inner Demon (Dragon)",
+      "fr": "Démon intérieur (dragon)"
+    },
+    "INVISIBLEWOMAN": {
+      "en": "Invisible Woman",
+      "fr": "Femme invisible"
+    },
+    "INVISIBLEWOMANMCU": {
+      "en": "Invisible Woman (MCU)",
+      "fr": "Femme invisible (MCU)"
+    },
+    "IRONFIST": {
+      "en": "Iron Fist",
+      "fr": "Iron Fist"
+    },
+    "IRONFISTOPERATOR": {
+      "en": "Iron Fist",
+      "fr": "Iron Fist"
+    },
+    "IRONFISTORSON": {
+      "en": "Iron Fist (WWII)",
+      "fr": "Iron Fist (2GM)"
+    },
+    "IRONHEART": {
+      "en": "Ironheart",
+      "fr": "Ironheart"
+    },
+    "IRONHEARTMCU": {
+      "en": "Ironheart (MKII)",
+      "fr": "Ironheart (mod II)"
+    },
+    "IRONMAN": {
+      "en": "Iron Man",
+      "fr": "Iron Man"
+    },
+    "IRONMANINFINITYWAR": {
+      "en": "Iron Man (Infinity War)",
+      "fr": "Iron Man (Infinity War)"
+    },
+    "IRONPATRIOT": {
+      "en": "Iron Patriot",
+      "fr": "Iron Patriot"
+    },
+    "JANETHOR": {
+      "en": "Mighty Thor",
+      "fr": "Mighty Thor"
+    },
+    "JEANGREY": {
+      "en": "Jean Grey",
+      "fr": "Jean Grey"
+    },
+    "JEFFTHELANDSHARK": {
+      "en": "Jeff the Land Shark",
+      "fr": "Jeff le requin terrestre"
+    },
+    "JESSICAJONES": {
+      "en": "Jessica Jones",
+      "fr": "Jessica Jones"
+    },
+    "JUBILEE": {
+      "en": "Jubilee",
+      "fr": "Jubilé"
+    },
+    "JUGGERNAUT": {
+      "en": "Juggernaut",
+      "fr": "Le Fléau"
+    },
+    "KAHHORI": {
+      "en": "Kahhori",
+      "fr": "Kahhori"
+    },
+    "KAMALAKHAN": {
+      "en": "Ms. Marvel (Hard Light)",
+      "fr": "Ms. Marvel (lumière solide)"
+    },
+    "KANGTHECONQUEROR": {
+      "en": "Kang the Conqueror",
+      "fr": "Kang le Conquérant"
+    },
+    "KARNAK": {
+      "en": "Karnak",
+      "fr": "Karnak"
+    },
+    "KATEBISHOP": {
+      "en": "Kate Bishop",
+      "fr": "Kate Bishop"
+    },
+    "KILLMONGER": {
+      "en": "Killmonger",
+      "fr": "Killmonger"
+    },
+    "KINGPIN": {
+      "en": "Kingpin",
+      "fr": "Le Caïd"
+    },
+    "KINGPINOPERATOR": {
+      "en": "Kingpin",
+      "fr": "Le Caïd"
+    },
+    "KITTYPRYDE": {
+      "en": "Kitty Pryde",
+      "fr": "Kitty Pryde"
+    },
+    "KNULL": {
+      "en": "Knull",
+      "fr": "Knull"
+    },
+    "KORATH": {
+      "en": "Korath the Pursuer",
+      "fr": "Korath le Poursuivant"
+    },
+    "KORG": {
+      "en": "Korg",
+      "fr": "Korg"
+    },
+    "KRAVENTHEHUNTER": {
+      "en": "Kraven the Hunter",
+      "fr": "Kraven le chasseur"
+    },
+    "KREECONTROL_ASSIST": {
+      "en": "Kree Noble",
+      "fr": "Noble kree"
+    },
+    "KREEDMG_OFFENSE": {
+      "en": "Kree Cyborg",
+      "fr": "Cyborg kree"
+    },
+    "KREEDMG_SPEED": {
+      "en": "Kree Reaper",
+      "fr": "Faucheuse kree"
+    },
+    "KREEOPERATOR": {
+      "en": "Kree Operator",
+      "fr": "Agent kree"
+    },
+    "KREESUPPORT_HOT": {
+      "en": "Kree Oracle",
+      "fr": "Oracle kree"
+    },
+    "KREETANK_COUNTER": {
+      "en": "Kree Royal Guard",
+      "fr": "Garde royal kree"
+    },
+    "LADYBULLSEYE": {
+      "en": "Lady Bullseye",
+      "fr": "Lady Bullseye"
+    },
+    "LADYDEATHSTRIKE": {
+      "en": "Lady Deathstrike",
+      "fr": "Lady Deathstrike"
+    },
+    "LILANDRA": {
+      "en": "Lilandra",
+      "fr": "Lilandra"
+    },
+    "LIVINGMUMMY": {
+      "en": "Living Mummy",
+      "fr": "Momie vivante"
+    },
+    "LIVINGTRIBUNAL": {
+      "en": "Living Tribunal",
+      "fr": "Tribunal vivant"
+    },
+    "LIZARD": {
+      "en": "Lizard",
+      "fr": "Lézard"
+    },
+    "LOCKJAW": {
+      "en": "Lockjaw",
+      "fr": "Gueule d'or"
+    },
+    "LOKI": {
+      "en": "Loki",
+      "fr": "Loki"
+    },
+    "LOKIMINION": {
+      "en": "Loki ",
+      "fr": "Loki"
+    },
+    "LOKINPC": {
+      "en": "Loki",
+      "fr": "Loki"
+    },
+    "LOKITEEN": {
+      "en": "Loki (Teen)",
+      "fr": "Loki (adolescent)"
+    },
+    "LONGSHOT": {
+      "en": "Longshot",
+      "fr": "Longshot"
+    },
+    "LUKECAGE": {
+      "en": "Luke Cage",
+      "fr": "Luke Cage"
+    },
+    "MADELYNEPRYOR": {
+      "en": "Madelyne Pryor",
+      "fr": "Madelyne Pryor"
+    },
+    "MAGIK": {
+      "en": "Magik",
+      "fr": "Magik"
+    },
+    "MAGNETO": {
+      "en": "Magneto",
+      "fr": "Magnéto"
+    },
+    "MANTHING": {
+      "en": "Man-Thing",
+      "fr": "Homme-chose"
+    },
+    "MANTIS": {
+      "en": "Mantis",
+      "fr": "Mantis"
+    },
+    "MARIAHILL": {
+      "en": "Maria Hill",
+      "fr": "Maria Hill"
+    },
+    "MBAKU": {
+      "en": "M'Baku",
+      "fr": "M'Baku"
+    },
+    "MEDUSA": {
+      "en": "Medusa",
+      "fr": "Médusa"
+    },
+    "MEPHISTO": {
+      "en": "Mephisto",
+      "fr": "Méphisto"
+    },
+    "MERCDMG_GENERAL": {
+      "en": "Mercenary Soldier",
+      "fr": "Soldat mercenaire"
+    },
+    "MERCDMG_SINGLE": {
+      "en": "Mercenary Sniper",
+      "fr": "Sniper mercenaire"
+    },
+    "MERCOPERATOR": {
+      "en": "Mercenary Operator",
+      "fr": "Meneur mercenaire"
+    },
+    "MERCSUPPORT_BUFFS": {
+      "en": "Mercenary Lieutenant",
+      "fr": "Lieutenant mercenaire"
+    },
+    "MERCTANK_DEBUFF": {
+      "en": "Mercenary Riot Guard",
+      "fr": "Mercenaire anti-émeute"
+    },
+    "MERCTANK_TAUNT": {
+      "en": "Mercenary Bodyguard",
+      "fr": "Garde mercenaire"
+    },
+    "MINERVA": {
+      "en": "Minn-Erva",
+      "fr": "Minn-Erva"
+    },
+    "MISTYKNIGHT": {
+      "en": "Misty Knight",
+      "fr": "Misty Knight"
+    },
+    "MOCKINGBIRD": {
+      "en": "Mockingbird",
+      "fr": "Oiseau moqueur"
+    },
+    "MODOK": {
+      "en": "MODOK",
+      "fr": "MODOK"
+    },
+    "MOJO": {
+      "en": "Mojo",
+      "fr": "Mojo"
+    },
+    "MOONDRAGON": {
+      "en": "Moondragon",
+      "fr": "Dragon-Lune"
+    },
+    "MOONKNIGHT": {
+      "en": "Moon Knight",
+      "fr": "Moon Knight"
+    },
+    "MOONSTONE": {
+      "en": "Moonstone",
+      "fr": "Opale"
+    },
+    "MORBIUS": {
+      "en": "Morbius",
+      "fr": "Morbius"
+    },
+    "MORGANLEFAY": {
+      "en": "Morgan Le Fay",
+      "fr": "Morgan Le Fay"
+    },
+    "MRFANTASTIC": {
+      "en": "Mister Fantastic",
+      "fr": "Mister Fantastic"
+    },
+    "MRFANTASTICMCU": {
+      "en": "Mister Fantastic (MCU)",
+      "fr": "Mister Fantastic (MCU)"
+    },
+    "MRNEGATIVE": {
+      "en": "Mister Negative",
+      "fr": "Mister Negative"
+    },
+    "MRSINISTER": {
+      "en": "Mister Sinister",
+      "fr": "Mister Sinistre"
+    },
+    "MSMARVEL": {
+      "en": "Ms. Marvel",
+      "fr": "Ms. Marvel"
+    },
+    "MSMARVELCLASSIC": {
+      "en": "Ms. Marvel (Classic)",
+      "fr": "Ms. Marvel (classique)"
+    },
+    "MULTIPLEMAN": {
+      "en": "Multiple Man",
+      "fr": "Homme-multiple"
+    },
+    "MULTIPLEMANMINION": {
+      "en": "Dupe",
+      "fr": "Double"
+    },
+    "MYSTERIO": {
+      "en": "Mysterio",
+      "fr": "Mystério"
+    },
+    "MYSTERIOMINION": {
+      "en": "Mysterio",
+      "fr": "Mystério"
+    },
+    "MYSTIQUE": {
+      "en": "Mystique",
+      "fr": "Mystique"
+    },
+    "NAKIA": {
+      "en": "Nakia",
+      "fr": "Nakia"
+    },
+    "NAMOR": {
+      "en": "Namor",
+      "fr": "Namor"
+    },
+    "NEBULA": {
+      "en": "Nebula",
+      "fr": "Nebula"
+    },
+    "NEGASONIC": {
+      "en": "Negasonic",
+      "fr": "Negasonic"
+    },
+    "NEMESIS": {
+      "en": "Nemesis",
+      "fr": "Némésis"
+    },
+    "NICKFURY": {
+      "en": "Nick Fury",
+      "fr": "Nick Fury"
+    },
+    "NICKFURYOPERATOR": {
+      "en": "Nick Fury",
+      "fr": "Nick Fury"
+    },
+    "NICOMINORU": {
+      "en": "Nico Minoru",
+      "fr": "Nico Minoru"
+    },
+    "NIGHTCRAWLER": {
+      "en": "Nightcrawler",
+      "fr": "Diablo"
+    },
+    "NIGHTNURSE": {
+      "en": "Night Nurse",
+      "fr": "Infirmière de nuit"
+    },
+    "NIMROD": {
+      "en": "Nimrod",
+      "fr": "Nemrod"
+    },
+    "NOBU": {
+      "en": "Nobu",
+      "fr": "Nobu"
+    },
+    "NOBUOPERATOR": {
+      "en": "Nobu",
+      "fr": "Nobu"
+    },
+    "NORTHSTAR": {
+      "en": "Northstar",
+      "fr": "Véga"
+    },
+    "NOVA": {
+      "en": "Nova",
+      "fr": "Nova"
+    },
+    "NUEHANDSUPPORT_HEAL": {
+      "en": "Hand Sorceress",
+      "fr": "Ensorceleuse de la Main"
+    },
+    "NUESPIDERMAN": {
+      "en": "Spider-Man ",
+      "fr": "Spider-Man"
+    },
+    "OATH": {
+      "en": "Oath",
+      "fr": "Serment"
+    },
+    "ODIN": {
+      "en": "Odin",
+      "fr": "Odin"
+    },
+    "OKOYE": {
+      "en": "Okoye",
+      "fr": "Okoye"
+    },
+    "OLDMANLOGAN": {
+      "en": "Old Man Logan",
+      "fr": "Old Man Logan"
+    },
+    "OMEGARED": {
+      "en": "Omega Red",
+      "fr": "Omega Red"
+    },
+    "OMEGAREDPHOENIX": {
+      "en": "Omega Red (Phoenix Force)",
+      "fr": "Omega Red (Force Phénix)"
+    },
+    "OMEGASENTINEL": {
+      "en": "Omega Sentinel",
+      "fr": "Sentinelle Oméga"
+    },
+    "PANDAPOOL": {
+      "en": "Pandapool",
+      "fr": "Pandapool"
+    },
+    "PATRIOT": {
+      "en": "Patriot",
+      "fr": "Patriot"
+    },
+    "PEGGYCARTER": {
+      "en": "Peggy Carter",
+      "fr": "Peggy Carter"
+    },
+    "PENIPARKER": {
+      "en": "Peni Parker",
+      "fr": "Peni Parker"
+    },
+    "PETERBPARKER": {
+      "en": "Peter B. Parker",
+      "fr": "Peter B. Parker"
+    },
+    "PHANTOMRIDER": {
+      "en": "Phantom Rider",
+      "fr": "Phantom Rider"
+    },
+    "PHOENIX": {
+      "en": "Phoenix",
+      "fr": "Phénix"
+    },
+    "PHOTON": {
+      "en": "Photon",
+      "fr": "Photon"
+    },
+    "PHYLAVELL": {
+      "en": "Phyla-Vell",
+      "fr": "Phyla-Vell"
+    },
+    "POLARIS": {
+      "en": "Polaris",
+      "fr": "Polaris"
+    },
+    "PROXIMAMIDNIGHT": {
+      "en": "Proxima Midnight",
+      "fr": "Proxima Midnight"
+    },
+    "PSYLOCKE": {
+      "en": "Psylocke",
+      "fr": "Psylocke"
+    },
+    "PUNISHER": {
+      "en": "Punisher",
+      "fr": "Punisher"
+    },
+    "PVE_ANNIHILUS_TOWER": {
+      "en": "Annihilus",
+      "fr": "Annihilus"
+    },
+    "PVE_ARES_SENTRYBOSS": {
+      "en": "Ares",
+      "fr": "Arès"
+    },
+    "PVE_BLACKWIDOW_SENTRYBOSS": {
+      "en": "Black Widow",
+      "fr": "Black Widow"
+    },
+    "PVE_BOSS_KNULL": {
+      "en": "Knull",
+      "fr": "Knull"
+    },
+    "PVE_BOSS_SENTRY": {
+      "en": "Sentry",
+      "fr": "Sentry"
+    },
+    "PVE_BULLSEYE_SENTRYBOSS": {
+      "en": "Bullseye",
+      "fr": "Bullseye"
+    },
+    "PVE_CAPTAINAMERICA_SENTRYBOSS": {
+      "en": "Captain America",
+      "fr": "Captain America"
+    },
+    "PVE_CHAOSRAID_EMMAFROST": {
+      "en": "Emma Frost (Chaos)",
+      "fr": "Emma Frost (Chaos)"
+    },
+    "PVE_CHAOSRAID_JEANGREY": {
+      "en": "Jean Grey (Chaos)",
+      "fr": "Jean Grey (Chaos)"
+    },
+    "PVE_CHAOSRAID_MADELYNEPRYOR": {
+      "en": "Madelyne Pryor (Chaos)",
+      "fr": "Madelyne Pryor (Chaos)"
+    },
+    "PVE_CHAOSRAID_PSYLOCKE": {
+      "en": "Psylocke (Chaos)",
+      "fr": "Psylocke (Chaos)"
+    },
+    "PVE_CHAOSRAID_SHADOWKING": {
+      "en": "Shadow King (Chaos)",
+      "fr": "Roi d’ombre (Chaos)"
+    },
+    "PVE_CORVUSGLAIVE_GAUNTLET": {
+      "en": "Corvus Glaive",
+      "fr": "Corvus Glaive"
+    },
+    "PVE_CULLOBSIDIAN_GAUNTLET": {
+      "en": "Cull Obsidian",
+      "fr": "Cull Obsidian"
+    },
+    "PVE_CYCLOPS_INCURSION": {
+      "en": "Cyclops (Aphelion)",
+      "fr": "Cyclope (Aphélion)"
+    },
+    "PVE_DAKEN_SENTRYBOSS": {
+      "en": "Daken",
+      "fr": "Daken"
+    },
+    "PVE_DDDOCTORDOOM": {
+      "en": "Doctor Doom",
+      "fr": "Docteur Fatalis"
+    },
+    "PVE_DDDOOMBOMB": {
+      "en": "Doom Bomb",
+      "fr": "Bombe de Fatalis"
+    },
+    "PVE_DDHUMANTORCH": {
+      "en": "Torch-Bot",
+      "fr": "Robotorche"
+    },
+    "PVE_DDINVISIBLEWOMAN": {
+      "en": "Invisi-Bot",
+      "fr": "Robot invisible"
+    },
+    "PVE_DDMRFANTASTIC": {
+      "en": "Fantastic-Bot",
+      "fr": "Robot fantastique"
+    },
+    "PVE_DDTHING": {
+      "en": "Thing-Bot",
+      "fr": "Robot chose"
+    },
+    "PVE_EBONYMAW_GAUNTLET": {
+      "en": "Ebony Maw",
+      "fr": "Ebony Maw"
+    },
+    "PVE_HAWKEYE_SENTRYBOSS": {
+      "en": "Hawkeye",
+      "fr": "Hawkeye"
+    },
+    "PVE_HULKBUSTER_INCURSION": {
+      "en": "Hulkbuster (Aphelion)",
+      "fr": "Hulkbuster (Aphélion)"
+    },
+    "PVE_HULK_SENTRYBOSS": {
+      "en": "Hulk",
+      "fr": "Hulk"
+    },
+    "PVE_IRONMAN_SENTRYBOSS": {
+      "en": "Iron Man",
+      "fr": "Iron Man"
+    },
+    "PVE_IRONPATRIOT_SENTRYBOSS": {
+      "en": "Iron Patriot",
+      "fr": "Iron Patriot"
+    },
+    "PVE_KANGTHECONQUEROR_INCURSION": {
+      "en": "Kang the Conqueror (Aphelion)",
+      "fr": "Kang le Conquérant (Aphélion)"
+    },
+    "PVE_KILLMONGER_INCURSION": {
+      "en": "Killmonger (Aphelion)",
+      "fr": "Killmonger (Aphélion)"
+    },
+    "PVE_MOONSTONE_SENTRYBOSS": {
+      "en": "Moonstone",
+      "fr": "Opale"
+    },
+    "PVE_MRFANTASTIC_INCURSION": {
+      "en": "Mister Fantastic (Aphelion)",
+      "fr": "Mister Fantastic (Aphélion)"
+    },
+    "PVE_PROXIMAMIDNIGHT_GAUNTLET": {
+      "en": "Proxima Midnight",
+      "fr": "Proxima Midnight"
+    },
+    "PVE_SAGABOSS_GLADIATOR": {
+      "en": "Gladiator (Saga)",
+      "fr": "Gladiator (Saga)"
+    },
+    "PVE_SAGABOSS_NIMROD": {
+      "en": "Nimrod (Saga)",
+      "fr": "Nemrod (Saga)"
+    },
+    "PVE_SAGABOSS_SHADOWKING": {
+      "en": "Shadow King (Saga)",
+      "fr": "Roi d’ombre (Saga)"
+    },
+    "PVE_SAGABOSS_XAVIER": {
+      "en": "Dark Xavier",
+      "fr": "Xavier corrompu"
+    },
+    "PVE_SENTINEL_ROGUELIKE": {
+      "en": "Sentinel (Prime)",
+      "fr": "Sentinelle (Prime)"
+    },
+    "PVE_STRANGESUPREME_INCURSION": {
+      "en": "Doctor Strange (Aphelion)",
+      "fr": "Docteur Strange (Aphélion)"
+    },
+    "PVE_THANOS_GAUNTLET": {
+      "en": "Thanos",
+      "fr": "Thanos"
+    },
+    "PVE_THOR_SENTRYBOSS": {
+      "en": "Thor",
+      "fr": "Thor"
+    },
+    "PVE_USAGENT_SENTRYBOSS": {
+      "en": "U.S. Agent",
+      "fr": "U.S. Agent"
+    },
+    "PVE_VIP_ZOMBIE": {
+      "en": "Terrified Civilian",
+      "fr": "Civil terrifié"
+    },
+    "PYRO": {
+      "en": "Pyro",
+      "fr": "Pyro"
+    },
+    "QUAKE": {
+      "en": "Quake",
+      "fr": "Quake"
+    },
+    "QUASAR": {
+      "en": "Quasar",
+      "fr": "Quasar"
+    },
+    "QUASAR1": {
+      "en": "Quasar",
+      "fr": "Quasar"
+    },
+    "QUASAR2": {
+      "en": "Quasar",
+      "fr": "Quasar"
+    },
+    "QUASAR3": {
+      "en": "Quasar",
+      "fr": "Quasar"
+    },
+    "QUICKSILVER": {
+      "en": "Quicksilver",
+      "fr": "Vif-Argent"
+    },
+    "RACHELSUMMERS": {
+      "en": "Rachel Summers",
+      "fr": "Rachel Summers"
+    },
+    "RAVAGERDMG_AOE": {
+      "en": "Ravager Boomer",
+      "fr": "Déflagrateur ravageur"
+    },
+    "RAVAGERSUPPORT_HEAL": {
+      "en": "Ravager Stitcher",
+      "fr": "Rapiéceur ravageur"
+    },
+    "RAVAGERTANK_TAUNT": {
+      "en": "Ravager Bruiser",
+      "fr": "Cogneur ravageur"
+    },
+    "REDGOBLIN": {
+      "en": "Red Goblin",
+      "fr": "Bouffon rouge"
+    },
+    "REDGUARDIAN": {
+      "en": "Red Guardian",
+      "fr": "Red Guardian"
+    },
+    "REDHULK": {
+      "en": "Red Hulk",
+      "fr": "Hulk rouge"
+    },
+    "REDSKULL": {
+      "en": "Red Skull",
+      "fr": "Crâne Rouge"
+    },
+    "REDSKULLOPERATOR": {
+      "en": "Red Skull",
+      "fr": "Crâne Rouge"
+    },
+    "RESCUE": {
+      "en": "Rescue",
+      "fr": "Rescousse"
+    },
+    "RHINO": {
+      "en": "Rhino",
+      "fr": "Rhino"
+    },
+    "ROCKETRACCOON": {
+      "en": "Rocket Raccoon",
+      "fr": "Rocket Raccoon"
+    },
+    "ROCKETRACCOONOPERATOR": {
+      "en": "Rocket Raccoon",
+      "fr": "Rocket Raccoon"
+    },
+    "ROGUE": {
+      "en": "Rogue",
+      "fr": "Malicia"
+    },
+    "RONAN": {
+      "en": "Ronan the Accuser",
+      "fr": "Ronan l’Accusateur"
+    },
+    "RONIN": {
+      "en": "Ronin",
+      "fr": "Ronin"
+    },
+    "SABRETOOTH": {
+      "en": "Sabretooth",
+      "fr": "Dents-de-sabre"
+    },
+    "SAMWILSON": {
+      "en": "Captain America (Sam)",
+      "fr": "Captain America (Sam)"
+    },
+    "SASQUATCH": {
+      "en": "Sasquatch",
+      "fr": "Sasquatch"
+    },
+    "SATANA": {
+      "en": "Satana",
+      "fr": "Satana"
+    },
+    "SCARLETSPIDER": {
+      "en": "Scarlet Spider",
+      "fr": "Scarlet Spider"
+    },
+    "SCARLETWITCH": {
+      "en": "Scarlet Witch",
+      "fr": "Sorcière Rouge"
+    },
+    "SCIENTISTSUPREME": {
+      "en": "Scientist Supreme",
+      "fr": "Scientifique suprême"
+    },
+    "SCORPION": {
+      "en": "Scorpion",
+      "fr": "Scorpion"
+    },
+    "SCREAM": {
+      "en": "Scream",
+      "fr": "Scream"
+    },
+    "SEBASTIANSHAW": {
+      "en": "Sebastian Shaw",
+      "fr": "Sebastian Shaw"
+    },
+    "SENTINEL": {
+      "en": "Sentinel",
+      "fr": "Sentinelle"
+    },
+    "SENTINEL_GUN": {
+      "en": "Sentinel Reinforcement (Gun)",
+      "fr": "Sentinelle en renfort : blaster"
+    },
+    "SENTINEL_SWORD": {
+      "en": "Sentinel Reinforcement (Sword)",
+      "fr": "Sentinelle en renfort : épée"
+    },
+    "SENTRY": {
+      "en": "Sentry",
+      "fr": "Sentry"
+    },
+    "SERSI": {
+      "en": "Sersi",
+      "fr": "Circé"
+    },
+    "SHADOWKING": {
+      "en": "Shadow King",
+      "fr": "Roi d’ombre"
+    },
+    "SHANGCHI": {
+      "en": "Shang-Chi",
+      "fr": "Shang-Chi"
+    },
+    "SHARONCARTER": {
+      "en": "Sharon Carter",
+      "fr": "Sharon Carter"
+    },
+    "SHATTERSTAR": {
+      "en": "Shatterstar",
+      "fr": "Shatterstar"
+    },
+    "SHEHULK": {
+      "en": "She-Hulk",
+      "fr": "She-Hulk"
+    },
+    "SHIELDDMG_AOE": {
+      "en": "S.H.I.E.L.D. Assault",
+      "fr": "Soldate du S.H.I.E.L.D."
+    },
+    "SHIELDDMG_DEFENSE": {
+      "en": "S.H.I.E.L.D. Trooper",
+      "fr": "Fantassin du S.H.I.E.L.D."
+    },
+    "SHIELDOPERATOR": {
+      "en": "S.H.I.E.L.D. Operator",
+      "fr": "Opératrice du S.H.I.E.L.D."
+    },
+    "SHIELDSUPPORTHEAL": {
+      "en": "S.H.I.E.L.D. Medic",
+      "fr": "Infirmière du S.H.I.E.L.D."
+    },
+    "SHIELDSUPPORT_HEAL": {
+      "en": "S.H.I.E.L.D. Medic",
+      "fr": "Infirmière du S.H.I.E.L.D."
+    },
+    "SHIELDSUPPORT_STEALTH": {
+      "en": "S.H.I.E.L.D. Operative",
+      "fr": "Agent du S.H.I.E.L.D."
+    },
+    "SHIELDTANK_STUN": {
+      "en": "S.H.I.E.L.D. Security",
+      "fr": "Surveillant du S.H.I.E.L.D."
+    },
+    "SHOCKER": {
+      "en": "Shocker",
+      "fr": "Shocker"
+    },
+    "SHURI": {
+      "en": "Shuri",
+      "fr": "Shuri"
+    },
+    "SIF": {
+      "en": "Sif",
+      "fr": "Sif"
+    },
+    "SILVERSABLE": {
+      "en": "Silver Sable",
+      "fr": "Silver Sable"
+    },
+    "SILVERSAMURAI": {
+      "en": "Silver Samurai",
+      "fr": "Samouraï d'argent"
+    },
+    "SILVERSURFER": {
+      "en": "Silver Surfer",
+      "fr": "Surfer d'argent"
+    },
+    "SONGBIRD": {
+      "en": "Songbird",
+      "fr": "Songbird"
+    },
+    "SPIDERMAN": {
+      "en": "Spider-Man",
+      "fr": "Spider-Man"
+    },
+    "SPIDERMAN2099": {
+      "en": "Spider-Man 2099",
+      "fr": "Spider-Man 2099"
+    },
+    "SPIDERMANBIGTIME": {
+      "en": "Spider-Man (Big Time)",
+      "fr": "Spider-Man (Big Time)"
+    },
+    "SPIDERMANNOIR": {
+      "en": "Spider-Man (Noir)",
+      "fr": "Spider-Man (Noir)"
+    },
+    "SPIDERMANPAVITR": {
+      "en": "Spider-Man (Pavitr)",
+      "fr": "Spider-Man (Pavitr)"
+    },
+    "SPIDERPUNK": {
+      "en": "Spider-Punk",
+      "fr": "Spider-Punk"
+    },
+    "SPIDERSLAYER": {
+      "en": "Spider-Slayer",
+      "fr": "Anti-Araignée"
+    },
+    "SPIDERWEAVER": {
+      "en": "Spider-Weaver",
+      "fr": "Spider-Weaver"
+    },
+    "SPIDERWOMAN": {
+      "en": "Spider-Woman",
+      "fr": "Spider-Woman"
+    },
+    "SQUIRRELGIRL": {
+      "en": "Squirrel Girl",
+      "fr": "Squirrel Girl"
+    },
+    "STARBRAND": {
+      "en": "Starbrand",
+      "fr": "Starbrand"
+    },
+    "STARLORD": {
+      "en": "Star-Lord",
+      "fr": "Star-Lord"
+    },
+    "STARLORD_ANNIHILATION": {
+      "en": "Star-Lord (Annihilation)",
+      "fr": "Star-Lord (Annihilation)"
+    },
+    "STATURE": {
+      "en": "Stature",
+      "fr": "Stature"
+    },
+    "STEELSERPENT": {
+      "en": "Steel Serpent",
+      "fr": "Serpent d’acier"
+    },
+    "STORM": {
+      "en": "Storm",
+      "fr": "Tornade"
+    },
+    "STRANGESUPREME": {
+      "en": "Strange (Heartless)",
+      "fr": "Strange (Sans cœur)"
+    },
+    "STRYFE": {
+      "en": "Stryfe",
+      "fr": "Stryfe"
+    },
+    "SUNFIRE": {
+      "en": "Sunfire",
+      "fr": "Feu du soleil"
+    },
+    "SUNSPOT": {
+      "en": "Sunspot",
+      "fr": "Solar"
+    },
+    "SUPERIORSPIDERMAN": {
+      "en": "Superior Spider-Man",
+      "fr": "Spider-Man supérieur"
+    },
+    "SUPERSKRULL": {
+      "en": "Super Skrull",
+      "fr": "Super Skrull"
+    },
+    "SWARM": {
+      "en": "Swarm",
+      "fr": "Essaim"
+    },
+    "SWORDMASTER": {
+      "en": "Sword Master",
+      "fr": "Maître de l’épée"
+    },
+    "SYBIL": {
+      "en": "Kestrel",
+      "fr": "Crécerelle"
+    },
+    "SYLVIE": {
+      "en": "Sylvie",
+      "fr": "Sylvie"
+    },
+    "SYMBIOTESILVERSURFER": {
+      "en": "Void Knight",
+      "fr": "Void Knight"
+    },
+    "SYMBIOTESPIDERMAN": {
+      "en": "Spider-Man (Symbiote)",
+      "fr": "Spider-Man (symbiote)"
+    },
+    "S_HANDDMG_BONUS": {
+      "en": "Hand Blademaster",
+      "fr": "Maître-lame de la Main"
+    },
+    "S_HANDDMG_UNBUFF": {
+      "en": "Hand Archer",
+      "fr": "Archer de la Main"
+    },
+    "S_HYDRADMG_BUFF": {
+      "en": "Hydra Rifle Trooper",
+      "fr": "Fusilier d’Hydra"
+    },
+    "S_HYDRADMG_SINGLE": {
+      "en": "Hydra Sniper",
+      "fr": "Sniper d’Hydra"
+    },
+    "S_HYDRASUPPORT_HEAL": {
+      "en": "Hydra Scientist",
+      "fr": "Scientifique d’Hydra"
+    },
+    "S_KREECONTROL_ASSIST": {
+      "en": "Kree Noble",
+      "fr": "Noble kree"
+    },
+    "S_KREEDMG_SPEED": {
+      "en": "Kree Reaper",
+      "fr": "Faucheuse kree"
+    },
+    "S_RAVAGERDMG_AOE": {
+      "en": "Ravager Boomer",
+      "fr": "Déflagrateur ravageur"
+    },
+    "S_RAVAGERSUPPORT_HEAL": {
+      "en": "Ravager Stitcher",
+      "fr": "Rapiéceur ravageur"
+    },
+    "S_SHIELDSUPPORT_STEALTH": {
+      "en": "S.H.I.E.L.D. Operative",
+      "fr": "Agent du S.H.I.E.L.D."
+    },
+    "S_SHIELDTANK_STUN": {
+      "en": "S.H.I.E.L.D. Security",
+      "fr": "Surveillant du S.H.I.E.L.D."
+    },
+    "TASKMASTER": {
+      "en": "Taskmaster",
+      "fr": "Taskmaster"
+    },
+    "TCHALLA": {
+      "en": "Star-Lord (T'Challa)",
+      "fr": "Star-Lord (T'Challa)"
+    },
+    "TESTCHARACTERC": {
+      "en": "Test Character C",
+      "fr": "Test Character C"
+    },
+    "TESTCHARACTERD": {
+      "en": "Test Character D",
+      "fr": "Test Character D"
+    },
+    "TESTMAN": {
+      "en": "Test-Man",
+      "fr": "Test-Man"
+    },
+    "THANOS": {
+      "en": "Thanos",
+      "fr": "Thanos"
+    },
+    "THANOSENDGAME": {
+      "en": "Thanos (Endgame)",
+      "fr": "Thanos (Endgame)"
+    },
+    "THEHOOD": {
+      "en": "The Hood",
+      "fr": "Hood"
+    },
+    "THELEADER": {
+      "en": "The Leader",
+      "fr": "Le Leader"
+    },
+    "THEWATCHER": {
+      "en": "The Watcher",
+      "fr": "Le Gardien"
+    },
+    "THING": {
+      "en": "The Thing",
+      "fr": "La Chose"
+    },
+    "THOR": {
+      "en": "Thor",
+      "fr": "Thor"
+    },
+    "THORNPC": {
+      "en": "Thor",
+      "fr": "Thor"
+    },
+    "THOROPERATOR": {
+      "en": "Thor",
+      "fr": "Thor"
+    },
+    "THOR_INFINITYWAR": {
+      "en": "Thor (Infinity War)",
+      "fr": "Thor (Infinity War)"
+    },
+    "THUNDERSTRIKE": {
+      "en": "Thunderstrike",
+      "fr": "Thunderstrike"
+    },
+    "TIGRA": {
+      "en": "Tigra",
+      "fr": "Tigra"
+    },
+    "TITANIA": {
+      "en": "Titania",
+      "fr": "Titania"
+    },
+    "TOAD": {
+      "en": "Toad",
+      "fr": "Crapaud"
+    },
+    "ULTGREENGOBLIN": {
+      "en": "Green Goblin",
+      "fr": "Bouffon vert"
+    },
+    "ULTIMUS": {
+      "en": "Ultimus",
+      "fr": "Ultimus"
+    },
+    "ULTRON": {
+      "en": "Ultron",
+      "fr": "Ultron"
+    },
+    "ULTRONDMG_DEFENSE": {
+      "en": "Ultron Fortifier",
+      "fr": "Fortificateur d’Ultron"
+    },
+    "ULTRONDMG_OFFENSE": {
+      "en": "Ultron Incinerator",
+      "fr": "Incinérateur d’Ultron"
+    },
+    "ULTRONDMG_SPEED": {
+      "en": "Ultron Accelerator",
+      "fr": "Accélérateur d’Ultron"
+    },
+    "ULTRONOPERATOR": {
+      "en": "Ultron",
+      "fr": "Ultron"
+    },
+    "ULTRONSUPPORT_HEAL": {
+      "en": "Ultron Fabricator",
+      "fr": "Usineur d’Ultron"
+    },
+    "ULTRONTANK_TAUNT": {
+      "en": "Ultron Reinforcer",
+      "fr": "Renforceur d’Ultron"
+    },
+    "ULTSPIDERMAN": {
+      "en": "Spider-Man (Miles)",
+      "fr": "Spider-Man (Miles)"
+    },
+    "UNIONJACK": {
+      "en": "Union Jack",
+      "fr": "Union Jack"
+    },
+    "URSAMAJOR": {
+      "en": "Ursa Major",
+      "fr": "Grande Ourse"
+    },
+    "USAGENT": {
+      "en": "U.S. Agent",
+      "fr": "U.S. Agent"
+    },
+    "VAHL": {
+      "en": "Vahl",
+      "fr": "Vahl"
+    },
+    "VAHL_PHOENIX": {
+      "en": "Phoenix",
+      "fr": "Phénix"
+    },
+    "VALKYRIE": {
+      "en": "Valkyrie",
+      "fr": "Valkyrie"
+    },
+    "VAMPIREBLASTER": {
+      "en": "Vampire Defiler",
+      "fr": "Profanateur vampire"
+    },
+    "VAMPIREBRAWLER": {
+      "en": "Vampire Enforcer",
+      "fr": "Exécutant vampire"
+    },
+    "VAMPIRECONTROLLER": {
+      "en": "Vampire Stalker",
+      "fr": "Traqueur vampire"
+    },
+    "VAMPIREPROTECTOR": {
+      "en": "Vampire Brute",
+      "fr": "Brute vampire"
+    },
+    "VAMPIRESUPPORT": {
+      "en": "Vampire Occultist",
+      "fr": "Occultiste vampire"
+    },
+    "VENOM": {
+      "en": "Venom",
+      "fr": "Venom"
+    },
+    "VICTORIAHAND": {
+      "en": "Victoria Hand",
+      "fr": "Victoria Hand"
+    },
+    "VIPMALEAOPERATOR": {
+      "en": "Civilian",
+      "fr": "Civil"
+    },
+    "VIPMALEBOPERATOR": {
+      "en": "Civilian",
+      "fr": "Civil"
+    },
+    "VIPMALECOPERATOR": {
+      "en": "Civilian",
+      "fr": "Civil"
+    },
+    "VISION": {
+      "en": "Vision",
+      "fr": "Vision"
+    },
+    "VIVVISION": {
+      "en": "Viv Vision",
+      "fr": "Viv Vision"
+    },
+    "VOID": {
+      "en": "Void",
+      "fr": "Void"
+    },
+    "VULTURE": {
+      "en": "Vulture",
+      "fr": "Vautour"
+    },
+    "WARLOCK": {
+      "en": "Warlock",
+      "fr": "Warlock"
+    },
+    "WARMACHINE": {
+      "en": "War Machine",
+      "fr": "War Machine"
+    },
+    "WAR_SHIELDDMG_AOE": {
+      "en": "S.H.I.E.L.D. Assault",
+      "fr": "Soldate du S.H.I.E.L.D."
+    },
+    "WAR_SHIELDDMG_DEFENSE": {
+      "en": "S.H.I.E.L.D. Trooper",
+      "fr": "Fantassin du S.H.I.E.L.D."
+    },
+    "WAR_SHIELDSUPPORT_HEAL": {
+      "en": "S.H.I.E.L.D. Medic",
+      "fr": "Infirmière du S.H.I.E.L.D."
+    },
+    "WAR_SHIELDSUPPORT_STEALTH": {
+      "en": "S.H.I.E.L.D. Operative",
+      "fr": "Agent du S.H.I.E.L.D."
+    },
+    "WAR_SHIELDTANK_STUN": {
+      "en": "S.H.I.E.L.D. Security",
+      "fr": "Surveillant du S.H.I.E.L.D."
+    },
+    "WASP": {
+      "en": "Wasp",
+      "fr": "Guêpe"
+    },
+    "WEBLAUNCH_DEADPOOLXFORCE": {
+      "en": "X-Force Deadpool",
+      "fr": "Deadpool : X-Force"
+    },
+    "WEBLAUNCH_IRONMAN": {
+      "en": "Arc Reactor",
+      "fr": "Réacteur Arc"
+    },
+    "WEBLAUNCH_MILESMORALES": {
+      "en": "Spider-Man (Miles) Unmasked",
+      "fr": "Spider-Man (Miles) démasqué"
+    },
+    "WEBLAUNCH_SCARLETWITCH": {
+      "en": "Queen of Chaos",
+      "fr": "Reine du chaos"
+    },
+    "WEBLAUNCH_SPIDERMAN": {
+      "en": "Spidey Sense",
+      "fr": "Sens d’araignée"
+    },
+    "WHITETIGER": {
+      "en": "White Tiger",
+      "fr": "Tigre Blanc"
+    },
+    "WINTERSOLDIER": {
+      "en": "Winter Soldier",
+      "fr": "Winter Soldier"
+    },
+    "WOLFSBANE": {
+      "en": "Wolfsbane",
+      "fr": "Félina"
+    },
+    "WOLVERINE": {
+      "en": "Wolverine",
+      "fr": "Wolverine"
+    },
+    "WONG": {
+      "en": "Wong",
+      "fr": "Wong"
+    },
+    "X23": {
+      "en": "X-23",
+      "fr": "X-23"
+    },
+    "XAVIER": {
+      "en": "Professor Xavier",
+      "fr": "Professeur Xavier"
+    },
+    "YELENA": {
+      "en": "Yelena Belova",
+      "fr": "Yelena Belova"
+    },
+    "YELLOWJACKET": {
+      "en": "Yellowjacket",
+      "fr": "Yellowjacket"
+    },
+    "YONDU": {
+      "en": "Yondu",
+      "fr": "Yondu"
+    },
+    "YONDUOPERATOR": {
+      "en": "Yondu",
+      "fr": "Yondu"
+    },
+    "YOYO": {
+      "en": "Yo-Yo",
+      "fr": "Yo-Yo"
+    },
+    "ZEMO": {
+      "en": "Baron Zemo",
+      "fr": "Baron Zemo"
+    },
+    "ZOMBIEIRONMAN": {
+      "en": "Iron Man (Zombie)",
+      "fr": "Iron Man (zombie)"
+    },
+    "ZOMBIEJUGGERNAUT": {
+      "en": "Juggernaut (Zombie)",
+      "fr": "Le Fléau (zombie)"
+    },
+    "ZOMBIEKESTREL": {
+      "en": "Kestrel (Zombie)",
+      "fr": "Crécerelle (zombie)"
+    },
+    "ZOMBIESCARLETWITCH": {
+      "en": "Scarlet Witch (Zombie)",
+      "fr": "Sorcière Rouge (zombie)"
+    }
+  },
+  "description": "MSF Characters database - extracted from official API",
+  "lastUpdate": "2026-01-19",
+  "totalCharacters": 492,
+  "version": 1
+}

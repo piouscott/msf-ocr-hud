@@ -1,0 +1,988 @@
+{
+  "description": "MSF Teams/Traits database - extracted from official API",
+  "lastUpdate": "2026-01-19",
+  "totalTraits": 196,
+  "traits": {
+    "ABSOLUTEAFORCE": {
+      "en": "ABSOLUTE A-FORCE",
+      "fr": "A-FORCE ABSOLUTE",
+      "isTeam": true
+    },
+    "ACCURSED": {
+      "en": "ACCURSED",
+      "fr": "MAUDIT",
+      "isTeam": false
+    },
+    "AFORCE": {
+      "en": "A-FORCE",
+      "fr": "A-FORCE",
+      "isTeam": true
+    },
+    "AIM": {
+      "en": "A.I.M.",
+      "fr": "A.I.M.",
+      "isTeam": false
+    },
+    "ALIEN": {
+      "en": "ALIEN",
+      "fr": "A.I.M.",
+      "isTeam": false
+    },
+    "ALPHAFLIGHT": {
+      "en": "ALPHA FLIGHT",
+      "fr": "DIVISION ALPHA",
+      "isTeam": true
+    },
+    "ANNIHILATOR": {
+      "en": "ANNIHILATOR",
+      "fr": "ANNIHILATEUR",
+      "isTeam": false
+    },
+    "ANNIVERSARYELITE": {
+      "en": "ANNIVERSARY ELITE",
+      "fr": "ÉLITES DE L'ANNIVERSAIRE",
+      "isTeam": false
+    },
+    "ANTIHERO": {
+      "en": "ANTIHERO",
+      "fr": "ANTIHÉROS",
+      "isTeam": false
+    },
+    "ARCHENEMY": {
+      "en": "ARCHENEMY",
+      "fr": "ENNEMI JURÉ",
+      "isTeam": false
+    },
+    "ASGARD": {
+      "en": "ASGARDIAN",
+      "fr": "ASGARDIEN",
+      "isTeam": false
+    },
+    "ASPIRING": {
+      "en": "ASPIRING",
+      "fr": "ASPIRANT",
+      "isTeam": false
+    },
+    "ASTONISHING": {
+      "en": "ASTONISHING X-MEN",
+      "fr": "ASTONISHING X-MEN",
+      "isTeam": true
+    },
+    "ASTRAL": {
+      "en": "ASTRAL",
+      "fr": "ASTRAL",
+      "isTeam": false
+    },
+    "AVENGER": {
+      "en": "AVENGER",
+      "fr": "AVENGER",
+      "isTeam": true
+    },
+    "AVERAGE": {
+      "en": "AVERAGE",
+      "fr": "MOYEN",
+      "isTeam": false
+    },
+    "BIFROST": {
+      "en": "BIFROST",
+      "fr": "BIFRÖST",
+      "isTeam": true
+    },
+    "BIO": {
+      "en": "BIO",
+      "fr": "BIOTECHNIQUE",
+      "isTeam": false
+    },
+    "BIONICAVENGER": {
+      "en": "BIONIC AVENGER",
+      "fr": "AVENGERS BIONIQUES",
+      "isTeam": true
+    },
+    "BLACKORDER": {
+      "en": "BLACK ORDER",
+      "fr": "ORDRE NOIR",
+      "isTeam": true
+    },
+    "BLASTER": {
+      "en": "BLASTER",
+      "fr": "TIREUR",
+      "isTeam": false
+    },
+    "BRAWLER": {
+      "en": "BRAWLER",
+      "fr": "COGNEUR",
+      "isTeam": false
+    },
+    "BRIMSTONE": {
+      "en": "BRIMSTONE",
+      "fr": "BRIMSTONE",
+      "isTeam": true
+    },
+    "BROTHERHOOD": {
+      "en": "BROTHERHOOD",
+      "fr": "CONFRÉRIE",
+      "isTeam": true
+    },
+    "CABAL": {
+      "en": "CABAL",
+      "fr": "CABALE",
+      "isTeam": true
+    },
+    "CHAOSTEAM": {
+      "en": "CHAOS TEAM",
+      "fr": "ÉQUIPE CHAOS",
+      "isTeam": false
+    },
+    "CHEMICALS": {
+      "en": "CHEMICALS",
+      "fr": "PRODUITS CHIMIQUES",
+      "isTeam": false
+    },
+    "CHOSEN": {
+      "en": "CHOSEN",
+      "fr": "ÉLU",
+      "isTeam": false
+    },
+    "CITY": {
+      "en": "CITY",
+      "fr": "VILLE",
+      "isTeam": false
+    },
+    "CLUBS": {
+      "en": "CLUBS",
+      "fr": "TRÈFLE",
+      "isTeam": false
+    },
+    "CONQUEROR": {
+      "en": "CHAPTER 2 - CONQUEROR",
+      "fr": "CHAPITRE 2 - CONQUÉRANT",
+      "isTeam": false
+    },
+    "CONTROLLER": {
+      "en": "CONTROLLER",
+      "fr": "MANIPULATEUR",
+      "isTeam": false
+    },
+    "COSMIC": {
+      "en": "COSMIC",
+      "fr": "COSMIQUE",
+      "isTeam": false
+    },
+    "COUPLES": {
+      "en": "COUPLES",
+      "fr": "EN COUPLE",
+      "isTeam": false
+    },
+    "COVERT": {
+      "en": "COVERT",
+      "fr": "INFILTRÉ",
+      "isTeam": false
+    },
+    "DARKHOLD": {
+      "en": "DARKHOLD",
+      "fr": "DARKHOLD",
+      "isTeam": true
+    },
+    "DARKHUNTER": {
+      "en": "DARK HUNTER",
+      "fr": "CHASSEUR NOIR",
+      "isTeam": true
+    },
+    "DARK_PROMOTION": {
+      "en": "DARK PROMOTION",
+      "fr": "PROMOTION NOIRE",
+      "isTeam": false
+    },
+    "DDLIVETRAIT": {
+      "en": "B.K.T.",
+      "fr": "BKT",
+      "isTeam": false
+    },
+    "DEATHSEED": {
+      "en": "DEATH SEED",
+      "fr": "GRAINE DE MORT",
+      "isTeam": true
+    },
+    "DEBONAIR": {
+      "en": "DEBONAIR",
+      "fr": "DANDY",
+      "isTeam": false
+    },
+    "DEFENDER": {
+      "en": "DEFENDER",
+      "fr": "DÉFENSEUR",
+      "isTeam": true
+    },
+    "DEFIANT": {
+      "en": "DEFIANT",
+      "fr": "REBELLE",
+      "isTeam": false
+    },
+    "DIAMONDS": {
+      "en": "DIAMONDS",
+      "fr": "CARREAU",
+      "isTeam": false
+    },
+    "ENERGIZED": {
+      "en": "ENERGIZED",
+      "fr": "PLEIN D'ÉNERGIE",
+      "isTeam": false
+    },
+    "EPIC": {
+      "en": "EPIC",
+      "fr": "ÉPIQUE",
+      "isTeam": false
+    },
+    "ETERNAL": {
+      "en": "ETERNAL",
+      "fr": "ÉTERNEL",
+      "isTeam": true
+    },
+    "ETERNALCONNECTIONS": {
+      "en": "ETERNAL CONNECTIONS",
+      "fr": "LIENS ÉTERNELS",
+      "isTeam": true
+    },
+    "EXPOSED": {
+      "en": "EXPOSED",
+      "fr": "EXPOSÉ",
+      "isTeam": false
+    },
+    "FANTASTICFOUR": {
+      "en": "FANTASTIC FOUR",
+      "fr": "QUATRE FANTASTIQUES",
+      "isTeam": true
+    },
+    "FANTASTICFOURMCU": {
+      "en": "FANTASTIC FOUR (MCU)",
+      "fr": "QUATRE FANTASTIQUES (MCU)",
+      "isTeam": true
+    },
+    "FEMALE": {
+      "en": "FEMALE",
+      "fr": "FÉMININ",
+      "isTeam": false
+    },
+    "FRIENDSHIP": {
+      "en": "FRIENDSHIP",
+      "fr": "AMITIÉ",
+      "isTeam": false
+    },
+    "GALACTICHEROES": {
+      "en": "GALACTIC WARRIOR",
+      "fr": "GUERRIER GALACTIQUE",
+      "isTeam": true
+    },
+    "GAMMA": {
+      "en": "GAMMA",
+      "fr": "GAMMA",
+      "isTeam": true
+    },
+    "GLOBAL": {
+      "en": "GLOBAL",
+      "fr": "MONDIAL",
+      "isTeam": false
+    },
+    "GOTG": {
+      "en": "GUARDIAN",
+      "fr": "GARDIEN",
+      "isTeam": true
+    },
+    "HAND": {
+      "en": "HAND",
+      "fr": "MAIN",
+      "isTeam": true
+    },
+    "HARBINGER": {
+      "en": "CHAPTER 1 - HARBINGER",
+      "fr": "CHAPITRE 1 - ANNONCIATEUR",
+      "isTeam": false
+    },
+    "HARBINGERS": {
+      "en": "CHAPTER 1 - HARBINGER",
+      "fr": "CHAPITRE 1 - ANNONCIATEUR",
+      "isTeam": false
+    },
+    "HEARTS": {
+      "en": "HEARTS",
+      "fr": "CŒUR",
+      "isTeam": false
+    },
+    "HELLFIRECLUB": {
+      "en": "HELLFIRE CLUB",
+      "fr": "CLUB DES DAMNÉS",
+      "isTeam": true
+    },
+    "HERO": {
+      "en": "HERO",
+      "fr": "HÉROS",
+      "isTeam": false
+    },
+    "HEROESFORHIRE": {
+      "en": "HEROES FOR HIRE",
+      "fr": "HÉROS À LOUER",
+      "isTeam": true
+    },
+    "HIVEMIND": {
+      "en": "HIVE-MIND",
+      "fr": "CONSCIENCE COLLECTIVE",
+      "isTeam": false
+    },
+    "HONORABLE": {
+      "en": "HONORABLE",
+      "fr": "HONORABLE",
+      "isTeam": false
+    },
+    "HORSEMAN": {
+      "en": "HORSEMAN",
+      "fr": "CAVALIER",
+      "isTeam": true
+    },
+    "HYDRA": {
+      "en": "HYDRA",
+      "fr": "HYDRA",
+      "isTeam": true
+    },
+    "ILLUMINATI": {
+      "en": "ILLUMINATI",
+      "fr": "ILLUMINATI",
+      "isTeam": true
+    },
+    "IMMORTALWEAPON": {
+      "en": "IMMORTAL WEAPON",
+      "fr": "ARME IMMORTELLE",
+      "isTeam": true
+    },
+    "IMMORTALXMEN": {
+      "en": "IMMORTAL X-MEN",
+      "fr": "IMMORTAL X-MEN",
+      "isTeam": true
+    },
+    "INFESTATION": {
+      "en": "INFESTATION",
+      "fr": "INFESTATION",
+      "isTeam": true
+    },
+    "INFILTRATOR": {
+      "en": "INFILTRATOR",
+      "fr": "INFILTRATION",
+      "isTeam": false
+    },
+    "INFINITYWATCH": {
+      "en": "INFINITY WATCH",
+      "fr": "INFINITY WATCH",
+      "isTeam": true
+    },
+    "INHUMAN": {
+      "en": "INHUMAN",
+      "fr": "INHUMAIN",
+      "isTeam": true
+    },
+    "INSIDIOUSSIX": {
+      "en": "INSIDIOUS SIX",
+      "fr": "INSIDIOUS SIX",
+      "isTeam": true
+    },
+    "INTERGALACTIC": {
+      "en": "INTERGALACTIC",
+      "fr": "INTERGALACTIQUE",
+      "isTeam": false
+    },
+    "INVADER": {
+      "en": "INVADER",
+      "fr": "ENVAHISSEUR",
+      "isTeam": true
+    },
+    "IRONWILLED": {
+      "en": "IRON-WILLED",
+      "fr": "VOLONTÉ DE FER",
+      "isTeam": false
+    },
+    "JUNETEENTH": {
+      "en": "JUNETEENTH",
+      "fr": "JUNETEENTH",
+      "isTeam": false
+    },
+    "KNOWHERE": {
+      "en": "KNOWHERE",
+      "fr": "NULLE-PART",
+      "isTeam": true
+    },
+    "KNOWHEREHEIST": {
+      "en": "KNOWHERE HEIST",
+      "fr": "LE CASSE DE NULLE-PART",
+      "isTeam": true
+    },
+    "KNULLCHALLENGERS": {
+      "en": "KNULL CHALLENGERS",
+      "fr": "ADVERSAIRES DE KNULL",
+      "isTeam": false
+    },
+    "KREE": {
+      "en": "KREE",
+      "fr": "KREE",
+      "isTeam": true
+    },
+    "LARGE": {
+      "en": "LARGE",
+      "fr": "GRAND",
+      "isTeam": false
+    },
+    "LATENTPOTENTIAL": {
+      "en": "LATENT POTENTIAL",
+      "fr": "POTENTIEL DORMANT",
+      "isTeam": false
+    },
+    "LEGENDARY": {
+      "en": "LEGENDARY",
+      "fr": "LÉGENDAIRE",
+      "isTeam": false
+    },
+    "LIBERTY": {
+      "en": "LIBERTY",
+      "fr": "LIBERTÉ",
+      "isTeam": false
+    },
+    "LOSMUERTOS": {
+      "en": "LOS MUERTOS",
+      "fr": "LOS MUERTOS",
+      "isTeam": true
+    },
+    "LUCKY": {
+      "en": "LUCKY",
+      "fr": "VEINARD",
+      "isTeam": false
+    },
+    "MALE": {
+      "en": "MALE",
+      "fr": "MASCULIN",
+      "isTeam": false
+    },
+    "MARAUDERS": {
+      "en": "MARAUDER",
+      "fr": "MARAUDEUR",
+      "isTeam": true
+    },
+    "MARTIALARTIST": {
+      "en": "MARTIAL ARTIST",
+      "fr": "ARTS MARTIAUX",
+      "isTeam": false
+    },
+    "MARVEL80TH": {
+      "en": "MARVEL 80th",
+      "fr": "80 ans de MARVEL",
+      "isTeam": false
+    },
+    "MARVELMOMS": {
+      "en": "MARVEL MOMS",
+      "fr": "MÈRES MARVEL",
+      "isTeam": false
+    },
+    "MASKEDCAPER": {
+      "en": "MASKED CAPER",
+      "fr": "MASQUE ET CAPE",
+      "isTeam": false
+    },
+    "MASTERSOFEVIL": {
+      "en": "MASTERS OF EVIL",
+      "fr": "MAÎTRES DU MAL",
+      "isTeam": true
+    },
+    "MEDIUM": {
+      "en": "MEDIUM",
+      "fr": "MÉDIUM",
+      "isTeam": false
+    },
+    "MENTORSHIP": {
+      "en": "MENTORSHIP",
+      "fr": "INSTRUCTION",
+      "isTeam": false
+    },
+    "MERCENARY": {
+      "en": "MERCENARY",
+      "fr": "MERCENAIRE",
+      "isTeam": true
+    },
+    "MERCSFORMONEY": {
+      "en": "MERCS FOR MONEY",
+      "fr": "MERCENAIRES POUR L'ARGENT",
+      "isTeam": true
+    },
+    "METAMORPHOSIS": {
+      "en": "METAMORPHOSIS",
+      "fr": "MÉTAMORPHOSE",
+      "isTeam": false
+    },
+    "MIGHTYAVENGER": {
+      "en": "MIGHTY AVENGER",
+      "fr": "MIGHTY AVENGERS",
+      "isTeam": true
+    },
+    "MILITARY": {
+      "en": "MILITARY",
+      "fr": "MILITAIRE",
+      "isTeam": false
+    },
+    "MINION": {
+      "en": "MINION",
+      "fr": "SERVITEUR",
+      "isTeam": false
+    },
+    "MISFITS": {
+      "en": "MISFIT",
+      "fr": "MISFITS",
+      "isTeam": true
+    },
+    "MSFORIGINAL": {
+      "en": "MSF ORIGINAL",
+      "fr": "MSF ORIGINAL",
+      "isTeam": false
+    },
+    "MUTANT": {
+      "en": "MUTANT",
+      "fr": "MUTANT",
+      "isTeam": false
+    },
+    "MYSTIC": {
+      "en": "MYSTIC",
+      "fr": "MYSTIQUE",
+      "isTeam": false
+    },
+    "MYTHIC": {
+      "en": "MYTHIC",
+      "fr": "MYTHIQUE",
+      "isTeam": false
+    },
+    "NEWAVENGER": {
+      "en": "NEW AVENGER",
+      "fr": "NOUVEL AVENGER",
+      "isTeam": true
+    },
+    "NEWMUTANT": {
+      "en": "NEW MUTANT",
+      "fr": "NOUVEAUX MUTANTS",
+      "isTeam": true
+    },
+    "NEWWARRIOR": {
+      "en": "NEW WARRIOR",
+      "fr": "NEW WARRIOR",
+      "isTeam": true
+    },
+    "NIGHTSTALKER": {
+      "en": "NIGHTSTALKER",
+      "fr": "NIGHTSTALKER",
+      "isTeam": false
+    },
+    "NOCTURNAL": {
+      "en": "NOCTURNAL",
+      "fr": "NOCTURNE",
+      "isTeam": false
+    },
+    "NONE": {
+      "en": "NONE",
+      "fr": "AUCUN",
+      "isTeam": false
+    },
+    "NON_LEGENDARY": {
+      "en": "NON-LEGENDARY",
+      "fr": "NON LÉGENDAIRE",
+      "isTeam": false
+    },
+    "NON_MINION": {
+      "en": "NON-MINION",
+      "fr": "NON SERVITEUR",
+      "isTeam": false
+    },
+    "NOVACORPS": {
+      "en": "NOVA CORPS",
+      "fr": "COHORTES DE NOVA",
+      "isTeam": false
+    },
+    "ORCHIS": {
+      "en": "ORCHIS",
+      "fr": "ORCHIS",
+      "isTeam": true
+    },
+    "OUTOFTIME": {
+      "en": "OUT OF TIME",
+      "fr": "HORS DU TEMPS",
+      "isTeam": false
+    },
+    "PARTYANIMAL": {
+      "en": "PARTY ANIMAL",
+      "fr": "BÊTE DE FÊTE",
+      "isTeam": false
+    },
+    "PEGASUS": {
+      "en": "P.E.G.A.S.U.S.",
+      "fr": "P.E.G.A.S.U.S.",
+      "isTeam": false
+    },
+    "PHOENIXFORCE": {
+      "en": "PHOENIX FORCE",
+      "fr": "FORCE PHÉNIX",
+      "isTeam": true
+    },
+    "PIERCEDVEIL": {
+      "en": "PIERCED VEIL",
+      "fr": "VOILE PERCÉ",
+      "isTeam": false
+    },
+    "POOLPALS": {
+      "en": "POOL PALS",
+      "fr": "DEADPOOL ET SES COPAINS",
+      "isTeam": false
+    },
+    "POWERARMOR": {
+      "en": "POWER ARMOR",
+      "fr": "TECHNO-ARMURE",
+      "isTeam": true
+    },
+    "PROTECTOR": {
+      "en": "PROTECTOR",
+      "fr": "PROTECTEUR",
+      "isTeam": true
+    },
+    "PROUD": {
+      "en": "PROUD",
+      "fr": "FIER",
+      "isTeam": false
+    },
+    "PYMTECH": {
+      "en": "PYM TECH",
+      "fr": "PYM TECH",
+      "isTeam": false
+    },
+    "QUANTUMGUARD": {
+      "en": "QUANTUM GUARD",
+      "fr": "GARDE QUANTIQUE",
+      "isTeam": false
+    },
+    "RADIOACTIVE": {
+      "en": "RADIOACTIVE",
+      "fr": "RADIOACTIF",
+      "isTeam": false
+    },
+    "RAVAGER": {
+      "en": "RAVAGER",
+      "fr": "RAVAGEUR",
+      "isTeam": true
+    },
+    "REBEL": {
+      "en": "REBEL",
+      "fr": "REBELLE",
+      "isTeam": false
+    },
+    "REBIRTH": {
+      "en": "REBIRTH",
+      "fr": "RENAISSANCE",
+      "isTeam": true
+    },
+    "RETCON": {
+      "en": "RETCON",
+      "fr": "RETCON",
+      "isTeam": false
+    },
+    "ROGUEAGENT": {
+      "en": "ROGUE AGENT",
+      "fr": "AGENT REBELLE",
+      "isTeam": true
+    },
+    "SABOTEUR": {
+      "en": "SABOTEUR",
+      "fr": "SABOTEUR",
+      "isTeam": false
+    },
+    "SEASONED": {
+      "en": "SEASONED",
+      "fr": "CHEVRONNÉ",
+      "isTeam": false
+    },
+    "SECRETAVENGER": {
+      "en": "SECRET AVENGER",
+      "fr": "AVENGERS SECRETS",
+      "isTeam": true
+    },
+    "SECRETDEFENDER": {
+      "en": "SECRET DEFENDER",
+      "fr": "DÉFENSEUR SECRET",
+      "isTeam": true
+    },
+    "SECRETWARRIOR": {
+      "en": "SECRET WARRIOR",
+      "fr": "SECRET WARRIOR",
+      "isTeam": true
+    },
+    "SHADOWLAND": {
+      "en": "SHADOWLAND",
+      "fr": "SHADOWLAND",
+      "isTeam": true
+    },
+    "SHIELD": {
+      "en": "S.H.I.E.L.D.",
+      "fr": "S.H.I.E.L.D.",
+      "isTeam": true
+    },
+    "SHOWSTOPPER": {
+      "en": "SHOWSTOPPER",
+      "fr": "SHOW EFFROI",
+      "isTeam": false
+    },
+    "SINISTERSIX": {
+      "en": "SINISTER SIX",
+      "fr": "SINISTER SIX",
+      "isTeam": true
+    },
+    "SKILL": {
+      "en": "SKILL",
+      "fr": "EXPERTISE",
+      "isTeam": false
+    },
+    "SPADES": {
+      "en": "SPADES",
+      "fr": "PIQUE",
+      "isTeam": false
+    },
+    "SPIDERSOCIETY": {
+      "en": "SPIDER-SOCIETY",
+      "fr": "SOCIÉTÉ DES ARAIGNÉES",
+      "isTeam": true
+    },
+    "SPIDERVERSE": {
+      "en": "SPIDER-VERSE",
+      "fr": "SPIDER-VERSE",
+      "isTeam": true
+    },
+    "SPIRITOFVENGEANCE": {
+      "en": "SPIRIT OF VENGEANCE",
+      "fr": "ESPRIT DE VENGEANCE",
+      "isTeam": false
+    },
+    "SPIRITSLAYER": {
+      "en": "SPIRIT SLAYER",
+      "fr": "TUEUR D'ESPRIT",
+      "isTeam": false
+    },
+    "STARJAMMER": {
+      "en": "STARJAMMER",
+      "fr": "FRÈRES DES ÉTOILES",
+      "isTeam": true
+    },
+    "STORMBOUND": {
+      "en": "CHAPTER 3 - STORMBOUND",
+      "fr": "CHAPITRE 3 - STORMBOUND",
+      "isTeam": false
+    },
+    "STRIKEASSET": {
+      "en": "S.T.R.I.K.E. ASSET",
+      "fr": "ATOUT DU S.T.R.I.K.E.",
+      "isTeam": false
+    },
+    "SUPERIORSIX": {
+      "en": "SUPERIOR SIX",
+      "fr": "SUPERIOR SIX",
+      "isTeam": false
+    },
+    "SUPERNATURAL": {
+      "en": "SUPERNATURAL",
+      "fr": "SURNATUREL",
+      "isTeam": true
+    },
+    "SUPERSLEUTH": {
+      "en": "SUPER SLEUTH",
+      "fr": "FIN LIMIER",
+      "isTeam": false
+    },
+    "SUPERSOLDIERSERUM": {
+      "en": "SUPER-SOLDIER SERUM",
+      "fr": "SÉRUM DE SUPER-SOLDAT",
+      "isTeam": false
+    },
+    "SUPERSTAR": {
+      "en": "SUPERSTAR",
+      "fr": "SUPERSTAR",
+      "isTeam": false
+    },
+    "SUPPORT": {
+      "en": "SUPPORT",
+      "fr": "SOUTIEN",
+      "isTeam": false
+    },
+    "SYMBIOTE": {
+      "en": "SYMBIOTE",
+      "fr": "SYMBIOTE",
+      "isTeam": true
+    },
+    "SYNTHETIC": {
+      "en": "SYNTHETIC",
+      "fr": "SYNTHÉTIQUE",
+      "isTeam": false
+    },
+    "TANGLEDWEB": {
+      "en": "TANGLED WEB",
+      "fr": "ENTOILAGE",
+      "isTeam": true
+    },
+    "TECH": {
+      "en": "TECH",
+      "fr": "TECHNO",
+      "isTeam": false
+    },
+    "TERRAN": {
+      "en": "TERRAN",
+      "fr": "TERRIEN",
+      "isTeam": false
+    },
+    "THUNDERBOLT": {
+      "en": "THUNDERBOLT",
+      "fr": "THUNDERBOLT",
+      "isTeam": false
+    },
+    "TRICKORTREAT": {
+      "en": "TRICK OR TREAT",
+      "fr": "UN BONBON OU UNE BLAGUE",
+      "isTeam": false
+    },
+    "UNCANNY": {
+      "en": "UNCANNY X-MEN",
+      "fr": "UNCANNY X-MEN",
+      "isTeam": true
+    },
+    "UNCANNYAVENGER": {
+      "en": "UNCANNY AVENGER",
+      "fr": "UNCANNY AVENGERS",
+      "isTeam": true
+    },
+    "UNDERWORLD": {
+      "en": "UNDERWORLD",
+      "fr": "PÈGRE",
+      "isTeam": false
+    },
+    "UNDYING": {
+      "en": "UNDYING",
+      "fr": "IMPÉRISSABLE",
+      "isTeam": false
+    },
+    "UNITED": {
+      "en": "UNITED",
+      "fr": "UNI",
+      "isTeam": false
+    },
+    "UNITY": {
+      "en": "UNITY",
+      "fr": "UNITÉ",
+      "isTeam": false
+    },
+    "UNLIMITED": {
+      "en": "UNLIMITED X-MEN",
+      "fr": "UNLIMITED X-MEN",
+      "isTeam": true
+    },
+    "UNYIELDING": {
+      "en": "UNYIELDING",
+      "fr": "INDÉFECTIBLE",
+      "isTeam": false
+    },
+    "UPANDCOMER": {
+      "en": "UP AND COMER",
+      "fr": "EN DEVENIR",
+      "isTeam": false
+    },
+    "VALENTINE": {
+      "en": "VALENTINE",
+      "fr": "VALENTIN",
+      "isTeam": false
+    },
+    "VAMPIRE": {
+      "en": "VAMPIRE",
+      "fr": "VAMPIRE",
+      "isTeam": false
+    },
+    "VIGILANT": {
+      "en": "VIGILANT",
+      "fr": "VIGILANT",
+      "isTeam": false
+    },
+    "VIGILANTE": {
+      "en": "VIGILANTE",
+      "fr": "JUSTICIER",
+      "isTeam": true
+    },
+    "VILLAIN": {
+      "en": "VILLAIN",
+      "fr": "SUPER-VILAIN",
+      "isTeam": false
+    },
+    "VOYAGER": {
+      "en": "VOYAGER",
+      "fr": "VOYAGEUR",
+      "isTeam": false
+    },
+    "WAKANDA": {
+      "en": "WAKANDAN",
+      "fr": "WAKANDIEN",
+      "isTeam": true
+    },
+    "WARDOG": {
+      "en": "WAR DOG",
+      "fr": "CHIEN DE GUERRE",
+      "isTeam": true
+    },
+    "WARREADY": {
+      "en": "WAR READY",
+      "fr": "AGUERRI",
+      "isTeam": false
+    },
+    "WAVE1AVENGER": {
+      "en": "WAVE I - AVENGER",
+      "fr": "AVENGER - VAGUE I",
+      "isTeam": true
+    },
+    "WEAPONX": {
+      "en": "WEAPON X",
+      "fr": "ARME X",
+      "isTeam": true
+    },
+    "WEBSLINGER": {
+      "en": "WEB-SLINGER",
+      "fr": "TISSEUR DE TOILE",
+      "isTeam": false
+    },
+    "WEBWARRIOR": {
+      "en": "WEB-WARRIOR",
+      "fr": "WEB WARRIOR",
+      "isTeam": true
+    },
+    "WINTERGUARD": {
+      "en": "WINTER GUARD",
+      "fr": "WINTER GUARD",
+      "isTeam": false
+    },
+    "XFACTOR": {
+      "en": "X-FACTOR",
+      "fr": "FACTEUR X",
+      "isTeam": true
+    },
+    "XFORCE": {
+      "en": "X-FORCE",
+      "fr": "X-FORCE",
+      "isTeam": true
+    },
+    "XMEN": {
+      "en": "X-MEN",
+      "fr": "X-MEN",
+      "isTeam": true
+    },
+    "XTREME": {
+      "en": "X-TREME X-MEN",
+      "fr": "X-TREME X-MEN",
+      "isTeam": true
+    },
+    "YOUNGAVENGER": {
+      "en": "YOUNG AVENGER",
+      "fr": "YOUNG AVENGERS",
+      "isTeam": true
+    }
+  },
+  "version": 1
+}

@@ -1,0 +1,1414 @@
+{
+  "teams": [
+    {
+      "id": "aforce",
+      "name": "A-FORCE",
+      "nameFr": "A-FORCE",
+      "memberCount": 5,
+      "members": [
+        "Captain Marvel",
+        "Jessica Jones",
+        "Nico Minoru",
+        "Photon",
+        "Spider-Woman"
+      ],
+      "memberIds": [
+        "CaptainMarvel",
+        "JessicaJones",
+        "NicoMinoru",
+        "Photon",
+        "SpiderWoman"
+      ]
+    },
+    {
+      "id": "alphaflight",
+      "name": "ALPHA FLIGHT",
+      "nameFr": "DIVISION ALPHA",
+      "memberCount": 5,
+      "members": [
+        "Guardian",
+        "Northstar",
+        "Sasquatch",
+        "Sunfire",
+        "Wolverine"
+      ],
+      "memberIds": [
+        "Guardian",
+        "Northstar",
+        "Sasquatch",
+        "Sunfire",
+        "Wolverine"
+      ]
+    },
+    {
+      "id": "annihilator",
+      "name": "ANNIHILATOR",
+      "nameFr": "ANNIHILATEUR",
+      "memberCount": 6,
+      "members": [
+        "Gladiator",
+        "Gorr",
+        "Gladiator (Saga)",
+        "Silver Surfer",
+        "Thanos (Endgame)",
+        "Ultimus"
+      ],
+      "memberIds": [
+        "Gladiator",
+        "Gorr",
+        "PVE_SagaBoss_Gladiator",
+        "SilverSurfer",
+        "ThanosEndgame",
+        "Ultimus"
+      ]
+    },
+    {
+      "id": "asgard",
+      "name": "ASGARDIAN",
+      "nameFr": "ASGARDIEN",
+      "memberCount": 20,
+      "members": [
+        "Beta Ray Bill",
+        "Undead Asgardian",
+        "Heimdall",
+        "Hela",
+        "Mighty Thor",
+        "Loki",
+        "Loki (Teen)",
+        "Odin",
+        "Thor",
+        "Sif",
+        "Sylvie",
+        "Thor",
+        "Thor (Infinity War)",
+        "Thunderstrike",
+        "Vahl",
+        "Valkyrie",
+        "Heimdall",
+        "Thor",
+        "Loki",
+        "Thor"
+      ],
+      "memberIds": [
+        "BetaRayBill",
+        "Greg",
+        "Heimdall",
+        "Hela",
+        "JaneThor",
+        "Loki",
+        "LokiTeen",
+        "Odin",
+        "PVE_Thor_SentryBoss",
+        "Sif",
+        "Sylvie",
+        "Thor",
+        "Thor_InfinityWar",
+        "Thunderstrike",
+        "Vahl",
+        "Valkyrie",
+        "HeimdallOperator",
+        "ThorOperator",
+        "LokiNPC",
+        "ThorNPC"
+      ]
+    },
+    {
+      "id": "astonishing",
+      "name": "ASTONISHING X-MEN",
+      "nameFr": "ASTONISHING X-MEN",
+      "memberCount": 5,
+      "members": [
+        "Beast",
+        "Bishop",
+        "Iceman",
+        "Jubilee",
+        "Kitty Pryde"
+      ],
+      "memberIds": [
+        "Beast",
+        "Bishop",
+        "Iceman",
+        "Jubilee",
+        "KittyPryde"
+      ]
+    },
+    {
+      "id": "avenger",
+      "name": "AVENGER",
+      "nameFr": "AVENGER",
+      "memberCount": 11,
+      "members": [
+        "Ant-Man",
+        "Black Panther",
+        "Agent Coulson",
+        "Hank Pym",
+        "Iron Man (Infinity War)",
+        "Nick Fury",
+        "Thor (Infinity War)",
+        "War Machine",
+        "Black Widow",
+        "Nick Fury",
+        "Thor"
+      ],
+      "memberIds": [
+        "AntMan",
+        "BlackPanther",
+        "Coulson",
+        "HankPym",
+        "IronManInfinityWar",
+        "NickFury",
+        "Thor_InfinityWar",
+        "WarMachine",
+        "BlackWidowOperator",
+        "NickFuryOperator",
+        "ThorOperator"
+      ]
+    },
+    {
+      "id": "bifrost",
+      "name": "BIFROST",
+      "nameFr": "BIFRÖST",
+      "memberCount": 5,
+      "members": [
+        "Beta Ray Bill",
+        "Loki",
+        "Loki (Teen)",
+        "Sylvie",
+        "Vahl"
+      ],
+      "memberIds": [
+        "BetaRayBill",
+        "Loki",
+        "LokiTeen",
+        "Sylvie",
+        "Vahl"
+      ]
+    },
+    {
+      "id": "bionicavenger",
+      "name": "BIONIC AVENGER",
+      "nameFr": "AVENGERS BIONIQUES",
+      "memberCount": 7,
+      "members": [
+        "Deathlok",
+        "Hulkbuster",
+        "Iron Man",
+        "Hulkbuster (Aphelion)",
+        "Iron Man",
+        "Vision",
+        "Viv Vision"
+      ],
+      "memberIds": [
+        "Deathlok",
+        "Hulkbuster",
+        "IronMan",
+        "PVE_Hulkbuster_Incursion",
+        "PVE_IronMan_SentryBoss",
+        "Vision",
+        "VivVision"
+      ]
+    },
+    {
+      "id": "blackorder",
+      "name": "BLACK ORDER",
+      "nameFr": "ORDRE NOIR",
+      "memberCount": 8,
+      "members": [
+        "Corvus Glaive",
+        "Cull Obsidian",
+        "Ebony Maw",
+        "Proxima Midnight",
+        "Corvus Glaive",
+        "Cull Obsidian",
+        "Ebony Maw",
+        "Proxima Midnight"
+      ],
+      "memberIds": [
+        "CorvusGlaive",
+        "CullObsidian",
+        "EbonyMaw",
+        "ProximaMidnight",
+        "PVE_CorvusGlaive_Gauntlet",
+        "PVE_CullObsidian_Gauntlet",
+        "PVE_EbonyMaw_Gauntlet",
+        "PVE_ProximaMidnight_Gauntlet"
+      ]
+    },
+    {
+      "id": "brimstone",
+      "name": "BRIMSTONE",
+      "nameFr": "BRIMSTONE",
+      "memberCount": 5,
+      "members": [
+        "Daimon Hellstrom",
+        "Elsa Bloodstone",
+        "Hellcat",
+        "Living Mummy",
+        "Strange (Heartless)"
+      ],
+      "memberIds": [
+        "DaimonHellstrom",
+        "ElsaBloodstone",
+        "Hellcat",
+        "LivingMummy",
+        "StrangeSupreme"
+      ]
+    },
+    {
+      "id": "brotherhood",
+      "name": "BROTHERHOOD",
+      "nameFr": "CONFRÉRIE",
+      "memberCount": 7,
+      "members": [
+        "Blob",
+        "Juggernaut",
+        "Magneto",
+        "Mystique",
+        "Pyro",
+        "Sabretooth",
+        "Toad"
+      ],
+      "memberIds": [
+        "Blob",
+        "Juggernaut",
+        "Magneto",
+        "Mystique",
+        "Pyro",
+        "Sabretooth",
+        "Toad"
+      ]
+    },
+    {
+      "id": "cabal",
+      "name": "CABAL",
+      "nameFr": "CABALE",
+      "memberCount": 4,
+      "members": [
+        "Iron Patriot",
+        "Namor",
+        "Iron Patriot",
+        "The Leader"
+      ],
+      "memberIds": [
+        "IronPatriot",
+        "Namor",
+        "PVE_IronPatriot_SentryBoss",
+        "TheLeader"
+      ]
+    },
+    {
+      "id": "darkhunter",
+      "name": "DARK HUNTER",
+      "nameFr": "CHASSEUR NOIR",
+      "memberCount": 5,
+      "members": [
+        "Mordo",
+        "Doctor Voodoo",
+        "Elsa Bloodstone",
+        "Ghost Rider",
+        "Morbius"
+      ],
+      "memberIds": [
+        "BaronMordo",
+        "DoctorVoodoo",
+        "ElsaBloodstone",
+        "GhostRider",
+        "Morbius"
+      ]
+    },
+    {
+      "id": "darkhold",
+      "name": "DARKHOLD",
+      "nameFr": "DARKHOLD",
+      "memberCount": 6,
+      "members": [
+        "Agatha Harkness",
+        "Morgan Le Fay",
+        "Doctor Strange (Aphelion)",
+        "Scarlet Witch",
+        "Strange (Heartless)",
+        "Wong"
+      ],
+      "memberIds": [
+        "AgathaHarkness",
+        "MorganLeFay",
+        "PVE_StrangeSupreme_Incursion",
+        "ScarletWitch",
+        "StrangeSupreme",
+        "Wong"
+      ]
+    },
+    {
+      "id": "deathseed",
+      "name": "DEATH SEED",
+      "nameFr": "GRAINE DE MORT",
+      "memberCount": 6,
+      "members": [
+        "Archangel",
+        "Dark Beast",
+        "Magneto",
+        "Nemesis",
+        "Psylocke",
+        "Psylocke (Chaos)"
+      ],
+      "memberIds": [
+        "Archangel",
+        "DarkBeast",
+        "Magneto",
+        "Nemesis",
+        "Psylocke",
+        "PVE_ChaosRaid_Psylocke"
+      ]
+    },
+    {
+      "id": "defender",
+      "name": "DEFENDER",
+      "nameFr": "DÉFENSEUR",
+      "memberCount": 5,
+      "members": [
+        "Daredevil",
+        "Iron Fist",
+        "Jessica Jones",
+        "Luke Cage",
+        "Iron Fist"
+      ],
+      "memberIds": [
+        "Daredevil",
+        "IronFist",
+        "JessicaJones",
+        "LukeCage",
+        "IronFistOperator"
+      ]
+    },
+    {
+      "id": "eternal",
+      "name": "ETERNAL",
+      "nameFr": "ÉTERNEL",
+      "memberCount": 3,
+      "members": [
+        "Hyperion",
+        "Ikaris",
+        "Sersi"
+      ],
+      "memberIds": [
+        "Hyperion",
+        "Ikaris",
+        "Sersi"
+      ]
+    },
+    {
+      "id": "fantasticfour",
+      "name": "FANTASTIC FOUR",
+      "nameFr": "QUATRE FANTASTIQUES",
+      "memberCount": 3,
+      "members": [
+        "Invisible Woman",
+        "Mister Fantastic",
+        "Mister Fantastic (Aphelion)"
+      ],
+      "memberIds": [
+        "InvisibleWoman",
+        "MrFantastic",
+        "PVE_MrFantastic_Incursion"
+      ]
+    },
+    {
+      "id": "gamma",
+      "name": "GAMMA",
+      "nameFr": "GAMMA",
+      "memberCount": 7,
+      "members": [
+        "Abomination",
+        "Brawn",
+        "Hulk",
+        "Hulk",
+        "Red Hulk",
+        "She-Hulk",
+        "The Leader"
+      ],
+      "memberIds": [
+        "Abomination",
+        "AmadeusCho",
+        "Hulk",
+        "PVE_Hulk_SentryBoss",
+        "RedHulk",
+        "SheHulk",
+        "TheLeader"
+      ]
+    },
+    {
+      "id": "hand",
+      "name": "HAND",
+      "nameFr": "MAIN",
+      "memberCount": 18,
+      "members": [
+        "Elektra",
+        "Hand Assassin",
+        "Hand Blademaster",
+        "Hand Archer",
+        "Hand Sorceress",
+        "Hand Sentry",
+        "Hand Assassin",
+        "Hand Blademaster",
+        "Hand Blademaster",
+        "Hand Archer",
+        "Hand Archer",
+        "Hand Sorceress",
+        "Hand Sentry",
+        "Lady Bullseye",
+        "Nobu",
+        "Hand Operator",
+        "Nobu",
+        "Hand Sorceress"
+      ],
+      "memberIds": [
+        "Elektra",
+        "GT_HandControl_HealBlock",
+        "GT_HandDmg_Bonus",
+        "GT_HandDmg_Unbuff",
+        "GT_HandSupport_Heal",
+        "GT_HandTank_Stealth",
+        "HandControl_HealBlock",
+        "HandDmg_Bonus",
+        "S_HandDmg_Bonus",
+        "HandDmg_Unbuff",
+        "S_HandDmg_Unbuff",
+        "HandSupport_Heal",
+        "HandTank_Stealth",
+        "LadyBullseye",
+        "Nobu",
+        "HandOperator",
+        "NobuOperator",
+        "NUEHandSupport_Heal"
+      ]
+    },
+    {
+      "id": "hellfireclub",
+      "name": "HELLFIRE CLUB",
+      "nameFr": "CLUB DES DAMNÉS",
+      "memberCount": 5,
+      "members": [
+        "Azazel",
+        "Emma Frost",
+        "Madelyne Pryor",
+        "Rachel Summers",
+        "Sebastian Shaw"
+      ],
+      "memberIds": [
+        "Azazel",
+        "EmmaFrost",
+        "MadelynePryor",
+        "RachelSummers",
+        "SebastianShaw"
+      ]
+    },
+    {
+      "id": "heroesforhire",
+      "name": "HEROES FOR HIRE",
+      "nameFr": "HÉROS À LOUER",
+      "memberCount": 5,
+      "members": [
+        "Colleen Wing",
+        "Iron Fist",
+        "Luke Cage",
+        "Misty Knight",
+        "Shang-Chi"
+      ],
+      "memberIds": [
+        "ColleenWing",
+        "IronFist",
+        "LukeCage",
+        "MistyKnight",
+        "ShangChi"
+      ]
+    },
+    {
+      "id": "horseman",
+      "name": "HORSEMAN",
+      "nameFr": "CAVALIER",
+      "memberCount": 4,
+      "members": [
+        "Archangel",
+        "Morgan Le Fay",
+        "Red Hulk",
+        "Rogue"
+      ],
+      "memberIds": [
+        "Archangel",
+        "MorganLeFay",
+        "RedHulk",
+        "Rogue"
+      ]
+    },
+    {
+      "id": "hydra",
+      "name": "HYDRA",
+      "nameFr": "HYDRA",
+      "memberCount": 14,
+      "members": [
+        "Crossbones",
+        "Hydra Grenadier",
+        "Hydra Rifle Trooper",
+        "Hydra Rifle Trooper",
+        "Hydra Sniper",
+        "Hydra Sniper",
+        "Hydra Scientist",
+        "Hydra Scientist",
+        "Hydra Armored Guard",
+        "Red Skull",
+        "Winter Soldier",
+        "Baron Zemo",
+        "Hydra Operator",
+        "Red Skull"
+      ],
+      "memberIds": [
+        "Crossbones",
+        "HydraDmg_AoE",
+        "HydraDmg_Buff",
+        "S_HydraDmg_Buff",
+        "HydraDmg_Single",
+        "S_HydraDmg_Single",
+        "HydraSupport_Heal",
+        "S_HydraSupport_Heal",
+        "HydraTank_Taunt",
+        "RedSkull",
+        "WinterSoldier",
+        "Zemo",
+        "HydraOperator",
+        "RedSkullOperator"
+      ]
+    },
+    {
+      "id": "illuminati",
+      "name": "ILLUMINATI",
+      "nameFr": "ILLUMINATI",
+      "memberCount": 7,
+      "members": [
+        "Black Bolt",
+        "Black Panther (Shuri)",
+        "Captain Britain",
+        "Hank Pym",
+        "Iron Man",
+        "Mister Fantastic",
+        "Iron Man"
+      ],
+      "memberIds": [
+        "BlackBolt",
+        "BlackPantherShuri",
+        "CaptainBritain",
+        "HankPym",
+        "IronMan",
+        "MrFantastic",
+        "PVE_IronMan_SentryBoss"
+      ]
+    },
+    {
+      "id": "immortalxmen",
+      "name": "IMMORTAL X-MEN",
+      "nameFr": "IMMORTAL X-MEN",
+      "memberCount": 7,
+      "members": [
+        "Beast",
+        "Cable",
+        "Jean Grey",
+        "Polaris",
+        "Jean Grey (Chaos)",
+        "Rachel Summers",
+        "Storm"
+      ],
+      "memberIds": [
+        "Beast",
+        "Cable",
+        "JeanGrey",
+        "Polaris",
+        "PVE_ChaosRaid_JeanGrey",
+        "RachelSummers",
+        "Storm"
+      ]
+    },
+    {
+      "id": "infestation",
+      "name": "INFESTATION",
+      "nameFr": "INFESTATION",
+      "memberCount": 7,
+      "members": [
+        "Ant-Man",
+        "Black Widow",
+        "Black Widow",
+        "Scorpion",
+        "Spider-Man (Big Time)",
+        "Swarm",
+        "Yellowjacket"
+      ],
+      "memberIds": [
+        "AntMan",
+        "BlackWidow",
+        "PVE_BlackWidow_SentryBoss",
+        "Scorpion",
+        "SpiderManBigTime",
+        "Swarm",
+        "Yellowjacket"
+      ]
+    },
+    {
+      "id": "infinitywatch",
+      "name": "INFINITY WATCH",
+      "nameFr": "INFINITY WATCH",
+      "memberCount": 5,
+      "members": [
+        "Adam Warlock",
+        "Gamora",
+        "Moondragon",
+        "Nebula",
+        "Phyla-Vell"
+      ],
+      "memberIds": [
+        "AdamWarlock",
+        "Gamora",
+        "Moondragon",
+        "Nebula",
+        "PhylaVell"
+      ]
+    },
+    {
+      "id": "inhuman",
+      "name": "INHUMAN",
+      "nameFr": "INHUMAIN",
+      "memberCount": 7,
+      "members": [
+        "Black Bolt",
+        "Crystal",
+        "Karnak",
+        "Medusa",
+        "Ms. Marvel",
+        "Quake",
+        "Yo-Yo"
+      ],
+      "memberIds": [
+        "BlackBolt",
+        "Crystal",
+        "Karnak",
+        "Medusa",
+        "MsMarvel",
+        "Quake",
+        "YoYo"
+      ]
+    },
+    {
+      "id": "insidioussix",
+      "name": "INSIDIOUS SIX",
+      "nameFr": "INSIDIOUS SIX",
+      "memberCount": 3,
+      "members": [
+        "Hobgoblin",
+        "Scorpion",
+        "Superior Spider-Man"
+      ],
+      "memberIds": [
+        "Hobgoblin",
+        "Scorpion",
+        "SuperiorSpiderMan"
+      ]
+    },
+    {
+      "id": "invader",
+      "name": "INVADER",
+      "nameFr": "ENVAHISSEUR",
+      "memberCount": 7,
+      "members": [
+        "Bucky Barnes",
+        "Captain America (WWII)",
+        "Iron Fist (WWII)",
+        "Nick Fury",
+        "S.H.I.E.L.D. Operative",
+        "S.H.I.E.L.D. Security",
+        "Union Jack"
+      ],
+      "memberIds": [
+        "BuckyBarnes",
+        "CaptainAmericaWW2",
+        "IronFistOrson",
+        "NickFury",
+        "S_ShieldSupport_Stealth",
+        "S_ShieldTank_Stun",
+        "UnionJack"
+      ]
+    },
+    {
+      "id": "knowhere",
+      "name": "KNOWHERE",
+      "nameFr": "NULLE-PART",
+      "memberCount": 5,
+      "members": [
+        "Cosmo",
+        "Korg",
+        "Nova",
+        "Star-Lord (Annihilation)",
+        "Thor (Infinity War)"
+      ],
+      "memberIds": [
+        "Cosmo",
+        "Korg",
+        "Nova",
+        "StarLord_Annihilation",
+        "Thor_InfinityWar"
+      ]
+    },
+    {
+      "id": "kree",
+      "name": "KREE",
+      "nameFr": "KREE",
+      "memberCount": 15,
+      "members": [
+        "Captain Marvel",
+        "Korath the Pursuer",
+        "Kree Noble",
+        "Kree Noble",
+        "Kree Cyborg",
+        "Kree Reaper",
+        "Kree Reaper",
+        "Kree Oracle",
+        "Kree Royal Guard",
+        "Minn-Erva",
+        "Ms. Marvel (Classic)",
+        "Phyla-Vell",
+        "Ronan the Accuser",
+        "Ultimus",
+        "Kree Operator"
+      ],
+      "memberIds": [
+        "CaptainMarvel",
+        "Korath",
+        "KreeControl_Assist",
+        "S_KreeControl_Assist",
+        "KreeDmg_Offense",
+        "KreeDmg_Speed",
+        "S_KreeDmg_Speed",
+        "KreeSupport_HoT",
+        "KreeTank_Counter",
+        "Minerva",
+        "MsMarvelClassic",
+        "PhylaVell",
+        "Ronan",
+        "Ultimus",
+        "KreeOperator"
+      ]
+    },
+    {
+      "id": "liberty",
+      "name": "LIBERTY",
+      "nameFr": "LIBERTÉ",
+      "memberCount": 5,
+      "members": [
+        "Falcon (Joaquin)",
+        "Patriot",
+        "Peggy Carter",
+        "Captain America (Sam)",
+        "War Machine"
+      ],
+      "memberIds": [
+        "FalconJoaquin",
+        "Patriot",
+        "PeggyCarter",
+        "SamWilson",
+        "WarMachine"
+      ]
+    },
+    {
+      "id": "marauders",
+      "name": "MARAUDER",
+      "nameFr": "MARAUDEUR",
+      "memberCount": 6,
+      "members": [
+        "Madelyne Pryor",
+        "Mister Sinister",
+        "Mystique",
+        "Madelyne Pryor (Chaos)",
+        "Sabretooth",
+        "Stryfe"
+      ],
+      "memberIds": [
+        "MadelynePryor",
+        "MrSinister",
+        "Mystique",
+        "PVE_ChaosRaid_MadelynePryor",
+        "Sabretooth",
+        "Stryfe"
+      ]
+    },
+    {
+      "id": "mastersofevil",
+      "name": "MASTERS OF EVIL",
+      "nameFr": "MAÎTRES DU MAL",
+      "memberCount": 10,
+      "members": [
+        "Absorbing Man",
+        "Kang the Conqueror",
+        "Moonstone",
+        "Kang the Conqueror (Aphelion)",
+        "Moonstone",
+        "Titania",
+        "Ultron",
+        "Ultron Incinerator",
+        "Ultron Accelerator",
+        "Ultron Fabricator"
+      ],
+      "memberIds": [
+        "AbsorbingMan",
+        "KangTheConqueror",
+        "Moonstone",
+        "PVE_KangTheConqueror_Incursion",
+        "PVE_Moonstone_SentryBoss",
+        "Titania",
+        "Ultron",
+        "UltronDmg_Offense",
+        "UltronDmg_Speed",
+        "UltronSupport_Heal"
+      ]
+    },
+    {
+      "id": "mightyavenger",
+      "name": "MIGHTY AVENGER",
+      "nameFr": "MIGHTY AVENGERS",
+      "memberCount": 6,
+      "members": [
+        "Falcon",
+        "Hercules",
+        "Invisible Woman",
+        "Scarlet Witch",
+        "Sword Master",
+        "Vision"
+      ],
+      "memberIds": [
+        "Falcon",
+        "Hercules",
+        "InvisibleWoman",
+        "ScarletWitch",
+        "SwordMaster",
+        "Vision"
+      ]
+    },
+    {
+      "id": "newavenger",
+      "name": "NEW AVENGER",
+      "nameFr": "NOUVEL AVENGER",
+      "memberCount": 5,
+      "members": [
+        "Agent Coulson",
+        "Mockingbird",
+        "Ronin",
+        "The Thing",
+        "Tigra"
+      ],
+      "memberIds": [
+        "Coulson",
+        "Mockingbird",
+        "Ronin",
+        "Thing",
+        "Tigra"
+      ]
+    },
+    {
+      "id": "newwarrior",
+      "name": "NEW WARRIOR",
+      "nameFr": "NEW WARRIOR",
+      "memberCount": 5,
+      "members": [
+        "Cloak",
+        "Dagger",
+        "Deathpool",
+        "Firestar",
+        "Gwenpool"
+      ],
+      "memberIds": [
+        "Cloak",
+        "Dagger",
+        "Deathpool",
+        "Firestar",
+        "Gwenpool"
+      ]
+    },
+    {
+      "id": "orchis",
+      "name": "ORCHIS",
+      "nameFr": "ORCHIS",
+      "memberCount": 9,
+      "members": [
+        "Lady Deathstrike",
+        "Nimrod",
+        "Omega Sentinel",
+        "Nimrod (Saga)",
+        "Sentinel (Prime)",
+        "Scientist Supreme",
+        "Sentinel",
+        "Sentinel Reinforcement (Gun)",
+        "Sentinel Reinforcement (Sword)"
+      ],
+      "memberIds": [
+        "LadyDeathstrike",
+        "Nimrod",
+        "OmegaSentinel",
+        "PVE_SagaBoss_Nimrod",
+        "PVE_Sentinel_RogueLike",
+        "ScientistSupreme",
+        "Sentinel",
+        "Sentinel_Gun",
+        "Sentinel_Sword"
+      ]
+    },
+    {
+      "id": "powerarmor",
+      "name": "POWER ARMOR",
+      "nameFr": "TECHNO-ARMURE",
+      "memberCount": 6,
+      "members": [
+        "Falcon",
+        "Ironheart",
+        "Iron Man",
+        "Iron Man",
+        "Rescue",
+        "War Machine"
+      ],
+      "memberIds": [
+        "Falcon",
+        "Ironheart",
+        "IronMan",
+        "PVE_IronMan_SentryBoss",
+        "Rescue",
+        "WarMachine"
+      ]
+    },
+    {
+      "id": "ravager",
+      "name": "RAVAGER",
+      "nameFr": "RAVAGEUR",
+      "memberCount": 7,
+      "members": [
+        "Ravager Boomer",
+        "Ravager Boomer",
+        "Ravager Stitcher",
+        "Ravager Stitcher",
+        "Ravager Bruiser",
+        "Star-Lord (T'Challa)",
+        "Yondu"
+      ],
+      "memberIds": [
+        "RavagerDmg_AoE",
+        "S_RavagerDmg_AoE",
+        "RavagerSupport_Heal",
+        "S_RavagerSupport_Heal",
+        "RavagerTank_Taunt",
+        "TChalla",
+        "Yondu"
+      ]
+    },
+    {
+      "id": "rebirth",
+      "name": "REBIRTH",
+      "nameFr": "RENAISSANCE",
+      "memberCount": 7,
+      "members": [
+        "Agent Venom",
+        "Captain America",
+        "Captain Carter",
+        "Captain America",
+        "U.S. Agent",
+        "U.S. Agent",
+        "Winter Soldier"
+      ],
+      "memberIds": [
+        "AgentVenom",
+        "CaptainAmerica",
+        "CaptainCarter",
+        "PVE_CaptainAmerica_SentryBoss",
+        "PVE_USAgent_SentryBoss",
+        "USAgent",
+        "WinterSoldier"
+      ]
+    },
+    {
+      "id": "shield",
+      "name": "S.H.I.E.L.D.",
+      "nameFr": "S.H.I.E.L.D.",
+      "memberCount": 27,
+      "members": [
+        "Black Widow",
+        "Captain America",
+        "Agent Coulson",
+        "Hawkeye",
+        "Maria Hill",
+        "Mockingbird",
+        "Nick Fury",
+        "Black Widow",
+        "Captain America",
+        "Hawkeye",
+        "Quake",
+        "S.H.I.E.L.D. Assault",
+        "S.H.I.E.L.D. Trooper",
+        "S.H.I.E.L.D. Medic",
+        "S.H.I.E.L.D. Operative",
+        "S.H.I.E.L.D. Operative",
+        "S.H.I.E.L.D. Security",
+        "S.H.I.E.L.D. Security",
+        "Victoria Hand",
+        "Yo-Yo",
+        "Nick Fury",
+        "S.H.I.E.L.D. Operator",
+        "S.H.I.E.L.D. Assault",
+        "S.H.I.E.L.D. Trooper",
+        "S.H.I.E.L.D. Medic",
+        "S.H.I.E.L.D. Operative",
+        "S.H.I.E.L.D. Security"
+      ],
+      "memberIds": [
+        "BlackWidow",
+        "CaptainAmerica",
+        "Coulson",
+        "Hawkeye",
+        "MariaHill",
+        "Mockingbird",
+        "NickFury",
+        "PVE_BlackWidow_SentryBoss",
+        "PVE_CaptainAmerica_SentryBoss",
+        "PVE_Hawkeye_SentryBoss",
+        "Quake",
+        "ShieldDmg_AoE",
+        "ShieldDmg_Defense",
+        "ShieldSupport_Heal",
+        "ShieldSupport_Stealth",
+        "S_ShieldSupport_Stealth",
+        "ShieldTank_Stun",
+        "S_ShieldTank_Stun",
+        "VictoriaHand",
+        "YoYo",
+        "NickFuryOperator",
+        "ShieldOperator",
+        "War_ShieldDmg_AoE",
+        "War_ShieldDmg_Defense",
+        "War_ShieldSupport_Heal",
+        "War_ShieldSupport_Stealth",
+        "War_ShieldTank_Stun"
+      ]
+    },
+    {
+      "id": "shadowland",
+      "name": "SHADOWLAND",
+      "nameFr": "SHADOWLAND",
+      "memberCount": 5,
+      "members": [
+        "Daredevil",
+        "Elektra",
+        "Moon Knight",
+        "Night Nurse",
+        "White Tiger"
+      ],
+      "memberIds": [
+        "Daredevil",
+        "Elektra",
+        "MoonKnight",
+        "NightNurse",
+        "WhiteTiger"
+      ]
+    },
+    {
+      "id": "spiderverse",
+      "name": "SPIDER-VERSE",
+      "nameFr": "SPIDER-VERSE",
+      "memberCount": 44,
+      "members": [
+        "Agent Venom",
+        "Anti-Venom",
+        "Black Cat",
+        "Carnage",
+        "Carnage (Enraged)",
+        "Doctor Octopus",
+        "Electro",
+        "Ghost-Spider",
+        "Green Goblin (Classic)",
+        "Gwenom",
+        "Hobgoblin",
+        "Kingpin",
+        "Kraven the Hunter",
+        "Lizard",
+        "Morbius",
+        "Mister Negative",
+        "Mysterio",
+        "Mysterio",
+        "Peni Parker",
+        "Peter B. Parker",
+        "Red Goblin",
+        "Rhino",
+        "Scarlet Spider",
+        "Scorpion",
+        "Scream",
+        "Shocker",
+        "Silver Sable",
+        "Spider-Man",
+        "Spider-Man 2099",
+        "Spider-Man (Big Time)",
+        "Spider-Man (Noir)",
+        "Spider-Man (Pavitr)",
+        "Spider-Punk",
+        "Spider-Slayer",
+        "Spider-Weaver",
+        "Spider-Woman",
+        "Superior Spider-Man",
+        "Swarm",
+        "Void Knight",
+        "Spider-Man (Symbiote)",
+        "Green Goblin",
+        "Spider-Man (Miles)",
+        "Venom",
+        "Vulture"
+      ],
+      "memberIds": [
+        "AgentVenom",
+        "AntiVenom",
+        "BlackCat",
+        "Carnage",
+        "CarnageKnullSummon",
+        "DoctorOctopus",
+        "Electro",
+        "GhostSpider",
+        "GreenGoblinGlider",
+        "Gwenom",
+        "Hobgoblin",
+        "Kingpin",
+        "KravenTheHunter",
+        "Lizard",
+        "Morbius",
+        "MrNegative",
+        "Mysterio",
+        "MysterioMinion",
+        "PeniParker",
+        "PeterBParker",
+        "RedGoblin",
+        "Rhino",
+        "ScarletSpider",
+        "Scorpion",
+        "Scream",
+        "Shocker",
+        "SilverSable",
+        "SpiderMan",
+        "SpiderMan2099",
+        "SpiderManBigTime",
+        "SpiderManNoir",
+        "SpiderManPavitr",
+        "SpiderPunk",
+        "SpiderSlayer",
+        "SpiderWeaver",
+        "SpiderWoman",
+        "SuperiorSpiderMan",
+        "Swarm",
+        "SymbioteSilverSurfer",
+        "SymbioteSpiderMan",
+        "UltGreenGoblin",
+        "UltSpiderMan",
+        "Venom",
+        "Vulture"
+      ]
+    },
+    {
+      "id": "starjammer",
+      "name": "STARJAMMER",
+      "nameFr": "FRÈRES DES ÉTOILES",
+      "memberCount": 5,
+      "members": [
+        "Groot",
+        "Havok",
+        "Howard The Duck",
+        "Lilandra",
+        "Rocket Raccoon"
+      ],
+      "memberIds": [
+        "Groot",
+        "Havok",
+        "HowardTheDuck",
+        "Lilandra",
+        "RocketRaccoon"
+      ]
+    },
+    {
+      "id": "supernatural",
+      "name": "SUPERNATURAL",
+      "nameFr": "SURNATUREL",
+      "memberCount": 5,
+      "members": [
+        "Mordo",
+        "Doctor Strange",
+        "Elsa Bloodstone",
+        "Ghost Rider",
+        "Scarlet Witch"
+      ],
+      "memberIds": [
+        "BaronMordo",
+        "DoctorStrange",
+        "ElsaBloodstone",
+        "GhostRider",
+        "ScarletWitch"
+      ]
+    },
+    {
+      "id": "symbiote",
+      "name": "SYMBIOTE",
+      "nameFr": "SYMBIOTE",
+      "memberCount": 13,
+      "members": [
+        "Agent Venom",
+        "Anti-Venom",
+        "Carnage",
+        "Carnage (Enraged)",
+        "Gorr",
+        "Gwenom",
+        "Knull",
+        "Knull",
+        "Red Goblin",
+        "Scream",
+        "Void Knight",
+        "Spider-Man (Symbiote)",
+        "Venom"
+      ],
+      "memberIds": [
+        "AgentVenom",
+        "AntiVenom",
+        "Carnage",
+        "CarnageKnullSummon",
+        "Gorr",
+        "Gwenom",
+        "Knull",
+        "PVE_Boss_Knull",
+        "RedGoblin",
+        "Scream",
+        "SymbioteSilverSurfer",
+        "SymbioteSpiderMan",
+        "Venom"
+      ]
+    },
+    {
+      "id": "uncanny",
+      "name": "UNCANNY X-MEN",
+      "nameFr": "UNCANNY X-MEN",
+      "memberCount": 11,
+      "members": [
+        "Beast",
+        "Colossus",
+        "Cyclops",
+        "Dark Phoenix",
+        "Magik",
+        "Phoenix",
+        "Psylocke",
+        "Psylocke (Chaos)",
+        "Cyclops (Aphelion)",
+        "Storm",
+        "Wolverine"
+      ],
+      "memberIds": [
+        "Beast",
+        "Colossus",
+        "Cyclops",
+        "DarkPhoenix",
+        "Magik",
+        "Phoenix",
+        "Psylocke",
+        "PVE_ChaosRaid_Psylocke",
+        "PVE_Cyclops_Incursion",
+        "Storm",
+        "Wolverine"
+      ]
+    },
+    {
+      "id": "wakanda",
+      "name": "WAKANDAN",
+      "nameFr": "WAKANDIEN",
+      "memberCount": 9,
+      "members": [
+        "Black Panther",
+        "Black Panther (1MM)",
+        "Black Panther (Shuri)",
+        "Killmonger",
+        "M'Baku",
+        "Nakia",
+        "Okoye",
+        "Killmonger (Aphelion)",
+        "Shuri"
+      ],
+      "memberIds": [
+        "BlackPanther",
+        "BlackPantherBC",
+        "BlackPantherShuri",
+        "Killmonger",
+        "MBaku",
+        "Nakia",
+        "Okoye",
+        "PVE_Killmonger_Incursion",
+        "Shuri"
+      ]
+    },
+    {
+      "id": "webwarrior",
+      "name": "WEB-WARRIOR",
+      "nameFr": "WEB WARRIOR",
+      "memberCount": 5,
+      "members": [
+        "Ghost-Spider",
+        "Scarlet Spider",
+        "Spider-Man",
+        "Spider-Punk",
+        "Spider-Man (Miles)"
+      ],
+      "memberIds": [
+        "GhostSpider",
+        "ScarletSpider",
+        "SpiderMan",
+        "SpiderPunk",
+        "UltSpiderMan"
+      ]
+    },
+    {
+      "id": "xfactor",
+      "name": "X-FACTOR",
+      "nameFr": "FACTEUR X",
+      "memberCount": 5,
+      "members": [
+        "Longshot",
+        "Multiple Man",
+        "Dupe",
+        "Polaris",
+        "Shatterstar"
+      ],
+      "memberIds": [
+        "Longshot",
+        "MultipleMan",
+        "MultipleManMinion",
+        "Polaris",
+        "Shatterstar"
+      ]
+    },
+    {
+      "id": "youngavenger",
+      "name": "YOUNG AVENGER",
+      "nameFr": "YOUNG AVENGERS",
+      "memberCount": 6,
+      "members": [
+        "America Chavez",
+        "Echo",
+        "Kate Bishop",
+        "Ms. Marvel",
+        "Squirrel Girl",
+        "Spider-Man (Miles)"
+      ],
+      "memberIds": [
+        "AmericaChavez",
+        "Echo",
+        "KateBishop",
+        "MsMarvel",
+        "SquirrelGirl",
+        "UltSpiderMan"
+      ]
+    }
+  ],
+  "description": "MSF Teams - auto-generated from API traits",
+  "version": 1,
+  "lastUpdate": "2026-01-19",
+  "totalTeams": 54
+}

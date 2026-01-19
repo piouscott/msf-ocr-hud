@@ -329,6 +329,19 @@ Min Power : [1.1]x
 - [x] Paramètre d'écart entre lignes (rowGap) pour compenser les espacements irréguliers
 - [x] OCR amélioré: seuil adaptatif (Otsu), agrandissement 3x, corrections MSF automatiques
 
+### Phase 8 : Base de données personnages (API) ✅
+- [x] Extraction des noms depuis l'API officielle MSF (api.marvelstrikeforce.com)
+- [x] Fichier `data/characters.json` avec 492 personnages (FR + EN)
+- [x] Fichier `data/ocr-names.json` avec 609 noms uniques pour fuzzy matching
+- [x] Algorithme Levenshtein pour correction automatique des erreurs OCR
+- [x] Indicateurs visuels de confiance du match (✓ 90%+, ~ 70%+, ? 60%+, ✗ non trouvé)
+- [x] Export JSON avec charId pour chaque portrait identifié
+- [x] Fichier `data/characters-full.json` avec 480 personnages, portraits URL et traits
+- [x] Fichier `data/traits.json` avec 196 traits/tags (FR + EN)
+- [x] Fichier `data/teams-full.json` avec 54 équipes auto-générées (membres, IDs)
+- [x] Fichier `data/teams-official.json` avec 36 équipes officielles (5 membres) + 19 variantes
+- [x] Mise à jour `data/teams.json` avec 55 équipes complètes (membres, IDs, noms FR/EN)
+
 ---
 
 ## 8. Contraintes techniques

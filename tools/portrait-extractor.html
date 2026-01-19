@@ -147,6 +147,7 @@
       border-radius: 8px;
       padding: 8px;
       text-align: center;
+      position: relative;
     }
 
     .portrait-card.empty {
@@ -189,6 +190,36 @@
       margin-top: 2px;
       word-break: break-all;
       opacity: 0.7;
+    }
+
+    .portrait-card .match-badge {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 8px;
+      font-weight: bold;
+    }
+
+    .match-badge.match-high {
+      background: #51cf66;
+      color: #1a1a2e;
+    }
+
+    .match-badge.match-medium {
+      background: #ffd43b;
+      color: #1a1a2e;
+    }
+
+    .match-badge.match-low {
+      background: #ff922b;
+      color: #1a1a2e;
+    }
+
+    .match-badge.match-none {
+      background: #ff6b6b;
+      color: #fff;
     }
 
     .portrait-card .index {
@@ -382,7 +413,7 @@
       <div class="config-row">
         <div class="config-item">
           <label>Offset Y nom:</label>
-          <input type="range" id="cfg-nameOffsetY" value="82" min="50" max="100">
+          <input type="range" id="cfg-nameOffsetY" value="82" min="0" max="100">
           <span id="cfg-nameOffsetY-val">82%</span>
         </div>
         <div class="config-item">
@@ -451,6 +482,98 @@
 
     // OCR worker
     let ocrWorker = null;
+
+    // Base de donnees des noms de personnages MSF (chargee depuis l'API)
+    let knownNames = [];
+    let nameToId = {};
+
+    // Charger les noms connus au demarrage
+    async function loadKnownNames() {
+      try {
+        const response = await fetch('../data/ocr-names.json');
+        const data = await response.json();
+        knownNames = data.names || [];
+        nameToId = data.nameToId || {};
+        console.log(`[OCR] ${knownNames.length} noms de personnages charges`);
+      } catch (e) {
+        console.warn('[OCR] Impossible de charger ocr-names.json:', e);
+        knownNames = [];
+        nameToId = {};
+      }
+    }
+    loadKnownNames();
+
+    /**
+     * Calcule la distance de Levenshtein entre deux chaines
+     */
+    function levenshtein(a, b) {
+      if (a.length === 0) return b.length;
+      if (b.length === 0) return a.length;
+
+      const matrix = [];
+      for (let i = 0; i <= b.length; i++) {
+        matrix[i] = [i];
+      }
+      for (let j = 0; j <= a.length; j++) {
+        matrix[0][j] = j;
+      }
+
+      for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+          if (b.charAt(i - 1) === a.charAt(j - 1)) {
+            matrix[i][j] = matrix[i - 1][j - 1];
+          } else {
+            matrix[i][j] = Math.min(
+              matrix[i - 1][j - 1] + 1, // substitution
+              matrix[i][j - 1] + 1,     // insertion
+              matrix[i - 1][j] + 1      // deletion
+            );
+          }
+        }
+      }
+
+      return matrix[b.length][a.length];
+    }
+
+    /**
+     * Trouve le meilleur match pour un nom OCR dans la base de noms connus
+     * Retourne {name, charId, similarity} ou null si aucun match acceptable
+     */
+    function findBestMatch(ocrName, threshold = 0.6) {
+      if (!ocrName || knownNames.length === 0) return null;
+
+      const normalized = ocrName.toUpperCase().trim();
+
+      // Match exact
+      if (knownNames.includes(normalized)) {
+        return {
+          name: normalized,
+          charId: nameToId[normalized] || null,
+          similarity: 100
+        };
+      }
+
+      // Fuzzy matching
+      let bestMatch = null;
+      let bestScore = 0;
+
+      for (const known of knownNames) {
+        const distance = levenshtein(normalized, known);
+        const maxLen = Math.max(normalized.length, known.length);
+        const similarity = (maxLen - distance) / maxLen;
+
+        if (similarity > bestScore && similarity >= threshold) {
+          bestScore = similarity;
+          bestMatch = {
+            name: known,
+            charId: nameToId[known] || null,
+            similarity: Math.round(similarity * 100)
+          };
+        }
+      }
+
+      return bestMatch;
+    }
 
     // Elements DOM
     const fileInput = document.getElementById('file-input');
@@ -986,15 +1109,29 @@
           const cleanName = cleanOCRText(text);
 
           if (cleanName) {
-            extractedPortraits[i].name = cleanName;
-            extractedPortraits[i].ocrRaw = text.trim();
+            // Essayer de matcher avec la base de noms connus
+            const match = findBestMatch(cleanName);
+
+            if (match) {
+              extractedPortraits[i].name = match.name;
+              extractedPortraits[i].charId = match.charId;
+              extractedPortraits[i].matchConfidence = match.similarity;
+              extractedPortraits[i].ocrRaw = text.trim();
+              extractedPortraits[i].ocrClean = cleanName;
+            } else {
+              // Aucun match trouve, garder le texte OCR nettoye
+              extractedPortraits[i].name = cleanName;
+              extractedPortraits[i].ocrRaw = text.trim();
+              extractedPortraits[i].matchConfidence = 0;
+            }
             recognized++;
           }
         }
 
+        const matched = extractedPortraits.filter(p => p.matchConfidence && p.matchConfidence >= 60).length;
         renderGrid();
         updateStats();
-        setStatus(`OCR termine: ${recognized} noms reconnus sur ${total}`, 'success');
+        setStatus(`OCR termine: ${recognized} noms reconnus, ${matched} matches dans la base (${knownNames.length} noms connus)`, 'success');
 
       } catch (e) {
         console.error('Erreur OCR:', e);
@@ -1221,10 +1358,28 @@
         const card = document.createElement('div');
         card.className = 'portrait-card' + (p.isEmpty ? ' empty' : '');
 
-        const ocrHint = p.ocrRaw && p.ocrRaw !== p.name ? `<div class="ocr-raw" title="OCR brut">${p.ocrRaw}</div>` : '';
+        // Indicateur de confiance du match
+        let matchIndicator = '';
+        if (p.matchConfidence !== undefined) {
+          if (p.matchConfidence >= 90) {
+            matchIndicator = `<div class="match-badge match-high" title="Match exact">✓ ${p.matchConfidence}%</div>`;
+          } else if (p.matchConfidence >= 70) {
+            matchIndicator = `<div class="match-badge match-medium" title="Bon match">~ ${p.matchConfidence}%</div>`;
+          } else if (p.matchConfidence >= 60) {
+            matchIndicator = `<div class="match-badge match-low" title="Match incertain">? ${p.matchConfidence}%</div>`;
+          } else if (p.matchConfidence === 0 && p.ocrRaw) {
+            matchIndicator = `<div class="match-badge match-none" title="Aucun match dans la base">✗</div>`;
+          }
+        }
+
+        // Afficher le texte OCR brut si different du resultat final
+        const ocrHint = p.ocrClean && p.ocrClean !== p.name
+          ? `<div class="ocr-raw" title="OCR detecte: ${p.ocrRaw}">${p.ocrClean}</div>`
+          : (p.ocrRaw && p.ocrRaw !== p.name ? `<div class="ocr-raw" title="OCR brut">${p.ocrRaw}</div>` : '');
 
         card.innerHTML = `
           <div class="index">#${p.index}</div>
+          ${matchIndicator}
           <img src="${p.dataUrl}" alt="Portrait ${i}" data-index="${i}">
           <input type="text" value="${p.name}" placeholder="Nom..." data-index="${i}">
           ${ocrHint}
@@ -1327,18 +1482,27 @@
 
     function generateJSON() {
       const portraits = {};
+      const portraitsDetailed = {};
 
       extractedPortraits.forEach(p => {
         if (p.name && p.name.trim() && !p.isEmpty) {
           portraits[p.hash] = p.name.trim();
+
+          // Version detaillee avec charId si disponible
+          portraitsDetailed[p.hash] = {
+            name: p.name.trim(),
+            charId: p.charId || null,
+            matchConfidence: p.matchConfidence || null
+          };
         }
       });
 
       return JSON.stringify({
-        description: "Portraits MSF",
+        description: "Portraits MSF - genere par portrait-extractor",
         generatedAt: new Date().toISOString(),
         count: Object.keys(portraits).length,
-        portraits
+        portraits,             // Format simple hash -> nom (compatible avec l'extension)
+        portraitsDetailed      // Format detaille avec charId
       }, null, 2);
     }
 

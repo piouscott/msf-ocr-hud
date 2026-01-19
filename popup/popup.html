@@ -22,7 +22,25 @@
       <button id="btn-import" class="btn-small">Importer</button>
       <button id="btn-manage" class="btn-small">Counters</button>
       <button id="btn-settings" class="btn-small">Sync</button>
+      <button id="btn-api" class="btn-small">API</button>
       <input type="file" id="import-file" accept=".json" class="hidden">
+    </section>
+
+    <section id="api-panel" class="hidden">
+      <div class="sync-header">
+        <span>Configuration API MSF</span>
+        <button id="btn-close-api" class="btn-close">X</button>
+      </div>
+      <div class="api-form">
+        <label class="api-label">Bearer Token</label>
+        <input type="text" id="api-token" placeholder="Bearer xxxxx..." class="sync-input api-input">
+        <div class="api-help">Token d'authentification MSF (voir DevTools reseau)</div>
+      </div>
+      <div class="api-actions">
+        <button id="btn-save-api" class="btn-sync">Sauvegarder</button>
+        <button id="btn-test-api" class="btn-test">Tester</button>
+      </div>
+      <div id="api-status" class="sync-status"></div>
     </section>
 
     <section id="sync-panel" class="hidden">

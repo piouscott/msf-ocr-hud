@@ -1,10 +1,11 @@
 {
-  "description": "MSF Teams for counter suggestions",
-  "version": 2,
+  "description": "MSF Official Teams - teams with exactly 5 members sharing a trait",
+  "version": 1,
   "lastUpdate": "2026-01-19",
-  "teams": [
+  "officialTeams": [
     {
       "id": "aforce",
+      "traitId": "AForce",
       "name": "A-FORCE",
       "nameFr": "A-FORCE",
       "members": [
@@ -21,12 +22,17 @@
         "Photon",
         "SpiderWoman"
       ],
-      "tags": [
-        "aforce"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_CaptainMarvel_50f06658.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_JessicaJones_21457e3d.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_NicoMinoru_dd1344d8.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Photon_ff1bdc55.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_SpiderWoman_de4bc05a.png"
       ]
     },
     {
       "id": "absoluteaforce",
+      "traitId": "AbsoluteAForce",
       "name": "ABSOLUTE A-FORCE",
       "nameFr": "A-FORCE ABSOLUTE",
       "members": [
@@ -43,12 +49,17 @@
         "MsMarvelClassic",
         "Wasp"
       ],
-      "tags": [
-        "absoluteaforce"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Ironheart_2f557694.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Kahhori_f90dd48b.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Medusa_a4d5d1cc.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_MsMarvelClassic_bc1efe10.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Wasp_f28d68b1.png"
       ]
     },
     {
       "id": "alphaflight",
+      "traitId": "AlphaFlight",
       "name": "ALPHA FLIGHT",
       "nameFr": "DIVISION ALPHA",
       "members": [
@@ -65,12 +76,17 @@
         "Sunfire",
         "Wolverine"
       ],
-      "tags": [
-        "alphaflight"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Guardian_1aad8826.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Northstar_436fcd0c.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Sasquatch_d88fc5f8.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Sunfire_7c60daa6.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Wolverine_ee1eea4b.png"
       ]
     },
     {
       "id": "astonishing",
+      "traitId": "Astonishing",
       "name": "ASTONISHING X-MEN",
       "nameFr": "ASTONISHING X-MEN",
       "members": [
@@ -87,12 +103,17 @@
         "Jubilee",
         "KittyPryde"
       ],
-      "tags": [
-        "astonishing"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Beast_ce022c35.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Bishop_43998bed.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Iceman_2204cb0a.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Jubilee_613b5dda.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_KittyPryde_afd8f4cf.png"
       ]
     },
     {
       "id": "bifrost",
+      "traitId": "Bifrost",
       "name": "BIFROST",
       "nameFr": "BIFRÖST",
       "members": [
@@ -109,12 +130,17 @@
         "Sylvie",
         "Vahl"
       ],
-      "tags": [
-        "bifrost"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_BetaRayBill_5aa11433.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Loki_896c64c2.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_LokiTeen_76e71c3c.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Sylvie_fc6b92c7.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Vahl_f3b025f1.png"
       ]
     },
     {
       "id": "brimstone",
+      "traitId": "Brimstone",
       "name": "BRIMSTONE",
       "nameFr": "BRIMSTONE",
       "members": [
@@ -131,12 +157,17 @@
         "LivingMummy",
         "StrangeSupreme"
       ],
-      "tags": [
-        "brimstone"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_DaimonHellstrom_d20f82b9.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_ElsaBloodstone_a0480728.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Hellcat_78fa897b.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_LivingMummy_bc04839b.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_StrangeSupreme_514d1e83.png"
       ]
     },
     {
       "id": "darkhunter",
+      "traitId": "DarkHunter",
       "name": "DARK HUNTER",
       "nameFr": "CHASSEUR NOIR",
       "members": [
@@ -153,12 +184,17 @@
         "GhostRider",
         "Morbius"
       ],
-      "tags": [
-        "darkhunter"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_BaronMordo_01a03f84.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_DoctorVoodoo_8e87905c.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_ElsaBloodstone_a0480728.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_GhostRider_ec72c592.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Morbius_ae082b8f.png"
       ]
     },
     {
       "id": "defender",
+      "traitId": "Defender",
       "name": "DEFENDER",
       "nameFr": "DÉFENSEUR",
       "members": [
@@ -175,12 +211,17 @@
         "LukeCage",
         "IronFistOperator"
       ],
-      "tags": [
-        "defender"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Daredevil_7e951c75.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_IronFist_723e9bed.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_JessicaJones_21457e3d.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_LukeCage_260d482f.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_IronFist_723e9bed.png"
       ]
     },
     {
       "id": "fantasticfourmcu",
+      "traitId": "FantasticFourMCU",
       "name": "FANTASTIC FOUR (MCU)",
       "nameFr": "QUATRE FANTASTIQUES (MCU)",
       "members": [
@@ -197,12 +238,17 @@
         "MrFantasticMCU",
         "Thing"
       ],
-      "tags": [
-        "fantasticfourmcu"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_FranklinRichards_658b845f.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_HumanTorch_c034d13c.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_InvisibleWomanMCU_07da6224.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_MrFantasticMCU_457897f0.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Thing_d513b000.png"
       ]
     },
     {
       "id": "hellfireclub",
+      "traitId": "HellfireClub",
       "name": "HELLFIRE CLUB",
       "nameFr": "CLUB DES DAMNÉS",
       "members": [
@@ -219,12 +265,17 @@
         "RachelSummers",
         "SebastianShaw"
       ],
-      "tags": [
-        "hellfireclub"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Azazel_c3414ebf.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_EmmaFrost_0d4c0489.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_MadelynePryor_8728ba52.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_RachelSummers_593f2e8d.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_SebastianShaw_4709caef.png"
       ]
     },
     {
       "id": "heroesforhire",
+      "traitId": "HeroesForHire",
       "name": "HEROES FOR HIRE",
       "nameFr": "HÉROS À LOUER",
       "members": [
@@ -241,12 +292,17 @@
         "MistyKnight",
         "ShangChi"
       ],
-      "tags": [
-        "heroesforhire"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_ColleenWing_55112caa.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_IronFist_723e9bed.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_LukeCage_260d482f.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_MistyKnight_6048f6da.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_ShangChi_bf519a1d.png"
       ]
     },
     {
       "id": "hivemind",
+      "traitId": "HiveMind",
       "name": "HIVE-MIND",
       "nameFr": "CONSCIENCE COLLECTIVE",
       "members": [
@@ -263,12 +319,17 @@
         "SymbioteSilverSurfer",
         "Venom"
       ],
-      "tags": [
-        "hivemind"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Carnage_2d848a59.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Gwenom_ec5049af.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_RedGoblin_51daec71.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_SymbioteSilverSurfer_16f4d84b.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Venom_1476f6dd.png"
       ]
     },
     {
       "id": "immortalweapon",
+      "traitId": "ImmortalWeapon",
       "name": "IMMORTAL WEAPON",
       "nameFr": "ARME IMMORTELLE",
       "members": [
@@ -285,12 +346,17 @@
         "SteelSerpent",
         "SwordMaster"
       ],
-      "tags": [
-        "immortalweapon"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_IronFist_723e9bed.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_IronFistOrson_e312d26b.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_LadyBullseye_7609d6e7.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_SteelSerpent_e13ab926.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_SwordMaster_01d1d455.png"
       ]
     },
     {
       "id": "infinitywatch",
+      "traitId": "InfinityWatch",
       "name": "INFINITY WATCH",
       "nameFr": "INFINITY WATCH",
       "members": [
@@ -307,12 +373,17 @@
         "Nebula",
         "PhylaVell"
       ],
-      "tags": [
-        "infinitywatch"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_AdamWarlock_68514641.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Gamora_1d02692f.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Moondragon_e96c50ea.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Nebula_5740b34b.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_PhylaVell_4656eb94.png"
       ]
     },
     {
       "id": "knowhere",
+      "traitId": "Knowhere",
       "name": "KNOWHERE",
       "nameFr": "NULLE-PART",
       "members": [
@@ -329,12 +400,17 @@
         "StarLord_Annihilation",
         "Thor_InfinityWar"
       ],
-      "tags": [
-        "knowhere"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Cosmo_b4fdf024.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Korg_0c5ec179.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Nova_22eaa4a3.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_StarLord_Annihilation_afe3ce49.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Thor_InfinityWar_a5f8fad1.png"
       ]
     },
     {
       "id": "liberty",
+      "traitId": "Liberty",
       "name": "LIBERTY",
       "nameFr": "LIBERTÉ",
       "members": [
@@ -351,12 +427,17 @@
         "SamWilson",
         "WarMachine"
       ],
-      "tags": [
-        "liberty"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_FalconJoaquin_cbb93159.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Patriot_54e312f2.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_PeggyCarter_dcef340e.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_SamWilson_752c8993.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_WarMachine_1eff21be.png"
       ]
     },
     {
       "id": "newavenger",
+      "traitId": "NewAvenger",
       "name": "NEW AVENGER",
       "nameFr": "NOUVEL AVENGER",
       "members": [
@@ -373,12 +454,17 @@
         "Thing",
         "Tigra"
       ],
-      "tags": [
-        "newavenger"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Coulson_34872e23.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Mockingbird_22f5db10.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Ronin_8d80749d.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Thing_d513b000.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Tigra_8b2f107c.png"
       ]
     },
     {
       "id": "newmutant",
+      "traitId": "NewMutant",
       "name": "NEW MUTANT",
       "nameFr": "NOUVEAUX MUTANTS",
       "members": [
@@ -395,12 +481,17 @@
         "Warlock",
         "Wolfsbane"
       ],
-      "tags": [
-        "newmutant"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Cannonball_3e24c5e2.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Magik_7ff86837.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Sunspot_c7fceb6f.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Warlock_9612139b.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Wolfsbane_eccc0d1a.png"
       ]
     },
     {
       "id": "newwarrior",
+      "traitId": "NewWarrior",
       "name": "NEW WARRIOR",
       "nameFr": "NEW WARRIOR",
       "members": [
@@ -417,12 +508,17 @@
         "Firestar",
         "Gwenpool"
       ],
-      "tags": [
-        "newwarrior"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Cloak_a8143ff8.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Dagger_e8011597.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Deathpool_da382246.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Firestar_040b4085.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Gwenpool_bc7cbdd3.png"
       ]
     },
     {
       "id": "nightstalker",
+      "traitId": "Nightstalker",
       "name": "NIGHTSTALKER",
       "nameFr": "NIGHTSTALKER",
       "members": [
@@ -439,12 +535,17 @@
         "MoonKnight",
         "Oath"
       ],
-      "tags": [
-        "nightstalker"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_AgathaHarkness_ead1f20a.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Blade_cea98c1c.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_ManThing_cb08d2fb.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_MoonKnight_e1a53b9a.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Oath_8c79dde8.png"
       ]
     },
     {
       "id": "pegasus",
+      "traitId": "Pegasus",
       "name": "P.E.G.A.S.U.S.",
       "nameFr": "P.E.G.A.S.U.S.",
       "members": [
@@ -461,12 +562,17 @@
         "Rescue",
         "Sybil"
       ],
-      "tags": [
-        "pegasus"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Darkhawk_9e2230e9.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_IronheartMCU_b96e802f.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_IronManInfinityWar_d7bb59d6.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Rescue_ccc39988.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Sybil_a08de12d.png"
       ]
     },
     {
       "id": "retcon",
+      "traitId": "Retcon",
       "name": "RETCON",
       "nameFr": "RETCON",
       "members": [
@@ -483,12 +589,17 @@
         "SheHulk",
         "SquirrelGirl"
       ],
-      "tags": [
-        "retcon"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Deadpool_445c42aa.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Gwenpool_bc7cbdd3.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_JeffTheLandShark_e45dd9e2.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_SheHulk_ad195ac7.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_SquirrelGirl_4780e885.png"
       ]
     },
     {
       "id": "secretdefender",
+      "traitId": "SecretDefender",
       "name": "SECRET DEFENDER",
       "nameFr": "DÉFENSEUR SECRET",
       "members": [
@@ -505,12 +616,17 @@
         "KamalaKhan",
         "Photon"
       ],
-      "tags": [
-        "secretdefender"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_BlackCat_1f9ec310.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_DoctorStrange_28cf96fd.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_GhostRiderRobbie_f078b789.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_KamalaKhan_7a6ab8e9.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Photon_ff1bdc55.png"
       ]
     },
     {
       "id": "secretwarrior",
+      "traitId": "SecretWarrior",
       "name": "SECRET WARRIOR",
       "nameFr": "SECRET WARRIOR",
       "members": [
@@ -527,12 +643,17 @@
         "Quake",
         "YoYo"
       ],
-      "tags": [
-        "secretwarrior"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Domino_b10003cb.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Negasonic_376bb508.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_PhantomRider_4d4df490.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Quake_e087fac5.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_YoYo_ed8624b3.png"
       ]
     },
     {
       "id": "shadowland",
+      "traitId": "Shadowland",
       "name": "SHADOWLAND",
       "nameFr": "SHADOWLAND",
       "members": [
@@ -549,12 +670,17 @@
         "NightNurse",
         "WhiteTiger"
       ],
-      "tags": [
-        "shadowland"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Daredevil_7e951c75.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Elektra_05550515.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_MoonKnight_e1a53b9a.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_NightNurse_467cf4f9.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_WhiteTiger_412ed96b.png"
       ]
     },
     {
       "id": "spidersociety",
+      "traitId": "SpiderSociety",
       "name": "SPIDER-SOCIETY",
       "nameFr": "SOCIÉTÉ DES ARAIGNÉES",
       "members": [
@@ -571,12 +697,17 @@
         "SpiderManNoir",
         "SpiderManPavitr"
       ],
-      "tags": [
-        "spidersociety"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_GhostSpider_f7a4fac2.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_PeniParker_992f0956.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_PeterBParker_0a7774ae.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_SpiderManNoir_784aae26.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_SpiderManPavitr_f4510bf7.png"
       ]
     },
     {
       "id": "starjammer",
+      "traitId": "Starjammer",
       "name": "STARJAMMER",
       "nameFr": "FRÈRES DES ÉTOILES",
       "members": [
@@ -593,12 +724,17 @@
         "Lilandra",
         "RocketRaccoon"
       ],
-      "tags": [
-        "starjammer"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Groot_5cc29671.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Havok_7475eb82.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_HowardTheDuck_f5258093.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Lilandra_9234bcad.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_RocketRaccoon_5362342a.png"
       ]
     },
     {
       "id": "supernatural",
+      "traitId": "Supernatural",
       "name": "SUPERNATURAL",
       "nameFr": "SURNATUREL",
       "members": [
@@ -615,12 +751,17 @@
         "GhostRider",
         "ScarletWitch"
       ],
-      "tags": [
-        "supernatural"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_BaronMordo_01a03f84.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_DoctorStrange_28cf96fd.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_ElsaBloodstone_a0480728.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_GhostRider_ec72c592.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_ScarletWitch_386ef0d7.png"
       ]
     },
     {
       "id": "unlimited",
+      "traitId": "Unlimited",
       "name": "UNLIMITED X-MEN",
       "nameFr": "UNLIMITED X-MEN",
       "members": [
@@ -637,12 +778,17 @@
         "Rogue",
         "Sunfire"
       ],
-      "tags": [
-        "unlimited"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Dazzler_21ea8d60.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Fantomex_d972f605.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Gambit_27e36668.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Rogue_1bdb8429.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Sunfire_7c60daa6.png"
       ]
     },
     {
       "id": "vigilante",
+      "traitId": "Vigilante",
       "name": "VIGILANTE",
       "nameFr": "JUSTICIER",
       "members": [
@@ -659,12 +805,17 @@
         "Punisher",
         "SilverSable"
       ],
-      "tags": [
-        "vigilante"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_DaredevilModern_c9600c0f.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Elektra_05550515.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_HitMonkey_68aa16e7.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Punisher_c270e1bc.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_SilverSable_ef97ab93.png"
       ]
     },
     {
       "id": "wardog",
+      "traitId": "WarDog",
       "name": "WAR DOG",
       "nameFr": "CHIEN DE GUERRE",
       "members": [
@@ -681,12 +832,17 @@
         "Okoye",
         "Shuri"
       ],
-      "tags": [
-        "wardog"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_BlackPanther_b7d2b102.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_BlackPantherBC_9d0ee3c6.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Nakia_8e95fbdc.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Okoye_c7c1623e.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Shuri_ae424ae3.png"
       ]
     },
     {
       "id": "webwarrior",
+      "traitId": "WebWarrior",
       "name": "WEB-WARRIOR",
       "nameFr": "WEB WARRIOR",
       "members": [
@@ -703,12 +859,17 @@
         "SpiderPunk",
         "UltSpiderMan"
       ],
-      "tags": [
-        "webwarrior"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_GhostSpider_f7a4fac2.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_ScarletSpider_0689d8fc.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_SpiderMan_4fdcec3d.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_SpiderPunk_31d6dd76.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_UltSpiderMan_1214e2a2.png"
       ]
     },
     {
       "id": "winterguard",
+      "traitId": "WinterGuard",
       "name": "WINTER GUARD",
       "nameFr": "WINTER GUARD",
       "members": [
@@ -725,12 +886,17 @@
         "UrsaMajor",
         "Yelena"
       ],
-      "tags": [
-        "winterguard"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Darkstar_48b9b4e9.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_OmegaRed_9907edc5.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_RedGuardian_b4df6ba1.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_UrsaMajor_b43b91b2.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Yelena_41a43410.png"
       ]
     },
     {
       "id": "xfactor",
+      "traitId": "XFactor",
       "name": "X-FACTOR",
       "nameFr": "FACTEUR X",
       "members": [
@@ -747,12 +913,17 @@
         "Polaris",
         "Shatterstar"
       ],
-      "tags": [
-        "xfactor"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Longshot_59af7793.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_MultipleMan_bcbb4925.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_MultipleMan_bcbb4925.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Polaris_727b18f2.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Shatterstar_f078d3b8.png"
       ]
     },
     {
       "id": "xtreme",
+      "traitId": "XTreme",
       "name": "X-TREME X-MEN",
       "nameFr": "X-TREME X-MEN",
       "members": [
@@ -769,12 +940,17 @@
         "Nightcrawler",
         "Sunspot"
       ],
-      "tags": [
-        "xtreme"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Cyclops_ed14de8b.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Forge_da35924e.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Gambit_27e36668.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Nightcrawler_8fe6d4c5.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Sunspot_c7fceb6f.png"
       ]
     },
     {
       "id": "xforce",
+      "traitId": "Xforce",
       "name": "X-FORCE",
       "nameFr": "X-FORCE",
       "members": [
@@ -791,14 +967,22 @@
         "Negasonic",
         "X23"
       ],
-      "tags": [
-        "xforce"
+      "portraits": [
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Cable_e14aa21f.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Deadpool_445c42aa.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Domino_b10003cb.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_Negasonic_376bb508.png",
+        "https://assets.marvelstrikeforce.com/imgs/Portrait_X23_d15b6740.png"
       ]
-    },
+    }
+  ],
+  "variantTeams": [
     {
       "id": "accursed",
+      "traitId": "Accursed",
       "name": "ACCURSED",
       "nameFr": "MAUDIT",
+      "memberCount": 6,
       "members": [
         "Azazel",
         "Mordo",
@@ -814,17 +998,14 @@
         "Juggernaut",
         "Satana",
         "TheHood"
-      ],
-      "tags": [
-        "accursed"
-      ],
-      "isVariant": true,
-      "memberCount": 6
+      ]
     },
     {
       "id": "annihilator",
+      "traitId": "Annihilator",
       "name": "ANNIHILATOR",
       "nameFr": "ANNIHILATEUR",
+      "memberCount": 6,
       "members": [
         "Gladiator",
         "Gorr",
@@ -840,17 +1021,14 @@
         "SilverSurfer",
         "ThanosEndgame",
         "Ultimus"
-      ],
-      "tags": [
-        "annihilator"
-      ],
-      "isVariant": true,
-      "memberCount": 6
+      ]
     },
     {
       "id": "cabal",
+      "traitId": "Cabal",
       "name": "CABAL",
       "nameFr": "CABALE",
+      "memberCount": 4,
       "members": [
         "Iron Patriot",
         "Namor",
@@ -862,17 +1040,14 @@
         "Namor",
         "PVE_IronPatriot_SentryBoss",
         "TheLeader"
-      ],
-      "tags": [
-        "cabal"
-      ],
-      "isVariant": true,
-      "memberCount": 4
+      ]
     },
     {
       "id": "darkhold",
+      "traitId": "Darkhold",
       "name": "DARKHOLD",
       "nameFr": "DARKHOLD",
+      "memberCount": 6,
       "members": [
         "Agatha Harkness",
         "Morgan Le Fay",
@@ -888,17 +1063,14 @@
         "ScarletWitch",
         "StrangeSupreme",
         "Wong"
-      ],
-      "tags": [
-        "darkhold"
-      ],
-      "isVariant": true,
-      "memberCount": 6
+      ]
     },
     {
       "id": "deathseed",
+      "traitId": "Deathseed",
       "name": "DEATH SEED",
       "nameFr": "GRAINE DE MORT",
+      "memberCount": 6,
       "members": [
         "Archangel",
         "Dark Beast",
@@ -914,17 +1086,14 @@
         "Nemesis",
         "Psylocke",
         "PVE_ChaosRaid_Psylocke"
-      ],
-      "tags": [
-        "deathseed"
-      ],
-      "isVariant": true,
-      "memberCount": 6
+      ]
     },
     {
       "id": "horseman",
+      "traitId": "Horseman",
       "name": "HORSEMAN",
       "nameFr": "CAVALIER",
+      "memberCount": 4,
       "members": [
         "Archangel",
         "Morgan Le Fay",
@@ -936,17 +1105,14 @@
         "MorganLeFay",
         "RedHulk",
         "Rogue"
-      ],
-      "tags": [
-        "horseman"
-      ],
-      "isVariant": true,
-      "memberCount": 4
+      ]
     },
     {
       "id": "marauders",
+      "traitId": "Marauders",
       "name": "MARAUDER",
       "nameFr": "MARAUDEUR",
+      "memberCount": 6,
       "members": [
         "Madelyne Pryor",
         "Mister Sinister",
@@ -962,17 +1128,14 @@
         "PVE_ChaosRaid_MadelynePryor",
         "Sabretooth",
         "Stryfe"
-      ],
-      "tags": [
-        "marauders"
-      ],
-      "isVariant": true,
-      "memberCount": 6
+      ]
     },
     {
       "id": "mercsformoney",
+      "traitId": "MercsForMoney",
       "name": "MERCS FOR MONEY",
       "nameFr": "MERCENAIRES POUR L'ARGENT",
+      "memberCount": 6,
       "members": [
         "Daken",
         "Deadpool",
@@ -988,17 +1151,14 @@
         "OldManLogan",
         "PandaPool",
         "PVE_Daken_SentryBoss"
-      ],
-      "tags": [
-        "mercsformoney"
-      ],
-      "isVariant": true,
-      "memberCount": 6
+      ]
     },
     {
       "id": "mightyavenger",
+      "traitId": "MightyAvenger",
       "name": "MIGHTY AVENGER",
       "nameFr": "MIGHTY AVENGERS",
+      "memberCount": 6,
       "members": [
         "Falcon",
         "Hercules",
@@ -1014,17 +1174,14 @@
         "ScarletWitch",
         "SwordMaster",
         "Vision"
-      ],
-      "tags": [
-        "mightyavenger"
-      ],
-      "isVariant": true,
-      "memberCount": 6
+      ]
     },
     {
       "id": "outoftime",
+      "traitId": "OutOfTime",
       "name": "OUT OF TIME",
       "nameFr": "HORS DU TEMPS",
+      "memberCount": 6,
       "members": [
         "Black Knight",
         "Captain America",
@@ -1040,17 +1197,14 @@
         "CosmicGhostRider",
         "PVE_CaptainAmerica_SentryBoss",
         "StarBrand"
-      ],
-      "tags": [
-        "outoftime"
-      ],
-      "isVariant": true,
-      "memberCount": 6
+      ]
     },
     {
       "id": "powerarmor",
+      "traitId": "PowerArmor",
       "name": "POWER ARMOR",
       "nameFr": "TECHNO-ARMURE",
+      "memberCount": 6,
       "members": [
         "Falcon",
         "Ironheart",
@@ -1066,17 +1220,14 @@
         "PVE_IronMan_SentryBoss",
         "Rescue",
         "WarMachine"
-      ],
-      "tags": [
-        "powerarmor"
-      ],
-      "isVariant": true,
-      "memberCount": 6
+      ]
     },
     {
       "id": "pvedddoom",
+      "traitId": "PvEDDDoom",
       "name": "PvEDDDoom",
       "nameFr": "PvEDDDoom",
+      "memberCount": 6,
       "members": [
         "Doctor Doom",
         "Doom Bomb",
@@ -1092,17 +1243,14 @@
         "PvE_DDInvisibleWoman",
         "PvE_DDMrFantastic",
         "PvE_DDThing"
-      ],
-      "tags": [
-        "pvedddoom"
-      ],
-      "isVariant": true,
-      "memberCount": 6
+      ]
     },
     {
       "id": "pymtech",
+      "traitId": "PymTech",
       "name": "PYM TECH",
       "nameFr": "PYM TECH",
+      "memberCount": 6,
       "members": [
         "Ant-Man",
         "Ghost",
@@ -1118,17 +1266,14 @@
         "Stature",
         "Wasp",
         "Yellowjacket"
-      ],
-      "tags": [
-        "pymtech"
-      ],
-      "isVariant": true,
-      "memberCount": 6
+      ]
     },
     {
       "id": "superiorsix",
+      "traitId": "SuperiorSix",
       "name": "SUPERIOR SIX",
       "nameFr": "SUPERIOR SIX",
+      "memberCount": 6,
       "members": [
         "Doctor Octopus",
         "Green Goblin (Classic)",
@@ -1144,17 +1289,14 @@
         "Lizard",
         "SpiderSlayer",
         "SuperiorSpiderMan"
-      ],
-      "tags": [
-        "superiorsix"
-      ],
-      "isVariant": true,
-      "memberCount": 6
+      ]
     },
     {
       "id": "thunderbolt",
+      "traitId": "Thunderbolt",
       "name": "THUNDERBOLT",
       "nameFr": "THUNDERBOLT",
+      "memberCount": 6,
       "members": [
         "Ghost",
         "Hyperion",
@@ -1170,17 +1312,14 @@
         "Songbird",
         "Taskmaster",
         "VictoriaHand"
-      ],
-      "tags": [
-        "thunderbolt"
-      ],
-      "isVariant": true,
-      "memberCount": 6
+      ]
     },
     {
       "id": "uncannyavenger",
+      "traitId": "UncannyAvenger",
       "name": "UNCANNY AVENGER",
       "nameFr": "UNCANNY AVENGERS",
+      "memberCount": 6,
       "members": [
         "Beast",
         "Falcon",
@@ -1196,17 +1335,14 @@
         "JeanGrey",
         "PVE_ChaosRaid_JeanGrey",
         "Storm"
-      ],
-      "tags": [
-        "uncannyavenger"
-      ],
-      "isVariant": true,
-      "memberCount": 6
+      ]
     },
     {
       "id": "undying",
+      "traitId": "Undying",
       "name": "UNDYING",
       "nameFr": "IMPÉRISSABLE",
+      "memberCount": 6,
       "members": [
         "Undead Asgardian",
         "Hela",
@@ -1222,17 +1358,14 @@
         "ZombieJuggernaut",
         "ZombieKestrel",
         "ZombieScarletWitch"
-      ],
-      "tags": [
-        "undying"
-      ],
-      "isVariant": true,
-      "memberCount": 6
+      ]
     },
     {
       "id": "weaponx",
+      "traitId": "WeaponX",
       "name": "WEAPON X",
       "nameFr": "ARME X",
+      "memberCount": 6,
       "members": [
         "Lady Deathstrike",
         "Omega Red",
@@ -1248,17 +1381,14 @@
         "SilverSamurai",
         "Wolverine",
         "X23"
-      ],
-      "tags": [
-        "weaponx"
-      ],
-      "isVariant": true,
-      "memberCount": 6
+      ]
     },
     {
       "id": "youngavenger",
+      "traitId": "YoungAvenger",
       "name": "YOUNG AVENGER",
       "nameFr": "YOUNG AVENGERS",
+      "memberCount": 6,
       "members": [
         "America Chavez",
         "Echo",
@@ -1274,12 +1404,7 @@
         "MsMarvel",
         "SquirrelGirl",
         "UltSpiderMan"
-      ],
-      "tags": [
-        "youngavenger"
-      ],
-      "isVariant": true,
-      "memberCount": 6
+      ]
     }
   ]
 }

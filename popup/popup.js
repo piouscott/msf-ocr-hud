@@ -20,6 +20,18 @@ const btnSync = document.getElementById("btn-sync");
 const syncStatus = document.getElementById("sync-status");
 const syncInfo = document.getElementById("sync-info");
 
+// API panel elements
+const apiPanel = document.getElementById("api-panel");
+const btnApi = document.getElementById("btn-api");
+const btnCloseApi = document.getElementById("btn-close-api");
+const apiToken = document.getElementById("api-token");
+const btnSaveApi = document.getElementById("btn-save-api");
+const btnTestApi = document.getElementById("btn-test-api");
+const apiStatus = document.getElementById("api-status");
+
+// API Key constante (ne change pas)
+const MSF_API_KEY = "17wMKJLRxy3pYDCKG5ciP7VSU45OVumB2biCzzgw";
+
 // Donnees globales
 let teamsData = [];
 let countersData = {};
@@ -197,6 +209,7 @@ btnManage.addEventListener("click", () => {
 
 btnSettings.addEventListener("click", async () => {
   syncPanel.classList.toggle("hidden");
+  apiPanel.classList.add("hidden"); // Fermer l'autre panneau
 
   if (!syncPanel.classList.contains("hidden")) {
     // Charger l'URL sauvegardee et les infos de sync
@@ -497,4 +510,85 @@ function setLoading(loading) {
 function setStatus(text, type = "") {
   statusText.textContent = text;
   statusText.className = type; // "", "error", ou "success"
+}
+
+// ============================================
+// Panneau API
+// ============================================
+
+btnApi.addEventListener("click", async () => {
+  apiPanel.classList.toggle("hidden");
+  syncPanel.classList.add("hidden"); // Fermer l'autre panneau
+
+  if (!apiPanel.classList.contains("hidden")) {
+    // Charger le token sauvegarde
+    const stored = await ext.storage.local.get(["msfApiToken"]);
+    if (stored.msfApiToken) {
+      apiToken.value = stored.msfApiToken;
+    }
+    setApiStatus("", "");
+  }
+});
+
+btnCloseApi.addEventListener("click", () => {
+  apiPanel.classList.add("hidden");
+});
+
+btnSaveApi.addEventListener("click", async () => {
+  const token = apiToken.value.trim();
+
+  if (!token) {
+    setApiStatus("Token requis", "error");
+    return;
+  }
+
+  // S'assurer que le token commence par "Bearer "
+  const finalToken = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+
+  await ext.storage.local.set({ msfApiToken: finalToken });
+  setApiStatus("Token sauvegarde", "success");
+});
+
+btnTestApi.addEventListener("click", async () => {
+  const token = apiToken.value.trim();
+
+  if (!token) {
+    setApiStatus("Token requis", "error");
+    return;
+  }
+
+  const finalToken = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+
+  btnTestApi.disabled = true;
+  setApiStatus("Test en cours...", "");
+
+  try {
+    const response = await fetch("https://api.marvelstrikeforce.com/player/v1/card", {
+      headers: {
+        "x-api-key": MSF_API_KEY,
+        "Authorization": finalToken
+      }
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const playerName = data.data?.name || "Inconnu";
+      setApiStatus(`Connecte: ${playerName}`, "success");
+      // Sauvegarder automatiquement si le test reussit
+      await ext.storage.local.set({ msfApiToken: finalToken });
+    } else if (response.status === 401) {
+      setApiStatus("Token invalide ou expire", "error");
+    } else {
+      setApiStatus(`Erreur ${response.status}`, "error");
+    }
+  } catch (e) {
+    setApiStatus("Erreur reseau: " + e.message, "error");
+  } finally {
+    btnTestApi.disabled = false;
+  }
+});
+
+function setApiStatus(text, type) {
+  apiStatus.textContent = text;
+  apiStatus.className = "sync-status " + (type || "");
 }
