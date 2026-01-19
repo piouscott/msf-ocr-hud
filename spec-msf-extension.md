@@ -323,6 +323,8 @@ Min Power : [1.1]x
 - [x] Mode manuel pour sélection individuelle
 - [x] OCR automatique des noms de personnages (Tesseract.js)
 - [x] Export JSON compatible avec `data/portraits.json`
+- [x] Bouton "Auto-params" pour détection automatique de la grille
+- [x] Paramètres par défaut optimisés pour cartes MSF (portrait 75%×55%, nom à 82%)
 
 ---
 

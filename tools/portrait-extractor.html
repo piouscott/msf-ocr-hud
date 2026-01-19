@@ -277,7 +277,8 @@
   <div class="controls">
     <button class="btn-primary" id="btn-load">Charger image</button>
     <button class="btn-secondary" id="btn-toggle-config">Config grille</button>
-    <button class="btn-secondary" id="btn-detect">Detecter (auto)</button>
+    <button class="btn-warning" id="btn-auto-params">Auto-params</button>
+    <button class="btn-secondary" id="btn-detect">Detecter portraits</button>
     <button class="btn-primary" id="btn-ocr-names">OCR Noms</button>
     <button class="btn-warning" id="btn-manual">Mode manuel</button>
     <button class="btn-success" id="btn-export">Exporter JSON</button>
@@ -310,20 +311,20 @@
       </div>
       <div class="config-item">
         <label>Offset Y:</label>
-        <input type="range" id="cfg-offsetY" value="15" min="0" max="100">
-        <span id="cfg-offsetY-val">15%</span>
+        <input type="range" id="cfg-offsetY" value="8" min="0" max="100">
+        <span id="cfg-offsetY-val">8%</span>
       </div>
     </div>
     <div class="config-row">
       <div class="config-item">
         <label>Largeur %:</label>
-        <input type="range" id="cfg-widthPct" value="60" min="20" max="100">
-        <span id="cfg-widthPct-val">60%</span>
+        <input type="range" id="cfg-widthPct" value="75" min="20" max="100">
+        <span id="cfg-widthPct-val">75%</span>
       </div>
       <div class="config-item">
         <label>Hauteur %:</label>
-        <input type="range" id="cfg-heightPct" value="45" min="20" max="100">
-        <span id="cfg-heightPct-val">45%</span>
+        <input type="range" id="cfg-heightPct" value="55" min="20" max="100">
+        <span id="cfg-heightPct-val">55%</span>
       </div>
     </div>
     <button class="btn-secondary" id="btn-preview-grid" style="margin-top:10px">Previsualiser grille</button>
@@ -333,13 +334,13 @@
       <div class="config-row">
         <div class="config-item">
           <label>Offset Y nom:</label>
-          <input type="range" id="cfg-nameOffsetY" value="75" min="50" max="100">
-          <span id="cfg-nameOffsetY-val">75%</span>
+          <input type="range" id="cfg-nameOffsetY" value="82" min="50" max="100">
+          <span id="cfg-nameOffsetY-val">82%</span>
         </div>
         <div class="config-item">
           <label>Hauteur nom:</label>
-          <input type="range" id="cfg-nameHeight" value="12" min="5" max="25">
-          <span id="cfg-nameHeight-val">12%</span>
+          <input type="range" id="cfg-nameHeight" value="10" min="5" max="25">
+          <span id="cfg-nameHeight-val">10%</span>
         </div>
       </div>
     </div>
@@ -379,17 +380,18 @@
     let extractedPortraits = [];
     let isManualMode = false;
 
-    // Config
+    // Config - valeurs optimisees pour les cartes MSF
+    // Structure carte MSF: portrait carre en haut (~55% de la cellule), nom en bas
     const config = {
       cols: 12,
       rows: 5,
       portraitSize: 80, // % (legacy, non utilise si widthPct/heightPct definis)
       offsetX: 50,      // % position horizontale du centre dans la cellule
-      offsetY: 15,      // % position verticale du haut dans la cellule
-      widthPct: 60,     // % largeur du portrait par rapport a la cellule
-      heightPct: 45,    // % hauteur du portrait par rapport a la cellule
-      nameOffsetY: 75,  // % position Y du texte du nom dans la cellule
-      nameHeight: 12    // % hauteur de la zone de texte
+      offsetY: 8,       // % position verticale du haut dans la cellule (petit decalage)
+      widthPct: 75,     // % largeur du portrait par rapport a la cellule
+      heightPct: 55,    // % hauteur du portrait par rapport a la cellule (carre visuellement)
+      nameOffsetY: 82,  // % position Y du texte du nom dans la cellule
+      nameHeight: 10    // % hauteur de la zone de texte
     };
 
     // OCR worker
@@ -502,6 +504,160 @@
     });
 
     document.getElementById('btn-preview-grid').addEventListener('click', previewGrid);
+
+    // ===== Auto-detection des parametres =====
+    document.getElementById('btn-auto-params').addEventListener('click', autoDetectParams);
+
+    async function autoDetectParams() {
+      if (!loadedImage) {
+        setStatus('Charger une image d\'abord', 'error');
+        return;
+      }
+
+      setStatus('Analyse de l\'image...', 'info');
+
+      try {
+        // Analyser l'image pour detecter la structure des cartes
+        const ctx = previewCanvas.getContext('2d');
+        const imageData = ctx.getImageData(0, 0, loadedImage.width, loadedImage.height);
+
+        // Detecter les bordures verticales (lignes sombres entre les cartes)
+        const verticalEdges = detectVerticalEdges(imageData, loadedImage.width, loadedImage.height);
+
+        // Detecter les bordures horizontales
+        const horizontalEdges = detectHorizontalEdges(imageData, loadedImage.width, loadedImage.height);
+
+        // Estimer le nombre de colonnes et lignes
+        const estimatedCols = Math.max(1, verticalEdges.length - 1) || config.cols;
+        const estimatedRows = Math.max(1, horizontalEdges.length - 1) || config.rows;
+
+        // Si detection reussie, mettre a jour la config
+        if (verticalEdges.length > 1 && horizontalEdges.length > 1) {
+          config.cols = estimatedCols;
+          config.rows = estimatedRows;
+          document.getElementById('cfg-cols').value = config.cols;
+          document.getElementById('cfg-rows').value = config.rows;
+
+          setStatus(`Detecte: ${config.cols} colonnes x ${config.rows} lignes. Ajustez les autres parametres si besoin.`, 'success');
+        } else {
+          // Utiliser des valeurs par defaut optimisees pour MSF
+          setStatus('Auto-detection partielle. Parametres MSF optimises appliques.', 'info');
+        }
+
+        // Appliquer les parametres optimises pour MSF et afficher la grille
+        applyMSFDefaults();
+        configPanel.classList.add('visible');
+        previewGrid();
+
+      } catch (e) {
+        console.error('Erreur auto-detection:', e);
+        setStatus('Erreur analyse. Parametres MSF par defaut appliques.', 'error');
+        applyMSFDefaults();
+        previewGrid();
+      }
+    }
+
+    function applyMSFDefaults() {
+      // Appliquer les valeurs optimisees pour MSF
+      config.offsetX = 50;
+      config.offsetY = 8;
+      config.widthPct = 75;
+      config.heightPct = 55;
+      config.nameOffsetY = 82;
+      config.nameHeight = 10;
+
+      // Mettre a jour les sliders
+      document.getElementById('cfg-offsetX').value = config.offsetX;
+      document.getElementById('cfg-offsetX-val').textContent = config.offsetX + '%';
+      document.getElementById('cfg-offsetY').value = config.offsetY;
+      document.getElementById('cfg-offsetY-val').textContent = config.offsetY + '%';
+      document.getElementById('cfg-widthPct').value = config.widthPct;
+      document.getElementById('cfg-widthPct-val').textContent = config.widthPct + '%';
+      document.getElementById('cfg-heightPct').value = config.heightPct;
+      document.getElementById('cfg-heightPct-val').textContent = config.heightPct + '%';
+      document.getElementById('cfg-nameOffsetY').value = config.nameOffsetY;
+      document.getElementById('cfg-nameOffsetY-val').textContent = config.nameOffsetY + '%';
+      document.getElementById('cfg-nameHeight').value = config.nameHeight;
+      document.getElementById('cfg-nameHeight-val').textContent = config.nameHeight + '%';
+    }
+
+    function detectVerticalEdges(imageData, width, height) {
+      const edges = [];
+      const data = imageData.data;
+      const threshold = 30; // Difference de luminosite pour detecter un bord
+      const minGap = width / 20; // Espace minimum entre deux bords
+
+      // Scanner le tiers superieur de l'image (la ou les portraits sont)
+      const scanHeight = Math.floor(height / 3);
+      const startY = Math.floor(height / 6);
+
+      for (let x = 5; x < width - 5; x++) {
+        let edgeScore = 0;
+
+        // Verifier si c'est une ligne verticale sombre
+        for (let y = startY; y < startY + scanHeight; y += 5) {
+          const idx = (y * width + x) * 4;
+          const leftIdx = (y * width + x - 3) * 4;
+          const rightIdx = (y * width + x + 3) * 4;
+
+          const brightness = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
+          const leftBrightness = (data[leftIdx] + data[leftIdx + 1] + data[leftIdx + 2]) / 3;
+          const rightBrightness = (data[rightIdx] + data[rightIdx + 1] + data[rightIdx + 2]) / 3;
+
+          // Bord detecte si la colonne est plus sombre que ses voisines
+          if (brightness < 50 && (leftBrightness - brightness > threshold || rightBrightness - brightness > threshold)) {
+            edgeScore++;
+          }
+        }
+
+        // Si assez de points de bord detectes
+        if (edgeScore > scanHeight / 20) {
+          // Verifier qu'on est assez loin du dernier bord
+          if (edges.length === 0 || x - edges[edges.length - 1] > minGap) {
+            edges.push(x);
+          }
+        }
+      }
+
+      return edges;
+    }
+
+    function detectHorizontalEdges(imageData, width, height) {
+      const edges = [];
+      const data = imageData.data;
+      const threshold = 30;
+      const minGap = height / 10;
+
+      // Scanner le centre horizontal de l'image
+      const scanWidth = Math.floor(width / 3);
+      const startX = Math.floor(width / 3);
+
+      for (let y = 5; y < height - 5; y++) {
+        let edgeScore = 0;
+
+        for (let x = startX; x < startX + scanWidth; x += 5) {
+          const idx = (y * width + x) * 4;
+          const topIdx = ((y - 3) * width + x) * 4;
+          const bottomIdx = ((y + 3) * width + x) * 4;
+
+          const brightness = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
+          const topBrightness = (data[topIdx] + data[topIdx + 1] + data[topIdx + 2]) / 3;
+          const bottomBrightness = (data[bottomIdx] + data[bottomIdx + 1] + data[bottomIdx + 2]) / 3;
+
+          if (brightness < 50 && (topBrightness - brightness > threshold || bottomBrightness - brightness > threshold)) {
+            edgeScore++;
+          }
+        }
+
+        if (edgeScore > scanWidth / 20) {
+          if (edges.length === 0 || y - edges[edges.length - 1] > minGap) {
+            edges.push(y);
+          }
+        }
+      }
+
+      return edges;
+    }
 
     function previewGrid() {
       if (!loadedImage) return;
