@@ -170,6 +170,27 @@ button:active {
   color: #fff;
 }
 
+.team-selector {
+  padding: 4px 8px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: #1a1a2e;
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  min-width: 150px;
+}
+
+.team-selector:focus {
+  outline: none;
+  border-color: #00d4ff;
+}
+
+.team-selector option {
+  background: #1a1a2e;
+  color: #fff;
+}
+
 .slot-power {
   font-size: 13px;
   color: #ffd43b;
@@ -232,6 +253,16 @@ button:active {
   margin-top: 10px;
   padding-top: 10px;
   border-top: 1px solid #444;
+}
+
+.counters.no-counters {
+  text-align: center;
+}
+
+.no-counters-text {
+  color: #666;
+  font-size: 11px;
+  font-style: italic;
 }
 
 .counters-title {

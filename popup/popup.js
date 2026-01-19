@@ -20,6 +20,50 @@ const btnSync = document.getElementById("btn-sync");
 const syncStatus = document.getElementById("sync-status");
 const syncInfo = document.getElementById("sync-info");
 
+// Donnees globales
+let teamsData = [];
+let countersData = {};
+let currentSlots = []; // Resultats du dernier scan
+
+// ============================================
+// Chargement des donnees (equipes + counters)
+// ============================================
+
+async function loadTeamsAndCounters() {
+  try {
+    const teamsUrl = ext.runtime.getURL("data/teams.json");
+    const countersUrl = ext.runtime.getURL("data/counters.json");
+
+    const [teamsRes, countersRes] = await Promise.all([
+      fetch(teamsUrl),
+      fetch(countersUrl)
+    ]);
+
+    const teamsJson = await teamsRes.json();
+    const countersJson = await countersRes.json();
+
+    teamsData = teamsJson.teams || [];
+    countersData = countersJson.counters || {};
+
+    // Charger les counters remote/custom depuis storage
+    const stored = await ext.storage.local.get(["msfRemoteCounters", "msfCustomCounters"]);
+
+    if (stored.msfRemoteCounters && stored.msfRemoteCounters.counters) {
+      Object.assign(countersData, stored.msfRemoteCounters.counters);
+    }
+    if (stored.msfCustomCounters) {
+      Object.assign(countersData, stored.msfCustomCounters);
+    }
+
+    console.log("[Popup] Teams:", teamsData.length, "Counters:", Object.keys(countersData).length);
+  } catch (e) {
+    console.error("[Popup] Erreur chargement teams/counters:", e);
+  }
+}
+
+// Charger au demarrage
+loadTeamsAndCounters();
+
 // ============================================
 // Bouton Analyser
 // ============================================
@@ -40,7 +84,8 @@ btnAnalyze.addEventListener("click", async () => {
       throw new Error("Aucun slot extrait");
     }
 
-    displayResults(response.slots);
+    currentSlots = response.slots;
+    displayResults(currentSlots);
     setStatus("Analyse terminee", "success");
 
   } catch (e) {
@@ -230,44 +275,47 @@ function setSyncStatus(text, type) {
 function displayResults(slots) {
   resultsSection.innerHTML = "";
 
-  slots.forEach(slot => {
+  slots.forEach((slot, slotIndex) => {
     const slotDiv = document.createElement("div");
     slotDiv.className = "slot-result";
+    slotDiv.dataset.slotIndex = slotIndex;
 
     const powerValue = slot.power || 0;
 
-    // Nom de l'equipe identifiee ou "Equipe custom"
-    const teamName = slot.team ? slot.team.name : "Equipe custom";
+    // Nom de l'equipe identifiee ou selecteur
+    const isIdentified = slot.team && slot.team.id;
+    const teamName = isIdentified ? slot.team.name : "Equipe inconnue";
+    const teamId = isIdentified ? slot.team.id : "";
 
     // Titres des portraits avec noms identifies
     const portraitTitles = slot.identifiedPortraits || [];
 
     // Counters suggeres
     const counters = slot.counters || [];
-    const countersHtml = counters.length > 0 ? `
-      <div class="counters">
-        <div class="counters-title">Counters:</div>
-        ${counters.slice(0, 3).map(c => `
-          <div class="counter-item">
-            <span class="counter-name">${c.teamName}</span>
-            <span class="counter-confidence">${c.confidence}%</span>
-            ${c.minPower ? `<span class="counter-power">${formatPower(c.minPower)}+</span>` : ""}
-          </div>
-        `).join("")}
-      </div>
-    ` : "";
+
+    // Generer le HTML des counters
+    const countersHtml = generateCountersHtml(counters);
+
+    // Selecteur d'equipe (toujours present, mais pre-selectionne si identifie)
+    const teamOptions = teamsData.map(t =>
+      `<option value="${t.id}" ${t.id === teamId ? "selected" : ""}>${t.name}</option>`
+    ).join("");
 
     slotDiv.innerHTML = `
       <div class="slot-header">
         <div class="slot-info">
           <span class="slot-title">Slot ${slot.slotNumber}</span>
-          <span class="team-name">${teamName}</span>
+          <select class="team-selector" data-slot-index="${slotIndex}">
+            <option value="">-- Selectionner equipe --</option>
+            ${teamOptions}
+          </select>
         </div>
         <div class="slot-power-edit">
           <input type="text"
                  class="power-input"
                  value="${formatPower(powerValue)}"
                  data-slot="${slot.slotNumber}"
+                 data-slot-index="${slotIndex}"
                  data-raw="${powerValue}"
                  title="Cliquer pour modifier">
         </div>
@@ -324,7 +372,81 @@ function displayResults(slots) {
     });
   });
 
+  // Event listeners pour selecteur d'equipe
+  resultsSection.querySelectorAll(".team-selector").forEach(select => {
+    select.addEventListener("change", (e) => {
+      const slotIndex = parseInt(e.target.dataset.slotIndex);
+      const teamId = e.target.value;
+      updateSlotCounters(slotIndex, teamId);
+    });
+  });
+
   resultsSection.classList.remove("hidden");
+}
+
+/**
+ * Genere le HTML pour afficher les counters
+ */
+function generateCountersHtml(counters) {
+  if (!counters || counters.length === 0) {
+    return '<div class="counters no-counters"><span class="no-counters-text">Selectionnez une equipe pour voir les counters</span></div>';
+  }
+
+  return `
+    <div class="counters">
+      <div class="counters-title">Counters:</div>
+      ${counters.slice(0, 3).map(c => `
+        <div class="counter-item">
+          <span class="counter-name">${c.teamName}</span>
+          <span class="counter-confidence">${c.confidence}%</span>
+          ${c.minPower ? `<span class="counter-power">${formatPower(c.minPower)}+</span>` : ""}
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+/**
+ * Met a jour les counters d'un slot apres selection manuelle d'equipe
+ */
+function updateSlotCounters(slotIndex, teamId) {
+  if (slotIndex < 0 || slotIndex >= currentSlots.length) return;
+
+  const slot = currentSlots[slotIndex];
+  const slotDiv = resultsSection.querySelector(`.slot-result[data-slot-index="${slotIndex}"]`);
+  if (!slotDiv) return;
+
+  // Calculer les nouveaux counters
+  let counters = [];
+
+  if (teamId && countersData[teamId]) {
+    const powerValue = slot.power || 0;
+
+    counters = countersData[teamId].map(counter => {
+      const minPower = powerValue ? Math.round(powerValue * counter.minPowerRatio) : null;
+      const counterTeam = teamsData.find(t => t.id === counter.team);
+      return {
+        teamId: counter.team,
+        teamName: counterTeam ? counterTeam.name : counter.team,
+        confidence: counter.confidence,
+        minPowerRatio: counter.minPowerRatio,
+        minPower: minPower,
+        notes: counter.notes || null
+      };
+    }).sort((a, b) => b.confidence - a.confidence);
+  }
+
+  // Mettre a jour le slot dans currentSlots
+  currentSlots[slotIndex].team = teamId ? { id: teamId, name: teamsData.find(t => t.id === teamId)?.name || teamId } : null;
+  currentSlots[slotIndex].counters = counters;
+
+  // Remplacer le HTML des counters
+  const existingCounters = slotDiv.querySelector(".counters");
+  if (existingCounters) {
+    existingCounters.outerHTML = generateCountersHtml(counters);
+  } else {
+    slotDiv.insertAdjacentHTML("beforeend", generateCountersHtml(counters));
+  }
 }
 
 /**

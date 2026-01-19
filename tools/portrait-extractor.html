@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>MSF Portrait Extractor</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      padding: 20px;
+    }
+    h1 { color: #00d4ff; margin-bottom: 20px; }
+
+    .instructions {
+      background: #2d2d44;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .instructions h2 { font-size: 14px; margin-bottom: 10px; color: #00d4ff; }
+    .instructions ol { margin-left: 20px; font-size: 13px; line-height: 1.8; }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .btn-primary { background: #00d4ff; color: #1a1a2e; }
+    .btn-success { background: #51cf66; color: #1a1a2e; }
+    .btn-secondary { background: #2d2d44; color: #ccc; border: 1px solid #444; }
+
+    #drop-zone {
+      border: 2px dashed #444;
+      border-radius: 8px;
+      padding: 40px;
+      text-align: center;
+      margin-bottom: 20px;
+      transition: border-color 0.2s;
+    }
+    #drop-zone.dragover { border-color: #00d4ff; }
+    #drop-zone p { color: #888; }
+
+    #preview {
+      max-width: 100%;
+      margin-bottom: 20px;
+      border-radius: 8px;
+    }
+
+    #status {
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    #status.success { display: block; background: #51cf66; color: #1a1a2e; }
+    #status.error { display: block; background: #ff6b6b; color: #fff; }
+    #status.info { display: block; background: #00d4ff; color: #1a1a2e; }
+
+    #portraits-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .portrait-card {
+      background: #2d2d44;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+    }
+    .portrait-card img {
+      width: 64px;
+      height: 64px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+    .portrait-card input {
+      width: 100%;
+      padding: 4px 8px;
+      border: 1px solid #444;
+      border-radius: 4px;
+      background: #1a1a2e;
+      color: #fff;
+      font-size: 11px;
+      text-align: center;
+    }
+    .portrait-card .hash {
+      font-size: 9px;
+      color: #666;
+      margin-top: 4px;
+      word-break: break-all;
+    }
+
+    #output {
+      background: #0d0d1a;
+      border: 1px solid #444;
+      border-radius: 8px;
+      padding: 15px;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 400px;
+      overflow: auto;
+      white-space: pre-wrap;
+    }
+
+    .stats {
+      background: #2d2d44;
+      padding: 10px 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <h1>MSF Portrait Extractor</h1>
+
+  <div class="instructions">
+    <h2>Instructions</h2>
+    <ol>
+      <li>Faire une capture d'ecran de la page des personnages MSF</li>
+      <li>Glisser-deposer l'image ci-dessous ou cliquer pour selectionner</li>
+      <li>L'outil detecte automatiquement les portraits (grille reguliere)</li>
+      <li>Verifier/corriger les noms des personnages</li>
+      <li>Cliquer "Exporter JSON" pour telecharger le fichier portraits</li>
+    </ol>
+  </div>
+
+  <div class="controls">
+    <button class="btn-primary" id="btn-load">Charger une image</button>
+    <button class="btn-secondary" id="btn-detect">Detecter les portraits</button>
+    <button class="btn-success" id="btn-export">Exporter JSON</button>
+    <button class="btn-secondary" id="btn-copy">Copier dans presse-papier</button>
+  </div>
+
+  <input type="file" id="file-input" accept="image/*" style="display:none">
+
+  <div id="drop-zone">
+    <p>Glisser-deposer une image ici<br>ou cliquer sur "Charger une image"</p>
+  </div>
+
+  <img id="preview" style="display:none">
+
+  <div id="status"></div>
+
+  <div class="stats" id="stats" style="display:none">
+    Portraits detectes: <span id="count">0</span>
+  </div>
+
+  <div id="portraits-grid"></div>
+
+  <div id="output" style="display:none"></div>
+
+  <script>
+    // Configuration de la grille de portraits MSF
+    const CONFIG = {
+      // Nombre de colonnes et lignes dans l'image
+      cols: 12,
+      rows: 5,
+      // Marge autour de chaque portrait (en %)
+      marginX: 0.01,
+      marginY: 0.02,
+      // Offset du debut de la grille (en %)
+      offsetX: 0.02,
+      offsetY: 0.02,
+      // Taille du portrait dans la cellule (en %)
+      portraitSize: 0.6
+    };
+
+    let loadedImage = null;
+    let extractedPortraits = [];
+
+    // Elements DOM
+    const fileInput = document.getElementById('file-input');
+    const dropZone = document.getElementById('drop-zone');
+    const preview = document.getElementById('preview');
+    const status = document.getElementById('status');
+    const stats = document.getElementById('stats');
+    const countSpan = document.getElementById('count');
+    const grid = document.getElementById('portraits-grid');
+    const output = document.getElementById('output');
+
+    // ===== Gestion des fichiers =====
+
+    document.getElementById('btn-load').addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files[0]) loadImage(e.target.files[0]);
+    });
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files[0]) loadImage(e.dataTransfer.files[0]);
+    });
+
+    function loadImage(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          loadedImage = img;
+          preview.src = e.target.result;
+          preview.style.display = 'block';
+          dropZone.style.display = 'none';
+          setStatus(`Image chargee: ${img.width}x${img.height}`, 'success');
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // ===== Detection des portraits =====
+
+    document.getElementById('btn-detect').addEventListener('click', detectPortraits);
+
+    async function detectPortraits() {
+      if (!loadedImage) {
+        setStatus('Charger une image d\'abord', 'error');
+        return;
+      }
+
+      setStatus('Detection en cours...', 'info');
+      extractedPortraits = [];
+      grid.innerHTML = '';
+
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = loadedImage.width;
+      canvas.height = loadedImage.height;
+      ctx.drawImage(loadedImage, 0, 0);
+
+      const cellWidth = canvas.width / CONFIG.cols;
+      const cellHeight = canvas.height / CONFIG.rows;
+
+      // Taille du portrait a extraire
+      const portraitW = Math.floor(cellWidth * 0.45);
+      const portraitH = Math.floor(cellHeight * 0.45);
+
+      for (let row = 0; row < CONFIG.rows; row++) {
+        for (let col = 0; col < CONFIG.cols; col++) {
+          // Centre de la cellule
+          const cellX = col * cellWidth;
+          const cellY = row * cellHeight;
+
+          // Position du portrait (centre-haut de la cellule)
+          const x = Math.floor(cellX + (cellWidth - portraitW) / 2);
+          const y = Math.floor(cellY + cellHeight * 0.08);
+
+          // Extraire le portrait
+          const portraitCanvas = document.createElement('canvas');
+          portraitCanvas.width = portraitW;
+          portraitCanvas.height = portraitH;
+          const pCtx = portraitCanvas.getContext('2d');
+          pCtx.drawImage(canvas, x, y, portraitW, portraitH, 0, 0, portraitW, portraitH);
+
+          const dataUrl = portraitCanvas.toDataURL('image/png');
+          const hash = await computePHash(portraitCanvas);
+
+          // Essayer d'extraire le nom depuis l'OCR (simplifie: on laisse l'utilisateur remplir)
+          const index = row * CONFIG.cols + col;
+
+          extractedPortraits.push({
+            index,
+            row,
+            col,
+            dataUrl,
+            hash,
+            name: ''
+          });
+        }
+      }
+
+      renderGrid();
+      setStatus(`${extractedPortraits.length} portraits extraits`, 'success');
+      stats.style.display = 'block';
+      countSpan.textContent = extractedPortraits.length;
+    }
+
+    function renderGrid() {
+      grid.innerHTML = '';
+
+      extractedPortraits.forEach((p, i) => {
+        const card = document.createElement('div');
+        card.className = 'portrait-card';
+        card.innerHTML = `
+          <img src="${p.dataUrl}" alt="Portrait ${i}">
+          <input type="text" value="${p.name}" placeholder="Nom..." data-index="${i}">
+          <div class="hash">${p.hash}</div>
+        `;
+
+        card.querySelector('input').addEventListener('change', (e) => {
+          extractedPortraits[i].name = e.target.value.trim();
+        });
+
+        grid.appendChild(card);
+      });
+    }
+
+    // ===== pHash =====
+
+    async function computePHash(canvas) {
+      const hashSize = 8;
+      const sampleSize = 32;
+
+      // Redimensionner
+      const smallCanvas = document.createElement('canvas');
+      smallCanvas.width = sampleSize;
+      smallCanvas.height = sampleSize;
+      const ctx = smallCanvas.getContext('2d');
+      ctx.drawImage(canvas, 0, 0, sampleSize, sampleSize);
+
+      const imageData = ctx.getImageData(0, 0, sampleSize, sampleSize);
+      const pixels = imageData.data;
+
+      // Convertir en niveaux de gris
+      const gray = new Float32Array(sampleSize * sampleSize);
+      for (let i = 0; i < gray.length; i++) {
+        const offset = i * 4;
+        gray[i] = 0.299 * pixels[offset] + 0.587 * pixels[offset + 1] + 0.114 * pixels[offset + 2];
+      }
+
+      // Reduire a hashSize x hashSize
+      const reduced = new Float32Array(hashSize * hashSize);
+      const blockSize = sampleSize / hashSize;
+
+      for (let y = 0; y < hashSize; y++) {
+        for (let x = 0; x < hashSize; x++) {
+          let sum = 0;
+          let count = 0;
+          const startY = Math.floor(y * blockSize);
+          const endY = Math.floor((y + 1) * blockSize);
+          const startX = Math.floor(x * blockSize);
+          const endX = Math.floor((x + 1) * blockSize);
+
+          for (let py = startY; py < endY; py++) {
+            for (let px = startX; px < endX; px++) {
+              sum += gray[py * sampleSize + px];
+              count++;
+            }
+          }
+          reduced[y * hashSize + x] = count > 0 ? sum / count : 0;
+        }
+      }
+
+      // Calculer la mediane
+      const sorted = [...reduced].sort((a, b) => a - b);
+      const median = sorted[Math.floor(sorted.length / 2)];
+
+      // Generer le hash binaire puis hex
+      let binary = '';
+      for (let i = 0; i < reduced.length; i++) {
+        binary += reduced[i] > median ? '1' : '0';
+      }
+
+      let hex = '';
+      for (let i = 0; i < binary.length; i += 4) {
+        hex += parseInt(binary.substr(i, 4), 2).toString(16);
+      }
+
+      return hex;
+    }
+
+    // ===== Export =====
+
+    document.getElementById('btn-export').addEventListener('click', exportJSON);
+    document.getElementById('btn-copy').addEventListener('click', copyToClipboard);
+
+    function generateJSON() {
+      const portraits = {};
+
+      extractedPortraits.forEach(p => {
+        if (p.name && p.name.trim()) {
+          portraits[p.hash] = p.name.trim();
+        }
+      });
+
+      return JSON.stringify({
+        description: "Base de portraits MSF generee automatiquement",
+        generatedAt: new Date().toISOString(),
+        count: Object.keys(portraits).length,
+        portraits
+      }, null, 2);
+    }
+
+    function exportJSON() {
+      const json = generateJSON();
+
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `msf-portraits-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      output.textContent = json;
+      output.style.display = 'block';
+
+      const count = extractedPortraits.filter(p => p.name).length;
+      setStatus(`Exporte ${count} portraits`, 'success');
+    }
+
+    function copyToClipboard() {
+      const json = generateJSON();
+      navigator.clipboard.writeText(json).then(() => {
+        setStatus('JSON copie dans le presse-papier', 'success');
+      });
+    }
+
+    // ===== Utils =====
+
+    function setStatus(msg, type) {
+      status.textContent = msg;
+      status.className = type;
+    }
+  </script>
+</body>
+</html>
