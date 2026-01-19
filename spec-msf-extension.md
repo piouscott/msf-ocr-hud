@@ -92,14 +92,21 @@ extension/
 ├── content.js             # Injection page + extraction
 ├── popup/
 │   ├── popup.html         # Interface utilisateur
-│   └── popup.js           # Logique UI
+│   ├── popup.js           # Logique UI
+│   ├── popup.css          # Styles popup
+│   ├── manage.html        # Gestion des counters
+│   └── manage.js          # Logique gestion counters
 ├── data/
-│   ├── teams.json         # Base compositions
-│   ├── counters.json      # Base counters
+│   ├── teams.json         # Base compositions (~50 équipes)
+│   ├── counters.json      # Base counters par défaut
 │   └── portraits.json     # Hash des portraits
-└── utils/
-    ├── ocr.js             # Extraction texte
-    └── vision.js          # Reconnaissance portraits
+├── modules/
+│   ├── zone-cropper.js    # Extraction zones calibrées
+│   └── ocr-engine.js      # Wrapper Tesseract.js
+├── lib/
+│   └── tesseract/         # Tesseract.js pour OCR
+└── tools/
+    └── portrait-extractor.html  # Outil extraction portraits avec OCR
 ```
 
 ### 3.2 Flux de données
@@ -309,6 +316,13 @@ Min Power : [1.1]x
 - [x] Fonction sync depuis URL distante (fetch JSON)
 - [x] Badges de source dans manage.html (Défaut/Sync/Perso)
 - [x] Bouton réinitialiser pour revenir aux valeurs par défaut
+
+### Phase 7 : Outils ✅
+- [x] Outil d'extraction de portraits (`tools/portrait-extractor.html`)
+- [x] Grille configurable (colonnes, lignes, offsets, taille)
+- [x] Mode manuel pour sélection individuelle
+- [x] OCR automatique des noms de personnages (Tesseract.js)
+- [x] Export JSON compatible avec `data/portraits.json`
 
 ---
 

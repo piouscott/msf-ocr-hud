@@ -27,6 +27,7 @@
       gap: 10px;
       margin-bottom: 20px;
       flex-wrap: wrap;
+      align-items: center;
     }
 
     button {
@@ -41,6 +42,7 @@
     .btn-primary { background: #00d4ff; color: #1a1a2e; }
     .btn-success { background: #51cf66; color: #1a1a2e; }
     .btn-secondary { background: #2d2d44; color: #ccc; border: 1px solid #444; }
+    .btn-warning { background: #ffd43b; color: #1a1a2e; }
 
     #drop-zone {
       border: 2px dashed #444;
@@ -53,10 +55,24 @@
     #drop-zone.dragover { border-color: #00d4ff; }
     #drop-zone p { color: #888; }
 
-    #preview {
-      max-width: 100%;
+    .preview-container {
+      position: relative;
       margin-bottom: 20px;
+      overflow: auto;
+      max-height: 500px;
+      border: 1px solid #444;
       border-radius: 8px;
+    }
+
+    #preview {
+      display: block;
+    }
+
+    #grid-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
     }
 
     #status {
@@ -69,40 +85,116 @@
     #status.error { display: block; background: #ff6b6b; color: #fff; }
     #status.info { display: block; background: #00d4ff; color: #1a1a2e; }
 
+    /* Config panel */
+    .config-panel {
+      background: #2d2d44;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .config-panel.visible { display: block; }
+
+    .config-row {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .config-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .config-item label {
+      font-size: 12px;
+      color: #888;
+      min-width: 80px;
+    }
+
+    .config-item input[type="number"] {
+      width: 70px;
+      padding: 4px 8px;
+      border: 1px solid #444;
+      border-radius: 4px;
+      background: #1a1a2e;
+      color: #fff;
+      font-size: 12px;
+    }
+
+    .config-item input[type="range"] {
+      width: 120px;
+    }
+
+    .config-item span {
+      font-size: 11px;
+      color: #00d4ff;
+      min-width: 30px;
+    }
+
     #portraits-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 8px;
       margin-bottom: 20px;
     }
 
     .portrait-card {
       background: #2d2d44;
       border-radius: 8px;
-      padding: 10px;
+      padding: 8px;
       text-align: center;
     }
+
+    .portrait-card.empty {
+      opacity: 0.3;
+    }
+
     .portrait-card img {
       width: 64px;
       height: 64px;
       border-radius: 4px;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
+      border: 2px solid transparent;
     }
+
+    .portrait-card.selected img {
+      border-color: #00d4ff;
+    }
+
     .portrait-card input {
       width: 100%;
-      padding: 4px 8px;
+      padding: 3px 6px;
       border: 1px solid #444;
       border-radius: 4px;
       background: #1a1a2e;
       color: #fff;
-      font-size: 11px;
+      font-size: 10px;
       text-align: center;
     }
+
     .portrait-card .hash {
+      font-size: 8px;
+      color: #555;
+      margin-top: 3px;
+      word-break: break-all;
+    }
+
+    .portrait-card .ocr-raw {
+      font-size: 8px;
+      color: #ffd43b;
+      margin-top: 2px;
+      word-break: break-all;
+      opacity: 0.7;
+    }
+
+    .portrait-card .index {
       font-size: 9px;
       color: #666;
-      margin-top: 4px;
-      word-break: break-all;
+      margin-bottom: 4px;
     }
 
     #output {
@@ -112,9 +204,10 @@
       padding: 15px;
       font-family: monospace;
       font-size: 12px;
-      max-height: 400px;
+      max-height: 300px;
       overflow: auto;
       white-space: pre-wrap;
+      display: none;
     }
 
     .stats {
@@ -123,76 +216,200 @@
       border-radius: 6px;
       margin-bottom: 20px;
       font-size: 13px;
+      display: none;
+    }
+
+    .stats.visible { display: block; }
+
+    /* Mode selection manuelle */
+    .manual-mode {
+      background: #3d2d44;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .manual-mode.visible { display: block; }
+
+    .manual-mode h3 {
+      color: #ffd43b;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .manual-mode p {
+      font-size: 12px;
+      color: #aaa;
+      margin-bottom: 10px;
+    }
+
+    #canvas-container {
+      position: relative;
+      display: inline-block;
+      cursor: crosshair;
+    }
+
+    #selection-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
     }
   </style>
 </head>
 <body>
+  <!-- Tesseract.js pour OCR -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
   <h1>MSF Portrait Extractor</h1>
 
   <div class="instructions">
-    <h2>Instructions</h2>
+    <h2>Mode d'emploi</h2>
     <ol>
-      <li>Faire une capture d'ecran de la page des personnages MSF</li>
-      <li>Glisser-deposer l'image ci-dessous ou cliquer pour selectionner</li>
-      <li>L'outil detecte automatiquement les portraits (grille reguliere)</li>
-      <li>Verifier/corriger les noms des personnages</li>
-      <li>Cliquer "Exporter JSON" pour telecharger le fichier portraits</li>
+      <li>Charger une capture d'ecran de la page des personnages MSF</li>
+      <li><b>Mode Auto</b>: Ajuster les parametres de grille puis "Detecter"</li>
+      <li><b>Mode Manuel</b>: Cliquer sur chaque portrait pour l'extraire</li>
+      <li>Remplir les noms des personnages</li>
+      <li>Exporter en JSON</li>
     </ol>
   </div>
 
   <div class="controls">
-    <button class="btn-primary" id="btn-load">Charger une image</button>
-    <button class="btn-secondary" id="btn-detect">Detecter les portraits</button>
+    <button class="btn-primary" id="btn-load">Charger image</button>
+    <button class="btn-secondary" id="btn-toggle-config">Config grille</button>
+    <button class="btn-secondary" id="btn-detect">Detecter (auto)</button>
+    <button class="btn-primary" id="btn-ocr-names">OCR Noms</button>
+    <button class="btn-warning" id="btn-manual">Mode manuel</button>
     <button class="btn-success" id="btn-export">Exporter JSON</button>
-    <button class="btn-secondary" id="btn-copy">Copier dans presse-papier</button>
+    <button class="btn-secondary" id="btn-copy">Copier</button>
+    <button class="btn-secondary" id="btn-clear">Effacer tout</button>
   </div>
 
   <input type="file" id="file-input" accept="image/*" style="display:none">
 
   <div id="drop-zone">
-    <p>Glisser-deposer une image ici<br>ou cliquer sur "Charger une image"</p>
+    <p>Glisser-deposer une image ici<br>ou cliquer sur "Charger image"</p>
   </div>
 
-  <img id="preview" style="display:none">
+  <div class="config-panel" id="config-panel">
+    <div class="config-row">
+      <div class="config-item">
+        <label>Colonnes:</label>
+        <input type="number" id="cfg-cols" value="12" min="1" max="20">
+      </div>
+      <div class="config-item">
+        <label>Lignes:</label>
+        <input type="number" id="cfg-rows" value="5" min="1" max="20">
+      </div>
+    </div>
+    <div class="config-row">
+      <div class="config-item">
+        <label>Offset X:</label>
+        <input type="range" id="cfg-offsetX" value="50" min="0" max="100">
+        <span id="cfg-offsetX-val">50%</span>
+      </div>
+      <div class="config-item">
+        <label>Offset Y:</label>
+        <input type="range" id="cfg-offsetY" value="15" min="0" max="100">
+        <span id="cfg-offsetY-val">15%</span>
+      </div>
+    </div>
+    <div class="config-row">
+      <div class="config-item">
+        <label>Largeur %:</label>
+        <input type="range" id="cfg-widthPct" value="60" min="20" max="100">
+        <span id="cfg-widthPct-val">60%</span>
+      </div>
+      <div class="config-item">
+        <label>Hauteur %:</label>
+        <input type="range" id="cfg-heightPct" value="45" min="20" max="100">
+        <span id="cfg-heightPct-val">45%</span>
+      </div>
+    </div>
+    <button class="btn-secondary" id="btn-preview-grid" style="margin-top:10px">Previsualiser grille</button>
+
+    <div style="margin-top:15px; padding-top:15px; border-top:1px solid #444;">
+      <div style="font-size:12px; color:#ffd43b; margin-bottom:8px;">Zone texte (nom du personnage):</div>
+      <div class="config-row">
+        <div class="config-item">
+          <label>Offset Y nom:</label>
+          <input type="range" id="cfg-nameOffsetY" value="75" min="50" max="100">
+          <span id="cfg-nameOffsetY-val">75%</span>
+        </div>
+        <div class="config-item">
+          <label>Hauteur nom:</label>
+          <input type="range" id="cfg-nameHeight" value="12" min="5" max="25">
+          <span id="cfg-nameHeight-val">12%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="manual-mode" id="manual-mode">
+    <h3>Mode selection manuelle</h3>
+    <p>Cliquez sur l'image pour selectionner un portrait (carre 64x64). Entrez le nom puis cliquez sur le suivant.</p>
+    <div class="config-item" style="margin-bottom:10px">
+      <label>Taille selection:</label>
+      <input type="number" id="manual-size" value="64" min="32" max="128" style="width:60px">
+      <span>px</span>
+    </div>
+    <button class="btn-secondary" id="btn-exit-manual">Quitter mode manuel</button>
+  </div>
+
+  <div class="preview-container" id="preview-container" style="display:none">
+    <div id="canvas-container">
+      <canvas id="preview"></canvas>
+      <canvas id="grid-overlay"></canvas>
+      <canvas id="selection-canvas"></canvas>
+    </div>
+  </div>
 
   <div id="status"></div>
 
-  <div class="stats" id="stats" style="display:none">
-    Portraits detectes: <span id="count">0</span>
+  <div class="stats" id="stats">
+    Portraits: <span id="count">0</span> | Nommes: <span id="named-count">0</span>
   </div>
 
   <div id="portraits-grid"></div>
 
-  <div id="output" style="display:none"></div>
+  <div id="output"></div>
 
   <script>
-    // Configuration de la grille de portraits MSF
-    const CONFIG = {
-      // Nombre de colonnes et lignes dans l'image
-      cols: 12,
-      rows: 5,
-      // Marge autour de chaque portrait (en %)
-      marginX: 0.01,
-      marginY: 0.02,
-      // Offset du debut de la grille (en %)
-      offsetX: 0.02,
-      offsetY: 0.02,
-      // Taille du portrait dans la cellule (en %)
-      portraitSize: 0.6
-    };
-
     let loadedImage = null;
     let extractedPortraits = [];
+    let isManualMode = false;
+
+    // Config
+    const config = {
+      cols: 12,
+      rows: 5,
+      portraitSize: 80, // % (legacy, non utilise si widthPct/heightPct definis)
+      offsetX: 50,      // % position horizontale du centre dans la cellule
+      offsetY: 15,      // % position verticale du haut dans la cellule
+      widthPct: 60,     // % largeur du portrait par rapport a la cellule
+      heightPct: 45,    // % hauteur du portrait par rapport a la cellule
+      nameOffsetY: 75,  // % position Y du texte du nom dans la cellule
+      nameHeight: 12    // % hauteur de la zone de texte
+    };
+
+    // OCR worker
+    let ocrWorker = null;
 
     // Elements DOM
     const fileInput = document.getElementById('file-input');
     const dropZone = document.getElementById('drop-zone');
-    const preview = document.getElementById('preview');
+    const previewContainer = document.getElementById('preview-container');
+    const previewCanvas = document.getElementById('preview');
+    const gridOverlay = document.getElementById('grid-overlay');
+    const selectionCanvas = document.getElementById('selection-canvas');
     const status = document.getElementById('status');
     const stats = document.getElementById('stats');
     const countSpan = document.getElementById('count');
+    const namedCountSpan = document.getElementById('named-count');
     const grid = document.getElementById('portraits-grid');
     const output = document.getElementById('output');
+    const configPanel = document.getElementById('config-panel');
+    const manualMode = document.getElementById('manual-mode');
 
     // ===== Gestion des fichiers =====
 
@@ -223,17 +440,109 @@
         const img = new Image();
         img.onload = () => {
           loadedImage = img;
-          preview.src = e.target.result;
-          preview.style.display = 'block';
+
+          // Dessiner sur le canvas
+          previewCanvas.width = img.width;
+          previewCanvas.height = img.height;
+          gridOverlay.width = img.width;
+          gridOverlay.height = img.height;
+          selectionCanvas.width = img.width;
+          selectionCanvas.height = img.height;
+
+          const ctx = previewCanvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+
+          previewContainer.style.display = 'block';
           dropZone.style.display = 'none';
-          setStatus(`Image chargee: ${img.width}x${img.height}`, 'success');
+
+          setStatus(`Image: ${img.width}x${img.height}`, 'success');
         };
         img.src = e.target.result;
       };
       reader.readAsDataURL(file);
     }
 
-    // ===== Detection des portraits =====
+    // ===== Config =====
+
+    document.getElementById('btn-toggle-config').addEventListener('click', () => {
+      configPanel.classList.toggle('visible');
+    });
+
+    // Config inputs
+    document.getElementById('cfg-cols').addEventListener('change', (e) => {
+      config.cols = parseInt(e.target.value) || 12;
+    });
+    document.getElementById('cfg-rows').addEventListener('change', (e) => {
+      config.rows = parseInt(e.target.value) || 5;
+    });
+
+    document.getElementById('cfg-offsetX').addEventListener('input', (e) => {
+      config.offsetX = parseInt(e.target.value);
+      document.getElementById('cfg-offsetX-val').textContent = config.offsetX + '%';
+    });
+    document.getElementById('cfg-offsetY').addEventListener('input', (e) => {
+      config.offsetY = parseInt(e.target.value);
+      document.getElementById('cfg-offsetY-val').textContent = config.offsetY + '%';
+    });
+    document.getElementById('cfg-widthPct').addEventListener('input', (e) => {
+      config.widthPct = parseInt(e.target.value);
+      document.getElementById('cfg-widthPct-val').textContent = config.widthPct + '%';
+    });
+    document.getElementById('cfg-heightPct').addEventListener('input', (e) => {
+      config.heightPct = parseInt(e.target.value);
+      document.getElementById('cfg-heightPct-val').textContent = config.heightPct + '%';
+    });
+    document.getElementById('cfg-nameOffsetY').addEventListener('input', (e) => {
+      config.nameOffsetY = parseInt(e.target.value);
+      document.getElementById('cfg-nameOffsetY-val').textContent = config.nameOffsetY + '%';
+    });
+    document.getElementById('cfg-nameHeight').addEventListener('input', (e) => {
+      config.nameHeight = parseInt(e.target.value);
+      document.getElementById('cfg-nameHeight-val').textContent = config.nameHeight + '%';
+    });
+
+    document.getElementById('btn-preview-grid').addEventListener('click', previewGrid);
+
+    function previewGrid() {
+      if (!loadedImage) return;
+
+      const ctx = gridOverlay.getContext('2d');
+      ctx.clearRect(0, 0, gridOverlay.width, gridOverlay.height);
+
+      const cellW = loadedImage.width / config.cols;
+      const cellH = loadedImage.height / config.rows;
+
+      // Utiliser widthPct/heightPct pour les dimensions
+      const pW = cellW * (config.widthPct / 100);
+      const pH = cellH * (config.heightPct / 100);
+
+      // Zone de texte (nom)
+      const nameY = cellH * (config.nameOffsetY / 100);
+      const nameH = cellH * (config.nameHeight / 100);
+
+      for (let row = 0; row < config.rows; row++) {
+        for (let col = 0; col < config.cols; col++) {
+          const cellX = col * cellW;
+          const cellY = row * cellH;
+
+          // offsetX: 50% = centre, offsetY: 0% = haut
+          const x = cellX + (config.offsetX / 100) * cellW - pW / 2;
+          const y = cellY + (config.offsetY / 100) * cellH;
+
+          // Rectangle portrait (cyan)
+          ctx.strokeStyle = '#00d4ff';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(x, y, pW, pH);
+
+          // Rectangle zone texte (jaune)
+          ctx.strokeStyle = '#ffd43b';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(cellX + cellW * 0.05, cellY + nameY, cellW * 0.9, nameH);
+        }
+      }
+    }
+
+    // ===== Detection auto =====
 
     document.getElementById('btn-detect').addEventListener('click', detectPortraits);
 
@@ -245,79 +554,323 @@
 
       setStatus('Detection en cours...', 'info');
       extractedPortraits = [];
-      grid.innerHTML = '';
 
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = loadedImage.width;
-      canvas.height = loadedImage.height;
-      ctx.drawImage(loadedImage, 0, 0);
+      const cellW = loadedImage.width / config.cols;
+      const cellH = loadedImage.height / config.rows;
 
-      const cellWidth = canvas.width / CONFIG.cols;
-      const cellHeight = canvas.height / CONFIG.rows;
+      // Utiliser widthPct/heightPct pour les dimensions
+      const pW = Math.floor(cellW * (config.widthPct / 100));
+      const pH = Math.floor(cellH * (config.heightPct / 100));
 
-      // Taille du portrait a extraire
-      const portraitW = Math.floor(cellWidth * 0.45);
-      const portraitH = Math.floor(cellHeight * 0.45);
+      for (let row = 0; row < config.rows; row++) {
+        for (let col = 0; col < config.cols; col++) {
+          const cellX = col * cellW;
+          const cellY = row * cellH;
 
-      for (let row = 0; row < CONFIG.rows; row++) {
-        for (let col = 0; col < CONFIG.cols; col++) {
-          // Centre de la cellule
-          const cellX = col * cellWidth;
-          const cellY = row * cellHeight;
-
-          // Position du portrait (centre-haut de la cellule)
-          const x = Math.floor(cellX + (cellWidth - portraitW) / 2);
-          const y = Math.floor(cellY + cellHeight * 0.08);
+          // offsetX: 50% = centre, offsetY: 0% = haut
+          const x = Math.floor(cellX + (config.offsetX / 100) * cellW - pW / 2);
+          const y = Math.floor(cellY + (config.offsetY / 100) * cellH);
 
           // Extraire le portrait
           const portraitCanvas = document.createElement('canvas');
-          portraitCanvas.width = portraitW;
-          portraitCanvas.height = portraitH;
+          portraitCanvas.width = pW;
+          portraitCanvas.height = pH;
           const pCtx = portraitCanvas.getContext('2d');
-          pCtx.drawImage(canvas, x, y, portraitW, portraitH, 0, 0, portraitW, portraitH);
+          pCtx.drawImage(previewCanvas, x, y, pW, pH, 0, 0, pW, pH);
+
+          // Verifier si l'image est vide (moyenne de luminosite)
+          const imageData = pCtx.getImageData(0, 0, pW, pH);
+          const brightness = getAverageBrightness(imageData);
 
           const dataUrl = portraitCanvas.toDataURL('image/png');
           const hash = await computePHash(portraitCanvas);
 
-          // Essayer d'extraire le nom depuis l'OCR (simplifie: on laisse l'utilisateur remplir)
-          const index = row * CONFIG.cols + col;
-
           extractedPortraits.push({
-            index,
+            index: row * config.cols + col,
             row,
             col,
+            x, y, w: pW, h: pH,
             dataUrl,
             hash,
-            name: ''
+            name: '',
+            isEmpty: brightness < 20 // Seuil pour images vides
           });
         }
       }
 
       renderGrid();
-      setStatus(`${extractedPortraits.length} portraits extraits`, 'success');
-      stats.style.display = 'block';
-      countSpan.textContent = extractedPortraits.length;
+      updateStats();
+      setStatus(`${extractedPortraits.length} portraits detectes. Cliquez "OCR Noms" pour extraire les noms automatiquement.`, 'success');
     }
+
+    // ===== OCR des noms =====
+
+    document.getElementById('btn-ocr-names').addEventListener('click', ocrAllNames);
+
+    async function ocrAllNames() {
+      if (!loadedImage) {
+        setStatus('Charger une image d\'abord', 'error');
+        return;
+      }
+
+      if (extractedPortraits.length === 0) {
+        setStatus('Detecter les portraits d\'abord', 'error');
+        return;
+      }
+
+      setStatus('Initialisation OCR...', 'info');
+
+      try {
+        // Initialiser le worker Tesseract
+        if (!ocrWorker) {
+          ocrWorker = await Tesseract.createWorker('fra+eng', 1, {
+            logger: m => {
+              if (m.status === 'recognizing text') {
+                const pct = Math.round(m.progress * 100);
+                setStatus(`OCR en cours... ${pct}%`, 'info');
+              }
+            }
+          });
+        }
+
+        const cellW = loadedImage.width / config.cols;
+        const cellH = loadedImage.height / config.rows;
+        const nameY = cellH * (config.nameOffsetY / 100);
+        const nameH = cellH * (config.nameHeight / 100);
+
+        let recognized = 0;
+        const total = extractedPortraits.filter(p => !p.isEmpty).length;
+
+        for (let i = 0; i < extractedPortraits.length; i++) {
+          const p = extractedPortraits[i];
+          if (p.isEmpty) continue;
+
+          setStatus(`OCR ${recognized + 1}/${total}...`, 'info');
+
+          // Calculer la zone de texte pour ce portrait
+          const cellX = p.col * cellW;
+          const cellY = p.row * cellH;
+          const textX = Math.floor(cellX + cellW * 0.05);
+          const textY = Math.floor(cellY + nameY);
+          const textW = Math.floor(cellW * 0.9);
+          const textH = Math.floor(nameH);
+
+          // Extraire la zone de texte
+          const textCanvas = document.createElement('canvas');
+          textCanvas.width = textW;
+          textCanvas.height = textH;
+          const tCtx = textCanvas.getContext('2d');
+          tCtx.drawImage(previewCanvas, textX, textY, textW, textH, 0, 0, textW, textH);
+
+          // Preprocesser pour OCR (augmenter contraste, inverser si fond sombre)
+          preprocessForOCR(tCtx, textW, textH);
+
+          // OCR
+          const { data: { text } } = await ocrWorker.recognize(textCanvas);
+          const cleanName = cleanOCRText(text);
+
+          if (cleanName) {
+            extractedPortraits[i].name = cleanName;
+            extractedPortraits[i].ocrRaw = text.trim();
+            recognized++;
+          }
+        }
+
+        renderGrid();
+        updateStats();
+        setStatus(`OCR termine: ${recognized} noms reconnus sur ${total}`, 'success');
+
+      } catch (e) {
+        console.error('Erreur OCR:', e);
+        setStatus('Erreur OCR: ' + e.message, 'error');
+      }
+    }
+
+    function preprocessForOCR(ctx, w, h) {
+      const imageData = ctx.getImageData(0, 0, w, h);
+      const data = imageData.data;
+
+      // Calculer la luminosite moyenne
+      let totalBrightness = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        totalBrightness += (data[i] + data[i + 1] + data[i + 2]) / 3;
+      }
+      const avgBrightness = totalBrightness / (data.length / 4);
+
+      // Si fond sombre (< 128), inverser les couleurs
+      const invert = avgBrightness < 100;
+
+      for (let i = 0; i < data.length; i += 4) {
+        let gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+
+        if (invert) {
+          gray = 255 - gray;
+        }
+
+        // Augmenter le contraste
+        gray = gray < 128 ? 0 : 255;
+
+        data[i] = gray;
+        data[i + 1] = gray;
+        data[i + 2] = gray;
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+    }
+
+    function cleanOCRText(text) {
+      if (!text) return '';
+
+      // Nettoyer le texte OCR
+      let clean = text.trim()
+        .replace(/\n/g, ' ')           // Remplacer sauts de ligne
+        .replace(/\s+/g, ' ')          // Normaliser espaces
+        .replace(/[_|\\\/\[\]{}]/g, '') // Supprimer caracteres parasites
+        .replace(/^[^a-zA-Z]+/, '')    // Supprimer prefixe non-alpha
+        .replace(/[^a-zA-Z]+$/, '')    // Supprimer suffixe non-alpha
+        .trim();
+
+      // Ignorer les resultats trop courts ou avec trop peu de lettres
+      const letters = clean.replace(/[^a-zA-Z]/g, '');
+      if (letters.length < 3) return '';
+
+      // Mettre en majuscules (comme dans le jeu)
+      return clean.toUpperCase();
+    }
+
+    function getAverageBrightness(imageData) {
+      const data = imageData.data;
+      let sum = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        sum += (data[i] + data[i + 1] + data[i + 2]) / 3;
+      }
+      return sum / (data.length / 4);
+    }
+
+    // ===== Mode manuel =====
+
+    document.getElementById('btn-manual').addEventListener('click', () => {
+      if (!loadedImage) {
+        setStatus('Charger une image d\'abord', 'error');
+        return;
+      }
+      isManualMode = true;
+      manualMode.classList.add('visible');
+      configPanel.classList.remove('visible');
+      setStatus('Cliquez sur un portrait pour l\'extraire', 'info');
+    });
+
+    document.getElementById('btn-exit-manual').addEventListener('click', () => {
+      isManualMode = false;
+      manualMode.classList.remove('visible');
+      const ctx = selectionCanvas.getContext('2d');
+      ctx.clearRect(0, 0, selectionCanvas.width, selectionCanvas.height);
+    });
+
+    selectionCanvas.addEventListener('click', (e) => {
+      if (!isManualMode || !loadedImage) return;
+
+      const rect = selectionCanvas.getBoundingClientRect();
+      const scaleX = loadedImage.width / rect.width;
+      const scaleY = loadedImage.height / rect.height;
+
+      const clickX = (e.clientX - rect.left) * scaleX;
+      const clickY = (e.clientY - rect.top) * scaleY;
+
+      const size = parseInt(document.getElementById('manual-size').value) || 64;
+      const x = Math.floor(clickX - size / 2);
+      const y = Math.floor(clickY - size / 2);
+
+      extractManualPortrait(x, y, size);
+    });
+
+    async function extractManualPortrait(x, y, size) {
+      // Limiter aux bords
+      x = Math.max(0, Math.min(x, loadedImage.width - size));
+      y = Math.max(0, Math.min(y, loadedImage.height - size));
+
+      // Dessiner le rectangle de selection
+      const ctx = selectionCanvas.getContext('2d');
+      ctx.strokeStyle = '#51cf66';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, size, size);
+
+      // Extraire
+      const portraitCanvas = document.createElement('canvas');
+      portraitCanvas.width = size;
+      portraitCanvas.height = size;
+      const pCtx = portraitCanvas.getContext('2d');
+      pCtx.drawImage(previewCanvas, x, y, size, size, 0, 0, size, size);
+
+      const dataUrl = portraitCanvas.toDataURL('image/png');
+      const hash = await computePHash(portraitCanvas);
+
+      // Demander le nom
+      const name = prompt('Nom du personnage:');
+
+      if (name && name.trim()) {
+        extractedPortraits.push({
+          index: extractedPortraits.length,
+          x, y, w: size, h: size,
+          dataUrl,
+          hash,
+          name: name.trim(),
+          isEmpty: false,
+          manual: true
+        });
+
+        renderGrid();
+        updateStats();
+        setStatus(`Portrait "${name.trim()}" ajoute`, 'success');
+      }
+    }
+
+    // ===== Rendu =====
 
     function renderGrid() {
       grid.innerHTML = '';
 
       extractedPortraits.forEach((p, i) => {
         const card = document.createElement('div');
-        card.className = 'portrait-card';
+        card.className = 'portrait-card' + (p.isEmpty ? ' empty' : '');
+
+        const ocrHint = p.ocrRaw && p.ocrRaw !== p.name ? `<div class="ocr-raw" title="OCR brut">${p.ocrRaw}</div>` : '';
+
         card.innerHTML = `
-          <img src="${p.dataUrl}" alt="Portrait ${i}">
+          <div class="index">#${p.index}</div>
+          <img src="${p.dataUrl}" alt="Portrait ${i}" data-index="${i}">
           <input type="text" value="${p.name}" placeholder="Nom..." data-index="${i}">
-          <div class="hash">${p.hash}</div>
+          ${ocrHint}
+          <div class="hash">${p.hash.substring(0, 8)}...</div>
         `;
 
         card.querySelector('input').addEventListener('change', (e) => {
           extractedPortraits[i].name = e.target.value.trim();
+          updateStats();
+        });
+
+        card.querySelector('img').addEventListener('click', () => {
+          // Highlight dans la preview
+          if (p.x !== undefined) {
+            const ctx = selectionCanvas.getContext('2d');
+            ctx.clearRect(0, 0, selectionCanvas.width, selectionCanvas.height);
+            ctx.strokeStyle = '#ffd43b';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(p.x, p.y, p.w, p.h);
+          }
         });
 
         grid.appendChild(card);
       });
+
+      stats.classList.add('visible');
+    }
+
+    function updateStats() {
+      const total = extractedPortraits.filter(p => !p.isEmpty).length;
+      const named = extractedPortraits.filter(p => p.name && !p.isEmpty).length;
+      countSpan.textContent = total;
+      namedCountSpan.textContent = named;
     }
 
     // ===== pHash =====
@@ -326,7 +879,6 @@
       const hashSize = 8;
       const sampleSize = 32;
 
-      // Redimensionner
       const smallCanvas = document.createElement('canvas');
       smallCanvas.width = sampleSize;
       smallCanvas.height = sampleSize;
@@ -336,14 +888,12 @@
       const imageData = ctx.getImageData(0, 0, sampleSize, sampleSize);
       const pixels = imageData.data;
 
-      // Convertir en niveaux de gris
       const gray = new Float32Array(sampleSize * sampleSize);
       for (let i = 0; i < gray.length; i++) {
         const offset = i * 4;
         gray[i] = 0.299 * pixels[offset] + 0.587 * pixels[offset + 1] + 0.114 * pixels[offset + 2];
       }
 
-      // Reduire a hashSize x hashSize
       const reduced = new Float32Array(hashSize * hashSize);
       const blockSize = sampleSize / hashSize;
 
@@ -366,11 +916,9 @@
         }
       }
 
-      // Calculer la mediane
       const sorted = [...reduced].sort((a, b) => a - b);
       const median = sorted[Math.floor(sorted.length / 2)];
 
-      // Generer le hash binaire puis hex
       let binary = '';
       for (let i = 0; i < reduced.length; i++) {
         binary += reduced[i] > median ? '1' : '0';
@@ -388,18 +936,19 @@
 
     document.getElementById('btn-export').addEventListener('click', exportJSON);
     document.getElementById('btn-copy').addEventListener('click', copyToClipboard);
+    document.getElementById('btn-clear').addEventListener('click', clearAll);
 
     function generateJSON() {
       const portraits = {};
 
       extractedPortraits.forEach(p => {
-        if (p.name && p.name.trim()) {
+        if (p.name && p.name.trim() && !p.isEmpty) {
           portraits[p.hash] = p.name.trim();
         }
       });
 
       return JSON.stringify({
-        description: "Base de portraits MSF generee automatiquement",
+        description: "Portraits MSF",
         generatedAt: new Date().toISOString(),
         count: Object.keys(portraits).length,
         portraits
@@ -420,18 +969,31 @@
       output.textContent = json;
       output.style.display = 'block';
 
-      const count = extractedPortraits.filter(p => p.name).length;
+      const count = extractedPortraits.filter(p => p.name && !p.isEmpty).length;
       setStatus(`Exporte ${count} portraits`, 'success');
     }
 
     function copyToClipboard() {
       const json = generateJSON();
       navigator.clipboard.writeText(json).then(() => {
-        setStatus('JSON copie dans le presse-papier', 'success');
+        setStatus('JSON copie', 'success');
       });
     }
 
-    // ===== Utils =====
+    function clearAll() {
+      extractedPortraits = [];
+      grid.innerHTML = '';
+      output.style.display = 'none';
+      stats.classList.remove('visible');
+
+      const ctx = selectionCanvas.getContext('2d');
+      ctx.clearRect(0, 0, selectionCanvas.width, selectionCanvas.height);
+
+      const gctx = gridOverlay.getContext('2d');
+      gctx.clearRect(0, 0, gridOverlay.width, gridOverlay.height);
+
+      setStatus('Liste effacee', 'info');
+    }
 
     function setStatus(msg, type) {
       status.textContent = msg;
