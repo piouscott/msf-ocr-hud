@@ -53,6 +53,23 @@ let warAnalyzer = null;
 // Portraits captures pour le mode War
 let capturedWarPortraits = [null, null, null, null, null];
 
+// Recuperer les portraits depuis le content script au demarrage
+(async function loadSavedPortraits() {
+  try {
+    const [tab] = await ext.tabs.query({ active: true, currentWindow: true });
+    if (tab) {
+      const response = await ext.tabs.sendMessage(tab.id, { type: "MSF_GET_SAVED_PORTRAITS" });
+      if (response && response.portraits && response.portraits.length > 0) {
+        capturedWarPortraits = response.portraits;
+        console.log("[Popup] Portraits recuperes:", capturedWarPortraits.length);
+        setTimeout(() => updateWarPortraitsDisplay(), 100);
+      }
+    }
+  } catch (e) {
+    console.log("[Popup] Pas de portraits sauvegardes");
+  }
+})();
+
 // API Key constante (ne change pas)
 const MSF_API_KEY = "17wMKJLRxy3pYDCKG5ciP7VSU45OVumB2biCzzgw";
 

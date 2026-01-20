@@ -579,6 +579,21 @@ ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     sendResponse({ success: true });
     return true;
   }
+
+  if (msg.type === "MSF_GET_SAVED_PORTRAITS") {
+    try {
+      const saved = localStorage.getItem("msf_war_portraits");
+      if (saved) {
+        const portraits = JSON.parse(saved);
+        sendResponse({ portraits: portraits });
+      } else {
+        sendResponse({ portraits: [] });
+      }
+    } catch (e) {
+      sendResponse({ portraits: [] });
+    }
+    return true;
+  }
 });
 
 async function handleExtraction(dataUrl) {
@@ -1108,9 +1123,20 @@ function startPortraitCapture(options) {
       overlay.remove();
 
       if (portraits && portraits.length > 0) {
+        // Sauvegarder en localStorage pour que le popup puisse les recuperer
+        try {
+          localStorage.setItem("msf_war_portraits", JSON.stringify(portraits));
+          console.log(`[MSF] Portraits sauvegardes en localStorage`);
+        } catch (e) {
+          console.warn("[MSF] Erreur sauvegarde localStorage:", e);
+        }
+
+        // Envoyer aussi via message
         ext.runtime.sendMessage({
           type: "MSF_PORTRAITS_CAPTURED",
           portraits: portraits
+        }).catch(err => {
+          console.log("[MSF] Message non delivre (popup ferme?):", err);
         });
         console.log(`[MSF] ${portraits.length} portraits captures`);
       } else {
@@ -1151,16 +1177,46 @@ function startPortraitCapture(options) {
       dragging = false;
     });
 
-    window.addEventListener("keydown", function handler(e) {
-      if (e.key === "Escape") {
-        window.removeEventListener("keydown", handler);
-        overlay.remove();
-      } else if (e.key === "Enter" && hasSelection) {
-        window.removeEventListener("keydown", handler);
+    // Boutons de validation dans l'overlay
+    const btnContainer = document.createElement("div");
+    btnContainer.style.cssText = "position:fixed;left:50%;bottom:90px;transform:translateX(-50%);display:flex;gap:12px;z-index:10";
+
+    const btnValidate = document.createElement("button");
+    btnValidate.textContent = "Valider";
+    btnValidate.style.cssText = "padding:10px 24px;background:#51cf66;color:#1a1a2e;border:none;border-radius:6px;font-weight:bold;cursor:pointer;font-size:14px";
+    btnValidate.addEventListener("click", function() {
+      if (hasSelection) {
         const portraits = captureAllPortraits();
         finishCapture(portraits);
       }
     });
+
+    const btnCancel = document.createElement("button");
+    btnCancel.textContent = "Annuler";
+    btnCancel.style.cssText = "padding:10px 24px;background:#ff6b6b;color:#fff;border:none;border-radius:6px;font-weight:bold;cursor:pointer;font-size:14px";
+    btnCancel.addEventListener("click", function() {
+      overlay.remove();
+    });
+
+    btnContainer.appendChild(btnValidate);
+    btnContainer.appendChild(btnCancel);
+    overlay.appendChild(btnContainer);
+
+    // Raccourcis clavier avec capture
+    document.addEventListener("keydown", function handler(e) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        document.removeEventListener("keydown", handler, true);
+        overlay.remove();
+      } else if (e.key === "Enter" && hasSelection) {
+        e.preventDefault();
+        e.stopPropagation();
+        document.removeEventListener("keydown", handler, true);
+        const portraits = captureAllPortraits();
+        finishCapture(portraits);
+      }
+    }, true); // capture phase pour intercepter avant le jeu
   }
 }
 
