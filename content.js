@@ -581,18 +581,19 @@ ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 
   if (msg.type === "MSF_GET_SAVED_PORTRAITS") {
-    try {
-      const saved = localStorage.getItem("msf_war_portraits");
-      if (saved) {
-        const portraits = JSON.parse(saved);
-        sendResponse({ portraits: portraits });
+    ext.storage.local.get("msf_war_portraits").then(result => {
+      if (result.msf_war_portraits && result.msf_war_portraits.length > 0) {
+        console.log("[MSF] Portraits récupérés du storage:", result.msf_war_portraits.length);
+        sendResponse({ portraits: result.msf_war_portraits });
       } else {
+        console.log("[MSF] Aucun portrait dans le storage");
         sendResponse({ portraits: [] });
       }
-    } catch (e) {
+    }).catch(e => {
+      console.error("[MSF] Erreur lecture storage:", e);
       sendResponse({ portraits: [] });
-    }
-    return true;
+    });
+    return true; // Réponse asynchrone
   }
 });
 
@@ -983,7 +984,8 @@ function startPortraitCapture(options) {
 
     // Instructions
     const info = document.createElement("div");
-    info.style.cssText = "position:fixed;left:50%;top:20px;transform:translateX(-50%);background:rgba(0,0,0,0.95);color:#fff;padding:16px 24px;border-radius:12px;font:14px sans-serif;text-align:center;max-width:500px;z-index:10";
+    info.id = "msf-portrait-info";
+    info.style.cssText = "position:fixed;left:50%;top:20px;transform:translateX(-50%);background:rgba(0,0,0,0.95);color:#fff;padding:16px 24px;border-radius:12px;font:14px sans-serif;text-align:center;max-width:500px;z-index:2147483648";
     info.innerHTML = `
       <div style="color:#ff922b;font-weight:bold;font-size:16px;margin-bottom:8px">
         Capture des ${count} portraits
@@ -997,7 +999,8 @@ function startPortraitCapture(options) {
 
     // Mini previews
     const previewsContainer = document.createElement("div");
-    previewsContainer.style.cssText = "position:fixed;left:50%;bottom:20px;transform:translateX(-50%);display:flex;gap:8px;background:rgba(0,0,0,0.9);padding:12px;border-radius:8px;z-index:10";
+    previewsContainer.id = "msf-portrait-previews";
+    previewsContainer.style.cssText = "position:fixed;left:50%;bottom:20px;transform:translateX(-50%);display:flex;gap:8px;background:rgba(0,0,0,0.9);padding:12px;border-radius:8px;z-index:2147483648";
     for (let i = 0; i < count; i++) {
       const preview = document.createElement("div");
       preview.style.cssText = "width:48px;height:48px;border:2px dashed #555;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#555;font-size:14px;font-weight:bold;overflow:hidden";
@@ -1012,6 +1015,7 @@ function startPortraitCapture(options) {
     let startX = 0, startY = 0, endX = 0, endY = 0;
     let dragging = false;
     let hasSelection = false;
+    let keyHandler = null; // Déclarer ici pour être accessible dans finishCapture
 
     function clamp(v, min, max) {
       return Math.max(min, Math.min(max, v));
@@ -1120,32 +1124,87 @@ function startPortraitCapture(options) {
     }
 
     function finishCapture(portraits) {
-      overlay.remove();
+      console.log("[MSF] finishCapture appelé, portraits:", portraits ? portraits.length : 0);
 
-      if (portraits && portraits.length > 0) {
-        // Sauvegarder en localStorage pour que le popup puisse les recuperer
-        try {
-          localStorage.setItem("msf_war_portraits", JSON.stringify(portraits));
-          console.log(`[MSF] Portraits sauvegardes en localStorage`);
-        } catch (e) {
-          console.warn("[MSF] Erreur sauvegarde localStorage:", e);
+      // Nettoyer les event listeners
+      if (keyHandler) {
+        window.removeEventListener("keydown", keyHandler, true);
+        document.removeEventListener("keydown", keyHandler, true);
+        console.log("[MSF] Event listeners supprimés");
+      }
+
+      // Supprimer l'overlay du DOM de manière agressive
+      try {
+        // Supprimer tous les éléments de l'overlay par ID
+        const elementsToRemove = [
+          "msf-portrait-capture",
+          "msf-portrait-info",
+          "msf-portrait-previews",
+          "msf-portrait-buttons"
+        ];
+
+        elementsToRemove.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.style.display = "none";
+            el.remove();
+            console.log(`[MSF] Élément #${id} supprimé`);
+          }
+        });
+
+        // Supprimer aussi par référence
+        if (overlay && overlay.parentNode) {
+          overlay.style.display = "none";
+          overlay.parentNode.removeChild(overlay);
+          console.log("[MSF] Overlay supprimé par référence");
         }
 
-        // Envoyer aussi via message
-        ext.runtime.sendMessage({
-          type: "MSF_PORTRAITS_CAPTURED",
-          portraits: portraits
-        }).catch(err => {
-          console.log("[MSF] Message non delivre (popup ferme?):", err);
+        // Recherche exhaustive de tous les éléments MSF portrait restants
+        const allMsfElements = document.querySelectorAll("[id^='msf-portrait'], [id*='portrait-preview']");
+        if (allMsfElements.length > 0) {
+          allMsfElements.forEach((el, idx) => {
+            el.remove();
+            console.log(`[MSF] Élément résiduel ${idx} (${el.id}) supprimé`);
+          });
+        }
+      } catch (e) {
+        console.error("[MSF] Erreur suppression overlay:", e);
+      }
+
+      if (portraits && portraits.length > 0) {
+        // Sauvegarder dans ext.storage.local (partagé entre content script et popup)
+        ext.storage.local.set({ msf_war_portraits: portraits }).then(() => {
+          console.log(`[MSF] ${portraits.length} portraits sauvegardes dans storage`);
+
+          // Envoyer un message au popup pour qu'il se mette à jour
+          ext.runtime.sendMessage({
+            type: "MSF_PORTRAITS_CAPTURED",
+            portraits: portraits
+          }).then(() => {
+            console.log("[MSF] Message envoyé au popup");
+          }).catch(err => {
+            console.log("[MSF] Popup fermé, les portraits seront chargés à la prochaine ouverture");
+          });
+        }).catch(e => {
+          console.warn("[MSF] Erreur sauvegarde storage:", e);
         });
-        console.log(`[MSF] ${portraits.length} portraits captures`);
       } else {
         alert("Aucun portrait capture");
       }
     }
 
     overlay.addEventListener("mousedown", function(e) {
-      if (e.target === info || e.target === previewsContainer) return;
+      // Ignorer les clics sur les elements UI (info, previews, boutons)
+      if (e.target === info ||
+          e.target === previewsContainer ||
+          e.target.tagName === "BUTTON" ||
+          e.target.closest("button") ||
+          info.contains(e.target) ||
+          previewsContainer.contains(e.target)) {
+        return;
+      }
+
+      console.log("[MSF] mousedown - starting selection");
       dragging = true;
       hasSelection = false;
       startX = clamp(e.clientX, 0, W);
@@ -1171,52 +1230,110 @@ function startPortraitCapture(options) {
     });
 
     overlay.addEventListener("mouseup", function() {
-      if (dragging && Math.abs(endX - startX) > 50 && Math.abs(endY - startY) > 20) {
+      const width = Math.abs(endX - startX);
+      const height = Math.abs(endY - startY);
+      console.log("[MSF] mouseup - dragging:", dragging, "width:", width, "height:", height);
+
+      if (dragging && width > 50 && height > 20) {
         hasSelection = true;
+        console.log("[MSF] Selection validee:", hasSelection);
+      } else {
+        console.log("[MSF] Selection trop petite ou pas de dragging");
       }
       dragging = false;
     });
 
     // Boutons de validation dans l'overlay
     const btnContainer = document.createElement("div");
-    btnContainer.style.cssText = "position:fixed;left:50%;bottom:90px;transform:translateX(-50%);display:flex;gap:12px;z-index:10";
+    btnContainer.id = "msf-portrait-buttons";
+    btnContainer.style.cssText = "position:fixed;left:50%;bottom:90px;transform:translateX(-50%);display:flex;gap:12px;z-index:2147483648";
 
     const btnValidate = document.createElement("button");
     btnValidate.textContent = "Valider";
-    btnValidate.style.cssText = "padding:10px 24px;background:#51cf66;color:#1a1a2e;border:none;border-radius:6px;font-weight:bold;cursor:pointer;font-size:14px";
-    btnValidate.addEventListener("click", function() {
-      if (hasSelection) {
-        const portraits = captureAllPortraits();
-        finishCapture(portraits);
-      }
+    btnValidate.style.cssText = "padding:10px 24px;background:#51cf66;color:#1a1a2e;border:none;border-radius:6px;font-weight:bold;cursor:pointer;font-size:14px;pointer-events:auto";
+    btnValidate.addEventListener("click", function(e) {
+      e.stopPropagation();
+      console.log("[MSF] Bouton Valider clique, hasSelection:", hasSelection);
+      const portraits = captureAllPortraits();
+      console.log("[MSF] Portraits captures:", portraits ? portraits.length : 0);
+      finishCapture(portraits);
     });
 
     const btnCancel = document.createElement("button");
     btnCancel.textContent = "Annuler";
-    btnCancel.style.cssText = "padding:10px 24px;background:#ff6b6b;color:#fff;border:none;border-radius:6px;font-weight:bold;cursor:pointer;font-size:14px";
-    btnCancel.addEventListener("click", function() {
-      overlay.remove();
+    btnCancel.style.cssText = "padding:10px 24px;background:#ff6b6b;color:#fff;border:none;border-radius:6px;font-weight:bold;cursor:pointer;font-size:14px;pointer-events:auto";
+    btnCancel.addEventListener("click", function(e) {
+      e.stopPropagation();
+      console.log("[MSF] Bouton Annuler clique");
+
+      // Nettoyer les event listeners
+      if (keyHandler) {
+        window.removeEventListener("keydown", keyHandler, true);
+        document.removeEventListener("keydown", keyHandler, true);
+      }
+
+      // Supprimer tous les éléments
+      ["msf-portrait-capture", "msf-portrait-info", "msf-portrait-previews", "msf-portrait-buttons"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.style.display = "none";
+          el.remove();
+        }
+      });
+
+      if (overlay && overlay.parentNode) {
+        overlay.style.display = "none";
+        overlay.parentNode.removeChild(overlay);
+      }
+
+      // Nettoyage exhaustif
+      document.querySelectorAll("[id^='msf-portrait'], [id*='portrait-preview']").forEach(el => el.remove());
     });
 
     btnContainer.appendChild(btnValidate);
     btnContainer.appendChild(btnCancel);
     overlay.appendChild(btnContainer);
 
-    // Raccourcis clavier avec capture
-    document.addEventListener("keydown", function handler(e) {
+    // Raccourcis clavier avec capture - attacher IMMEDIATEMENT et sur window
+    keyHandler = function(e) {
+      console.log("[MSF] Key pressed:", e.key, "hasSelection:", hasSelection);
       if (e.key === "Escape") {
         e.preventDefault();
         e.stopPropagation();
-        document.removeEventListener("keydown", handler, true);
-        overlay.remove();
+        e.stopImmediatePropagation();
+        window.removeEventListener("keydown", keyHandler, true);
+        document.removeEventListener("keydown", keyHandler, true);
+
+        // Supprimer tous les éléments
+        ["msf-portrait-capture", "msf-portrait-info", "msf-portrait-previews", "msf-portrait-buttons"].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.style.display = "none";
+            el.remove();
+          }
+        });
+
+        if (overlay && overlay.parentNode) {
+          overlay.style.display = "none";
+          overlay.parentNode.removeChild(overlay);
+        }
+
+        // Nettoyage exhaustif
+        document.querySelectorAll("[id^='msf-portrait'], [id*='portrait-preview']").forEach(el => el.remove());
       } else if (e.key === "Enter" && hasSelection) {
         e.preventDefault();
         e.stopPropagation();
-        document.removeEventListener("keydown", handler, true);
+        e.stopImmediatePropagation();
+        window.removeEventListener("keydown", keyHandler, true);
+        document.removeEventListener("keydown", keyHandler, true);
         const portraits = captureAllPortraits();
         finishCapture(portraits);
       }
-    }, true); // capture phase pour intercepter avant le jeu
+    };
+
+    // Attacher sur window ET document pour maximiser les chances
+    window.addEventListener("keydown", keyHandler, true);
+    document.addEventListener("keydown", keyHandler, true);
   }
 }
 

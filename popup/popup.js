@@ -3,6 +3,7 @@ const ext = typeof browser !== "undefined" ? browser : chrome;
 // Elements DOM
 const btnAnalyze = document.getElementById("btn-analyze");
 const btnCalibrate = document.getElementById("btn-calibrate");
+const btnDetach = document.getElementById("btn-detach");
 const btnExport = document.getElementById("btn-export");
 const btnImport = document.getElementById("btn-import");
 const btnManage = document.getElementById("btn-manage");
@@ -56,17 +57,17 @@ let capturedWarPortraits = [null, null, null, null, null];
 // Recuperer les portraits depuis le content script au demarrage
 (async function loadSavedPortraits() {
   try {
-    const [tab] = await ext.tabs.query({ active: true, currentWindow: true });
-    if (tab) {
-      const response = await ext.tabs.sendMessage(tab.id, { type: "MSF_GET_SAVED_PORTRAITS" });
-      if (response && response.portraits && response.portraits.length > 0) {
-        capturedWarPortraits = response.portraits;
-        console.log("[Popup] Portraits recuperes:", capturedWarPortraits.length);
-        setTimeout(() => updateWarPortraitsDisplay(), 100);
+    const result = await ext.storage.local.get("msf_war_portraits");
+    if (result.msf_war_portraits && result.msf_war_portraits.length > 0) {
+      capturedWarPortraits = result.msf_war_portraits;
+      console.log("[Popup] Portraits recuperes depuis storage:", capturedWarPortraits.length);
+      setTimeout(() => updateWarPortraitsDisplay(), 100);
+      if (warPanel.classList.contains("hidden")) {
+        warPanel.classList.remove("hidden");
       }
     }
   } catch (e) {
-    console.log("[Popup] Pas de portraits sauvegardes");
+    console.log("[Popup] Pas de portraits sauvegardes:", e);
   }
 })();
 
@@ -164,6 +165,31 @@ btnCalibrate.addEventListener("click", async () => {
     // Fermer le popup apres un delai
     setTimeout(() => window.close(), 500);
   } catch (e) {
+    setStatus("Erreur: " + e.message, "error");
+  }
+});
+
+// ============================================
+// Bouton Fenêtre Détachée
+// ============================================
+
+btnDetach.addEventListener("click", async () => {
+  try {
+    // Créer une fenêtre popup permanente
+    const popupUrl = ext.runtime.getURL("popup/popup.html");
+
+    await ext.windows.create({
+      url: popupUrl,
+      type: "popup",
+      width: 450,
+      height: 700,
+      focused: true
+    });
+
+    // Fermer le popup actuel (optionnel)
+    setTimeout(() => window.close(), 100);
+  } catch (e) {
+    console.error("[Popup] Erreur création fenêtre:", e);
     setStatus("Erreur: " + e.message, "error");
   }
 });
@@ -769,13 +795,13 @@ tabManual.addEventListener("click", () => {
 
 btnWarCapture.addEventListener("click", async () => {
   try {
-    // Fermer le popup et lancer le calibrateur en mode portrait
+    // Lancer le calibrateur en mode portrait
     await ext.runtime.sendMessage({
       type: "MSF_START_PORTRAIT_CAPTURE",
       count: 5
     });
-    setStatus("Selectionnez les 5 portraits (ESC pour quitter)");
-    setTimeout(() => window.close(), 300);
+    setStatus("Sélectionnez les 5 portraits (VALIDEZ quand terminé)");
+    // Ne pas fermer le popup - il se mettra à jour automatiquement
   } catch (e) {
     showWarResult("Erreur: " + e.message, "error");
   }
@@ -784,8 +810,21 @@ btnWarCapture.addEventListener("click", async () => {
 // Ecouter les portraits captures depuis le content script
 ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === "MSF_PORTRAITS_CAPTURED") {
+    console.log("[Popup] Portraits reçus:", msg.portraits.length);
     capturedWarPortraits = msg.portraits;
     updateWarPortraitsDisplay();
+    setStatus(`✅ ${msg.portraits.length} portraits capturés !`, "success");
+
+    // Ouvrir automatiquement le panneau War si pas déjà ouvert
+    if (warPanel.classList.contains("hidden")) {
+      warPanel.classList.remove("hidden");
+    }
+
+    // S'assurer que l'onglet Portrait est actif
+    if (!tabPortrait.classList.contains("active")) {
+      tabPortrait.click();
+    }
+
     sendResponse({ received: true });
   }
 });
@@ -849,19 +888,75 @@ function blobToDataUrl(blob) {
   });
 }
 
-// Click sur un slot pour le vider ou le remplacer
+// Click sur un slot pour le modifier ou le supprimer
 warPortraits.addEventListener("click", async (e) => {
   const slot = e.target.closest(".war-portrait-slot");
   if (!slot) return;
 
   const index = parseInt(slot.dataset.index);
+  const portrait = capturedWarPortraits[index];
 
-  if (capturedWarPortraits[index]) {
-    // Demander si on veut supprimer
-    if (confirm("Supprimer ce portrait ?")) {
-      capturedWarPortraits[index] = null;
+  if (!portrait) return;
+
+  // Proposer les options
+  const action = confirm(
+    `Portrait: ${portrait.name || "Non identifié"}\n\n` +
+    `Cliquez OK pour CORRIGER le nom\n` +
+    `Cliquez Annuler pour SUPPRIMER ce portrait`
+  );
+
+  if (action) {
+    // Corriger le nom
+    const newName = prompt(
+      "Entrez le nom correct du personnage:",
+      portrait.name || ""
+    );
+
+    if (newName && newName.trim()) {
+      // Calculer le hash du portrait
+      if (!warAnalyzer) {
+        warAnalyzer = new WarAnalyzer();
+        await warAnalyzer.init();
+      }
+
+      const hash = await warAnalyzer.computePortraitHash(portrait.dataUrl);
+
+      // Chercher le charId dans la base
+      let charId = null;
+      if (warAnalyzer.nameToId) {
+        const normalizedName = newName.trim().toUpperCase();
+        charId = warAnalyzer.nameToId[normalizedName] || null;
+      }
+
+      // Mettre à jour le portrait
+      portrait.name = newName.trim();
+      portrait.charId = charId;
+      portrait.hash = hash;
+
+      // Sauvegarder dans la base locale
+      try {
+        const stored = await ext.storage.local.get("msfPortraits");
+        const portraits = stored.msfPortraits || {};
+        portraits[hash] = {
+          name: portrait.name,
+          charId: charId
+        };
+        await ext.storage.local.set({ msfPortraits: portraits });
+        console.log(`[Popup] Portrait sauvegardé: ${portrait.name} = ${hash}`);
+      } catch (e) {
+        console.error("[Popup] Erreur sauvegarde portrait:", e);
+      }
+
+      // Mettre à jour l'affichage
       updateWarPortraitsDisplay();
+
+      // Sauvegarder les portraits mis à jour
+      await ext.storage.local.set({ msf_war_portraits: capturedWarPortraits });
     }
+  } else {
+    // Supprimer le portrait
+    capturedWarPortraits[index] = null;
+    updateWarPortraitsDisplay();
   }
 });
 
@@ -911,7 +1006,7 @@ btnWarAnalyzePortraits.addEventListener("click", async () => {
 
   } catch (e) {
     console.error("[War] Erreur analyse portraits:", e);
-    showWarResult("Erreur: " + e.message, "error");
+    showWarResult("Erreur: " + (e?.message || "Erreur inconnue"), "error");
   } finally {
     btnWarAnalyzePortraits.disabled = false;
   }

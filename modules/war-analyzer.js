@@ -106,15 +106,20 @@ class WarAnalyzer {
       console.error("[WarAnalyzer] Erreur chargement war-meta:", e);
     }
 
-    // Initialiser Tesseract
+    // Initialiser Tesseract (optionnel - seulement pour analyse par noms)
     if (typeof Tesseract !== "undefined") {
-      this.ocrWorker = await Tesseract.createWorker("eng+fra", 1, {
-        workerBlobURL: false,
-        corePath: typeof ext !== "undefined"
-          ? ext.runtime.getURL("lib/tesseract/tesseract-core-simd.wasm.js")
-          : "../lib/tesseract/tesseract-core-simd.wasm.js"
-      });
-      console.log("[WarAnalyzer] OCR worker initialise");
+      try {
+        this.ocrWorker = await Tesseract.createWorker("eng+fra", 1, {
+          workerBlobURL: false,
+          corePath: typeof ext !== "undefined"
+            ? ext.runtime.getURL("lib/tesseract/tesseract-core-simd.wasm.js")
+            : "../lib/tesseract/tesseract-core-simd.wasm.js"
+        });
+        console.log("[WarAnalyzer] OCR worker initialise");
+      } catch (e) {
+        console.log("[WarAnalyzer] Tesseract non disponible (CSP ou autre), analyse par portraits uniquement");
+        this.ocrWorker = null;
+      }
     }
 
     this.initialized = true;
@@ -603,7 +608,14 @@ class WarAnalyzer {
   _getImageData(dataUrl, size) {
     return new Promise((resolve, reject) => {
       const img = new Image();
+
+      const timeout = setTimeout(() => {
+        reject(new Error("Timeout chargement image (10s)"));
+      }, 10000);
+
       img.onload = () => {
+        clearTimeout(timeout);
+        console.log("[WarAnalyzer] Image chargee:", size + "x" + size);
         const canvas = document.createElement("canvas");
         canvas.width = size;
         canvas.height = size;
@@ -612,7 +624,14 @@ class WarAnalyzer {
         const data = ctx.getImageData(0, 0, size, size);
         resolve(data);
       };
-      img.onerror = () => reject(new Error("Echec chargement image"));
+
+      img.onerror = (e) => {
+        clearTimeout(timeout);
+        console.error("[WarAnalyzer] Erreur chargement image:", e);
+        reject(new Error("Echec chargement image"));
+      };
+
+      console.log("[WarAnalyzer] Debut chargement image");
       img.src = dataUrl;
     });
   }
@@ -685,12 +704,19 @@ class WarAnalyzer {
   async identifyPortraits(portraitDataUrls) {
     const identified = [];
 
-    for (const dataUrl of portraitDataUrls) {
+    console.log(`[WarAnalyzer] Debut identification de ${portraitDataUrls.length} portraits`);
+
+    for (let i = 0; i < portraitDataUrls.length; i++) {
+      const dataUrl = portraitDataUrls[i];
       try {
+        console.log(`[WarAnalyzer] Traitement portrait ${i + 1}/${portraitDataUrls.length}`);
         const hash = await this.computePortraitHash(dataUrl);
+        console.log(`[WarAnalyzer] Hash calcule pour portrait ${i + 1}: ${hash}`);
+
         const match = this.findPortraitMatch(hash);
 
         if (match) {
+          console.log(`[WarAnalyzer] Match trouve: ${match.name} (${match.similarity}%)`);
           identified.push({
             name: match.name,
             charId: match.charId,
@@ -698,6 +724,7 @@ class WarAnalyzer {
             hash: hash
           });
         } else {
+          console.log(`[WarAnalyzer] Aucun match pour portrait ${i + 1}`);
           identified.push({
             name: null,
             charId: null,
@@ -706,7 +733,7 @@ class WarAnalyzer {
           });
         }
       } catch (e) {
-        console.error("[WarAnalyzer] Erreur hash portrait:", e);
+        console.error(`[WarAnalyzer] Erreur hash portrait ${i + 1}:`, e);
         identified.push({
           name: null,
           charId: null,
