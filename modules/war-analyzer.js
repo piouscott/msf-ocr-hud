@@ -526,69 +526,6 @@ class WarAnalyzer {
   }
 
   /**
-   * Analyse un screenshot de guerre avec zones configurees
-   */
-  async analyzeWarScreenshot(imageDataUrl, zones, onProgress = null) {
-    await this.init();
-
-    const results = [];
-
-    for (let i = 0; i < zones.length; i++) {
-      const zone = zones[i];
-      if (onProgress) onProgress(`Analyse zone ${i + 1}/${zones.length}...`);
-
-      try {
-        // Extraire les noms de la zone (suppose 5 sous-zones pour les noms)
-        const names = [];
-
-        if (zone.nameZones) {
-          // Si des sous-zones sont definies pour chaque nom
-          for (const nameZone of zone.nameZones) {
-            const text = await this.extractTextFromZone(imageDataUrl, nameZone);
-            if (text) {
-              const match = this.findBestMatch(text);
-              if (match) {
-                names.push(match.name);
-              } else {
-                names.push(text);
-              }
-            }
-          }
-        } else if (zone.fullTextZone) {
-          // Zone de texte complete a parser
-          const fullText = await this.extractTextFromZone(imageDataUrl, zone.fullTextZone);
-          // Parser le texte pour extraire les noms (separes par newline ou autre)
-          const lines = fullText.split(/[\n\r]+/).filter(l => l.trim());
-          for (const line of lines) {
-            const match = this.findBestMatch(line);
-            if (match) {
-              names.push(match.name);
-            }
-          }
-        }
-
-        // Analyser l'equipe
-        const analysis = this.analyzeEnemyTeam(names, zone.power || null);
-        results.push({
-          zoneIndex: i,
-          zoneName: zone.name || `Zone ${i + 1}`,
-          ...analysis
-        });
-
-      } catch (e) {
-        console.error(`[WarAnalyzer] Erreur zone ${i}:`, e);
-        results.push({
-          zoneIndex: i,
-          zoneName: zone.name || `Zone ${i + 1}`,
-          error: e.message
-        });
-      }
-    }
-
-    return results;
-  }
-
-  /**
    * Libere les ressources
    */
   async terminate() {

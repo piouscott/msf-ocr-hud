@@ -1004,8 +1004,6 @@ btnWarAnalyzePortraits.addEventListener("click", async () => {
   }
 });
 
-// Note: btnCloseWar listener est defini plus haut
-
 // ============================================
 // War Mode - Multi-Teams Analysis
 // ============================================

@@ -164,12 +164,6 @@ button:active {
   font-size: 12px;
 }
 
-.team-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: #fff;
-}
-
 .team-selector {
   padding: 4px 8px;
   border: 1px solid #444;
@@ -189,12 +183,6 @@ button:active {
 .team-selector option {
   background: #1a1a2e;
   color: #fff;
-}
-
-.slot-power {
-  font-size: 13px;
-  color: #ffd43b;
-  font-weight: 500;
 }
 
 .slot-power-edit {
@@ -684,14 +672,6 @@ button:active {
   margin-top: 12px;
 }
 
-.multi-team-header {
-  font-size: 13px;
-  color: #00d4ff;
-  font-weight: 600;
-  margin-bottom: 4px;
-  text-align: center;
-}
-
 .team-result-card {
   background: #2d2d44;
   border-radius: 8px;
@@ -712,13 +692,6 @@ button:active {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 6px;
-}
-
-.team-result-index {
-  font-size: 10px;
-  color: #666;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .team-result-name {

@@ -217,16 +217,3 @@ async function handleBarracksCommand(type) {
   await ext.tabs.sendMessage(tab.id, { type });
   return { success: true };
 }
-
-// Ancien handler pour clic direct (backup si pas de popup)
-ext.browserAction.onClicked.addListener(async (tab) => {
-  try {
-    const dataUrl = await ext.tabs.captureVisibleTab(tab.windowId, { format: "png" });
-
-    await sendToAllFrames(tab.id, { type: "MSF_SCREENSHOT", dataUrl });
-
-    console.log("[BG] Screenshot envoye a toutes les frames");
-  } catch (e) {
-    console.error("[BG] Erreur:", e);
-  }
-});
