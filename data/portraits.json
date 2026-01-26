@@ -1,1502 +1,1502 @@
 {
   "description": "Hash perceptuels des portraits de personnages MSF",
   "version": 2,
-  "generatedAt": "2026-01-19T23:02:09.759Z",
+  "generatedAt": "2026-01-26T01:11:59.771Z",
   "count": 374,
   "portraits": {
-    "40f85ffe7c7e0200": {
+    "1e363d3e3e1f1c00": {
       "name": "Abomination",
       "charId": "Abomination"
     },
-    "081c3c3cfcff5e00": {
+    "361f3e1e8ca29383": {
       "name": "Absorbing Man",
       "charId": "AbsorbingMan"
     },
-    "3c7e7ebcff030000": {
+    "3f7f3e3f0ee04000": {
       "name": "Adam Warlock",
       "charId": "AdamWarlock"
     },
-    "3e3e7e7e5c3e0000": {
+    "eeffdf1f9d000000": {
       "name": "Agatha Harkness",
       "charId": "AgathaHarkness"
     },
-    "003c1c40c3cfff3e": {
+    "aa1e060ac070ffaf": {
       "name": "Agent Venom",
       "charId": "AgentVenom"
     },
-    "387c7c3fa7e24c00": {
+    "3f3e1eee43417090": {
       "name": "A.I.M. Operator",
       "charId": "AimOperator"
     },
-    "3c3e1fdf37630800": {
+    "3d8d873727636340": {
       "name": "A.I.M. Monstrosity",
       "charId": "AimDmg_Offense"
     },
-    "7c7c3c7e3e121e00": {
+    "7f7f7f3e0f010000": {
       "name": "A.I.M. Assaulter",
       "charId": "AimDmg_Speed"
     },
-    "3c7c7e7ccf370000": {
+    "7f3f7e7e1f010000": {
       "name": "A.I.M. Researcher",
       "charId": "AimSupport_Heal"
     },
-    "3c3c3c7ce3ef0c00": {
+    "3f3e3e9fc0c10145": {
       "name": "A.I.M. Security",
       "charId": "AimTank_Taunt"
     },
-    "00183c3cfc7f3f30": {
+    "3e3d3e3c9c8cc0c8": {
       "name": "Brawn",
       "charId": "AmadeusCho"
     },
-    "003e7e7e7cff4000": {
+    "be3f1f1e0e10189c": {
       "name": "America Chavez",
       "charId": "AmericaChavez"
     },
-    "3c3c7c3c1c7e3e00": {
+    "3fbf3e1c4e201039": {
       "name": "Ancient One",
       "charId": "AncientOne"
     },
-    "3cfc7e64fc7a0800": {
+    "fe79c0e0e4d8e0e0": {
       "name": "Annihilus",
       "charId": "PVE_Annihilus_Tower"
     },
-    "7e7efeb294007a00": {
+    "3fff736152129011": {
       "name": "Insectoid Devourer",
       "charId": "AnnihilusBug"
     },
-    "3c7e50d2d6b73c00": {
+    "330171399bd0e3e3": {
       "name": "Anti-Venom",
       "charId": "AntiVenom"
     },
-    "207c7e3efef83000": {
+    "b95f2f4c80787858": {
       "name": "Ant-Man",
       "charId": "AntMan"
     },
-    "3c7e3e1f303d3c00": {
+    "3f3d1f0e0070787c": {
       "name": "Apocalypse",
       "charId": "Apocalypse"
     },
-    "7cfcfcdccec50000": {
+    "bfbe969e9e030300": {
       "name": "Archangel",
       "charId": "Archangel"
     },
-    "74787c7c7e7f0000": {
+    "387e3a182084fcfe": {
       "name": "Ares",
       "charId": "PVE_Ares_SentryBoss"
     },
-    "3c7e7c3cfef20000": {
+    "fffe3e381862a100": {
       "name": "Azazel",
       "charId": "Azazel"
     },
-    "347c7c7e577f0000": {
+    "3fb61e0e03229be2": {
       "name": "Mordo",
       "charId": "BaronMordo"
     },
-    "1c1e5e5eeff70000": {
+    "3f1f1f100f81e1e1": {
       "name": "Beast",
       "charId": "Beast"
     },
-    "fa7e7c7f10e16000": {
+    "fefeffac38080080": {
       "name": "Beta Ray Bill",
       "charId": "BetaRayBill"
     },
-    "003e3e1efffc4600": {
+    "1f3f3f1c1c80e078": {
       "name": "Bishop",
       "charId": "Bishop"
     },
-    "1c7e7e3c6cf74000": {
+    "5f3f9f1f0e800303": {
       "name": "Black Bolt",
       "charId": "BlackBolt"
     },
-    "3e7e66eee27b0000": {
+    "44dbdbc8c46161b5": {
       "name": "Black Cat",
       "charId": "BlackCat"
     },
-    "3c3c3c3c5e7f0e00": {
+    "2e1e5e5e3f3e4020": {
       "name": "Black Knight",
       "charId": "BlackKnight"
     },
-    "787c7c3cfede0000": {
+    "3f7f5e0e86263210": {
       "name": "Black Panther",
       "charId": "BlackPanther"
     },
-    "58585e1e08787f3c": {
+    "3f3f3f1e0c003998": {
       "name": "Black Panther (1MM)",
       "charId": "BlackPantherBC"
     },
-    "3c3e3c3c3c7e3c00": {
+    "f27c7c022a14d6e3": {
       "name": "Black Panther (Shuri)",
       "charId": "BlackPantherShuri"
     },
-    "387e7e7cfe3a0000": {
+    "070f1f9eece13908": {
       "name": "Black Widow",
       "charId": "BlackWidowOperator"
     },
-    "3c7e7e7cf8790000": {
+    "767d7c7c20303c38": {
       "name": "Blade",
       "charId": "Blade"
     },
-    "3ede3efad3303000": {
+    "7e7e3cb03198e830": {
       "name": "Blastaar",
       "charId": "Blastaar"
     },
-    "003c6a7e3cc27e3c": {
+    "c0f3fd601e6c7818": {
       "name": "Blob",
       "charId": "Blob"
     },
-    "0c1e7ebecff30100": {
+    "b5bf3f0f8981a180": {
       "name": "Blue Marvel",
       "charId": "BlueMarvel"
     },
-    "3e5c3e5e5e7e2000": {
+    "39b43e3f1c083c3c": {
       "name": "Bucky Barnes",
       "charId": "BuckyBarnes"
     },
-    "007e7e7cfcfe0400": {
+    "100e9e1e0ee07ede": {
       "name": "Bullseye",
       "charId": "PVE_Bullseye_SentryBoss"
     },
-    "3c7e7e7e7e190000": {
+    "3fba3fbc9e2e0000": {
       "name": "Cable",
       "charId": "Cable"
     },
-    "3e7e3c3c7cd36000": {
+    "f6fc7e7878780100": {
       "name": "Cannonball",
       "charId": "Cannonball"
     },
-    "1c7e3e3efcfa0000": {
+    "bf1f1f3f0e212110": {
       "name": "Captain America",
       "charId": "PVE_CaptainAmerica_SentryBoss"
     },
-    "3c7e5c7cfcfc0000": {
+    "223cffff1e406060": {
       "name": "Captain America (WWII)",
       "charId": "CaptainAmericaWW2"
     },
-    "3c7c3c3c1f7c3c00": {
+    "3f3f7f3e0f021080": {
       "name": "Captain Britain",
       "charId": "CaptainBritain"
     },
-    "1c6e5e3e2e873e00": {
+    "737f3f1fce640000": {
       "name": "Captain Carter",
       "charId": "CaptainCarter"
     },
-    "383e7e7e737b0000": {
+    "bebebf9d81819800": {
       "name": "Captain Marvel",
       "charId": "CaptainMarvel"
     },
-    "2c7e5e7cecae0600": {
+    "aff8dc8e86c00e43": {
       "name": "Carnage (Enraged)",
       "charId": "CarnageKnullSummon"
     },
-    "3c3e7cdc98fb6000": {
+    "be3ebe3e1c203888": {
       "name": "Cloak",
       "charId": "Cloak"
     },
-    "001e7e7c7c7e5e00": {
+    "a6bf3f1e1c2c3018": {
       "name": "Colleen Wing",
       "charId": "ColleenWing"
     },
-    "0a1e3c7cfe7f0600": {
+    "0d0c0c84c0f3fb7f": {
       "name": "Colossus",
       "charId": "Colossus"
     },
-    "6cfe7e3e3c670000": {
+    "f9df4e4e5e260300": {
       "name": "Corvus Glaive",
       "charId": "PVE_CorvusGlaive_Gauntlet"
     },
-    "3e7e5e7e3e1e0000": {
+    "979383c7c7271f00": {
       "name": "Cosmic Ghost Rider",
       "charId": "CosmicGhostRider"
     },
-    "18785ae3dcff6800": {
+    "090dc0f07f04d8ff": {
       "name": "Cosmo",
       "charId": "Cosmo"
     },
-    "3c3e7c7c7c7c1800": {
+    "44e67e781ec0e0f8": {
       "name": "Agent Coulson",
       "charId": "Coulson"
     },
-    "387e7e7c7ef80000": {
+    "7f7f1e1e1e0c80c0": {
       "name": "Crossbones",
       "charId": "Crossbones"
     },
-    "3c7e7e7e7e320000": {
+    "363f3f3f7f500000": {
       "name": "Crystal",
       "charId": "Crystal"
     },
-    "1a7e3e7ef6f10000": {
+    "06773f9fc6616030": {
       "name": "Cull Obsidian",
       "charId": "PVE_CullObsidian_Gauntlet"
     },
-    "3e3e7e3c3cf31000": {
+    "bf3f3f1e1e0e0080": {
       "name": "Cyclops (Aphelion)",
       "charId": "PVE_Cyclops_Incursion"
     },
-    "187e7c7e7e761000": {
+    "3e3ebe9c8dd19010": {
       "name": "Dagger",
       "charId": "Dagger"
     },
-    "3c7c3c3c1eff5000": {
+    "3e3e3e3e1e0c0135": {
       "name": "Daimon Hellstrom",
       "charId": "DaimonHellstrom"
     },
-    "1c3c3c7c3a5d7c08": {
+    "7e763e3d1c2c3018": {
       "name": "Daken",
       "charId": "PVE_Daken_SentryBoss"
     },
-    "3c7c7c3c7c7e0300": {
+    "3f3e3e9e0e061603": {
       "name": "Daredevil",
       "charId": "Daredevil"
     },
-    "3e3e3e3cfe7c0000": {
+    "7f3f7f3e1e001400": {
       "name": "Daredevil (Modern)",
       "charId": "DaredevilModern"
     },
-    "001f0e7eeef3f008": {
+    "0a1e0caf87c6eee0": {
       "name": "Dark Beast",
       "charId": "DarkBeast"
     },
-    "2c7e7e1c08ff1e00": {
+    "bfbf1c3e0c0800fc": {
       "name": "Darkhawk",
       "charId": "Darkhawk"
     },
-    "1c7e7efece132000": {
+    "f7dfdf9f8e000000": {
       "name": "Phoenix",
       "charId": "Phoenix"
     },
-    "3c7e7e7efce00000": {
+    "f0ffffcdcc808000": {
       "name": "Darkstar",
       "charId": "Darkstar"
     },
-    "3c7fdd1c985ae800": {
+    "3f3f3e3e1c203818": {
       "name": "Dazzler",
       "charId": "Dazzler"
     },
-    "787c7e6ef6730000": {
+    "9f9f8f8f03a1c0c0": {
       "name": "Deadpool",
       "charId": "Deadpool"
     },
-    "3e3e1e2ce4f6120c": {
+    "21534b4ac2c7c7e3": {
       "name": "Deathlok",
       "charId": "Deathlok"
     },
-    "3e3e7d7d5d30c000": {
+    "96be3e3ebe9c8000": {
       "name": "Deathpool",
       "charId": "Deathpool"
     },
-    "1c1e3e7efefa0000": {
+    "293e1f9ecec0e0e0": {
       "name": "Doctor Octopus",
       "charId": "DoctorOctopus"
     },
-    "043e7c9ffe7f0000": {
+    "be3f3e1e041d8d40": {
       "name": "Doctor Strange",
       "charId": "DoctorStrangeOperator"
     },
-    "3c1c1c1cfffb3800": {
+    "04341c1eccedf1f8": {
       "name": "Doctor Voodoo",
       "charId": "DoctorVoodoo"
     },
-    "3c543c3c3c7f3e00": {
+    "3c3c3e3e3c1c6063": {
       "name": "Domino",
       "charId": "Domino"
     },
-    "3c5afcfdf8f20000": {
+    "7e3e783e3cc0e0a0": {
       "name": "Doom Bomb",
       "charId": "PvE_DDDoomBomb"
     },
-    "7e6652fefe2e0000": {
+    "82809d8de1e7df0a": {
       "name": "Dormammu",
       "charId": "Dormammu"
     },
-    "383c1c7cfeff0200": {
+    "0e1e9e9c86371f84": {
       "name": "Drax",
       "charId": "Drax"
     },
-    "3c7c7e3c78f64200": {
+    "d6bf1e3e1c0cc0e0": {
       "name": "Ebony Maw",
       "charId": "PVE_EbonyMaw_Gauntlet"
     },
-    "203e3e3e3cffc200": {
+    "3f7f3f3e1e0c0002": {
       "name": "Echo",
       "charId": "Echo"
     },
-    "3e3e3e3c3c7f0200": {
+    "3f3f5e1e0e00e072": {
       "name": "Electro",
       "charId": "Electro"
     },
-    "3c7c7cbcbe8ec000": {
+    "3e3e3c3d191e1e08": {
       "name": "Elektra",
       "charId": "Elektra"
     },
-    "187e7e7e78fe0000": {
+    "163e1e1e0c303ebe": {
       "name": "Elsa Bloodstone",
       "charId": "ElsaBloodstone"
     },
-    "1c7e7e7e7e186000": {
+    "f2ffeeee66500000": {
       "name": "Emma Frost (Chaos)",
       "charId": "PVE_ChaosRaid_EmmaFrost"
     },
-    "387c7c3c24ff1e00": {
+    "e1c6dec84040c3ff": {
       "name": "Emma Frost (X-Men)",
       "charId": "EmmaFrostXMen"
     },
-    "387c7c3c7f7f0000": {
+    "0e1e1c8ec6a33b1e": {
       "name": "Falcon",
       "charId": "Falcon"
     },
-    "787e7e1e4eb85800": {
+    "7fbf0f1e0f060700": {
       "name": "Falcon (Joaquin)",
       "charId": "FalconJoaquin"
     },
-    "001c7c7e7f7f3200": {
+    "18138eceeee1c91c": {
       "name": "Fantomex",
       "charId": "Fantomex"
     },
-    "187e7e5c5efb4000": {
+    "ff7f3e1e1c0c8040": {
       "name": "Firestar",
       "charId": "Firestar"
     },
-    "183e3e1c7c7c3e08": {
+    "773f110f0a42627e": {
       "name": "Forge",
       "charId": "Forge"
     },
-    "0a7c3c7cdef13c00": {
+    "3eff7e3e1c8080c0": {
       "name": "Franklin Richards",
       "charId": "FranklinRichards"
     },
-    "3e3ffe1e7b012020": {
+    "ff3f3f1e9c980000": {
       "name": "Gambit",
       "charId": "Gambit"
     },
-    "385e3e1e7ed7c000": {
+    "3f3f3f9c0d831410": {
       "name": "Gamora",
       "charId": "Gamora"
     },
-    "183e3e7c58e37c10": {
+    "5f7e9e9e9c888021": {
       "name": "Ghost",
       "charId": "Ghost"
     },
-    "7e7e7f7e1e030000": {
+    "feddff3f1c040000": {
       "name": "Ghost Rider",
       "charId": "GhostRider"
     },
-    "3e3eff7f1c031000": {
+    "fffff3da28180000": {
       "name": "Ghost Rider (Robbie)",
       "charId": "GhostRiderRobbie"
     },
-    "3c7e7c9db87f0000": {
+    "bf1e3c1c3c3858e0": {
       "name": "Ghost-Spider",
       "charId": "GhostSpider"
     },
-    "083c7ffd7d992200": {
+    "ffbe3f3e1e002010": {
       "name": "Gladiator (Saga)",
       "charId": "PVE_SagaBoss_Gladiator"
     },
-    "387c7edc3e1b0c04": {
+    "3f1e1e1e0e23391c": {
       "name": "Gorr",
       "charId": "Gorr"
     },
-    "7c7e7c3c1efc4000": {
+    "fefe7e3e2e020080": {
       "name": "Graviton",
       "charId": "Graviton"
     },
-    "607c3cfcfa3e1600": {
+    "fe7ebcbc8c8c0048": {
       "name": "Green Goblin (Classic)",
       "charId": "GreenGoblinGlider"
     },
-    "78ff3e3c7c730000": {
+    "773d2eb63e2d8040": {
       "name": "Undead Asgardian",
       "charId": "Greg"
     },
-    "7cfc7c3cbf6c0000": {
+    "ca0e7e3e3e4f8300": {
       "name": "Groot",
       "charId": "Groot"
     },
-    "1c7c3c7c781f1f00": {
+    "3e0e9e1e84cc3c1e": {
       "name": "Hand Operator",
       "charId": "HandOperator"
     },
-    "3c7e7e7ce64f0000": {
+    "ffff3f9b00030300": {
       "name": "Hand Blademaster",
       "charId": "S_HandDmg_Bonus"
     },
-    "3c7c7e7ef47c0000": {
+    "ffffff3f02000000": {
       "name": "Hand Archer",
       "charId": "S_HandDmg_Unbuff"
     },
-    "3c7c7c5e6e470700": {
+    "4fcdbf9dc5431100": {
       "name": "Hand Sorceress",
       "charId": "NUEHandSupport_Heal"
     },
-    "3c7e7e7e3c7c0000": {
+    "ffbb3b1b1e005006": {
       "name": "Hand Sentry",
       "charId": "HandTank_Stealth"
     },
-    "1c3c7e3c7cfe3000": {
+    "ff78783848e0f070": {
       "name": "Guardian",
       "charId": "Guardian"
     },
-    "3c7f7cdf2f140400": {
+    "7f3f0e0d8dc32302": {
       "name": "Gwenom",
       "charId": "Gwenom"
     },
-    "387c7cbc183c1e1c": {
+    "feee322c18007c3e": {
       "name": "Gwenpool",
       "charId": "Gwenpool"
     },
-    "1e3e3e3c7c772800": {
+    "3c7f3f3e3e0c0201": {
       "name": "Hank Pym",
       "charId": "HankPym"
     },
-    "3c3e1c3cfc7e0e00": {
+    "061e1e0e1c22bff9": {
       "name": "Havok",
       "charId": "Havok"
     },
-    "3c7e7c7cfcd30000": {
+    "fffffede24000000": {
       "name": "Hawkeye",
       "charId": "PVE_Hawkeye_SentryBoss"
     },
-    "d3ff7e7e4ae00000": {
+    "bbff5f1f1c880080": {
       "name": "Heimdall",
       "charId": "HeimdallOperator"
     },
-    "703e7c1c7fff0000": {
+    "3e1e1e1c4cac243f": {
       "name": "Hela",
       "charId": "Hela"
     },
-    "3c3c3c3c78fe7800": {
+    "3e3c3e9c8e2070f2": {
       "name": "Hellcat",
       "charId": "Hellcat"
     },
-    "fcfc7c3c7c760000": {
+    "1ef4fa7a3e8cc200": {
       "name": "Hellverine",
       "charId": "Hellverine"
     },
-    "003c3e3c7c5e7e18": {
+    "7e3f245ccce0021f": {
       "name": "Hercules",
       "charId": "Hercules"
     },
-    "3c7e7e7e7e1c0000": {
+    "80c07df97f3e2e00": {
       "name": "Hit-Monkey",
       "charId": "HitMonkey"
     },
-    "387c7edb7a3e1000": {
+    "b8b89898f8e0f81e": {
       "name": "Hobgoblin",
       "charId": "Hobgoblin"
     },
-    "3c3f3e3e7c7c4000": {
+    "7f7f7f7f70000000": {
       "name": "Howard The Duck",
       "charId": "HowardTheDuck"
     },
-    "207e7efefe780000": {
+    "3f3f381fcfe06000": {
       "name": "Hulk",
       "charId": "PVE_Hulk_SentryBoss"
     },
-    "1c3e7ef87f3e0000": {
+    "3f4ee0f0e3e30303": {
       "name": "Hulkbuster (Aphelion)",
       "charId": "PVE_Hulkbuster_Incursion"
     },
-    "1c3e3e3c7c770604": {
+    "7e7e7f7c8c020301": {
       "name": "Torch-Bot",
       "charId": "PvE_DDHumanTorch"
     },
-    "387c7c1cf6ff1000": {
+    "9f7e1e1e0281e1f0": {
       "name": "Hydra Grenadier",
       "charId": "HydraDmg_AoE"
     },
-    "387c1cdcf67f3000": {
+    "1e1e9e8e8181e1fa": {
       "name": "Hydra Rifle Trooper",
       "charId": "S_HydraDmg_Buff"
     },
-    "387c1c3cfeff1000": {
+    "0c1c1e3ab21ed8ee": {
       "name": "Hydra Sniper",
       "charId": "S_HydraDmg_Single"
     },
-    "387c7e1cf6f33000": {
+    "bf3e3e1e00a3c1e0": {
       "name": "Hydra Operator",
       "charId": "HydraOperator"
     },
-    "387c5c6efffc0000": {
+    "3f0fe1c5cce06f00": {
       "name": "Hydra Armored Guard",
       "charId": "HydraTank_Taunt"
     },
-    "387c7c3cfcfe2000": {
+    "08ce3e7e5ea2b218": {
       "name": "Hyperion",
       "charId": "Hyperion"
     },
-    "7c7e7e3c7c760000": {
+    "bebf7e7e1c8c0000": {
       "name": "Iceman",
       "charId": "Iceman"
     },
-    "001e3e3e7c3f6f00": {
+    "327f7f3e1e0f0001": {
       "name": "Ikaris",
       "charId": "Ikaris"
     },
-    "1c3e3e3e1f5f0600": {
+    "bf213f1f011a1d0d": {
       "name": "Inner Demon (Cyclops)",
       "charId": "InnerDemon_Cyclops"
     },
-    "1e3e3e2c9f5f0600": {
+    "bd1d0f06271b1d0d": {
       "name": "Inner Demon (Demon)",
       "charId": "InnerDemon_Demon"
     },
-    "3e7e3c1c93df0600": {
+    "67c83e3f111029bd": {
       "name": "Inner Demon (Dragon)",
       "charId": "InnerDemon_Dragon"
     },
-    "3c7e7e7e64f00c00": {
+    "ffbebf9f00460100": {
       "name": "Invisi-Bot",
       "charId": "PvE_DDInvisibleWoman"
     },
-    "387e7e7cfc7c0000": {
+    "04bc3e327070fcf8": {
       "name": "Invisible Woman (MCU)",
       "charId": "InvisibleWomanMCU"
     },
-    "183c3c3cfcfe7400": {
+    "321e1e1ee0f4fe01": {
       "name": "Iron Fist",
       "charId": "IronFistOperator"
     },
-    "103c5cbcfedf0e00": {
+    "8ed43f3f1f0f0300": {
       "name": "Iron Fist (WWII)",
       "charId": "IronFistOrson"
     },
-    "187c7c7c38ff6200": {
+    "9ebe9c1c0860f0b7": {
       "name": "Ironheart",
       "charId": "Ironheart"
     },
-    "3c7e3c7cc3bf0100": {
+    "3f1edccc8080d91f": {
       "name": "Ironheart (MKII)",
       "charId": "IronheartMCU"
     },
-    "1c7c3c7ce3fc3200": {
+    "7e7ebe88c08412f4": {
       "name": "Iron Man",
       "charId": "PVE_IronMan_SentryBoss"
     },
-    "3e1e3e3c7c7e0a00": {
+    "bb7f7f321e000283": {
       "name": "Iron Man (Infinity War)",
       "charId": "IronManInfinityWar"
     },
-    "7c3e7efce0381a00": {
+    "7f3edc9c8080d8f0": {
       "name": "Iron Patriot",
       "charId": "PVE_IronPatriot_SentryBoss"
     },
-    "5c7edefcfc211000": {
+    "005dffbede83c040": {
       "name": "Mighty Thor",
       "charId": "JaneThor"
     },
-    "3c7e7f3f1be80000": {
+    "fefe7e3f39100000": {
       "name": "Jean Grey (Chaos)",
       "charId": "PVE_ChaosRaid_JeanGrey"
     },
-    "307efffe7e440000": {
+    "fcfff1e3f6800000": {
       "name": "Jeff the Land Shark",
       "charId": "JeffTheLandShark"
     },
-    "207cfede9efa4000": {
+    "df3e3e3e3c180848": {
       "name": "Jessica Jones",
       "charId": "JessicaJones"
     },
-    "3c0c1e3efefa2c00": {
+    "1e171f1f1e0f9098": {
       "name": "Jubilee",
       "charId": "Jubilee"
     },
-    "647e7f7f78f00000": {
+    "f8f8fe7e1080f0c0": {
       "name": "Juggernaut",
       "charId": "Juggernaut"
     },
-    "003e7f1e3c7f1e00": {
+    "121f3f1f0e347438": {
       "name": "Kahhori",
       "charId": "Kahhori"
     },
-    "3c7e7e5e9e3e0000": {
+    "3f3f3f1e38003c30": {
       "name": "Ms. Marvel (Hard Light)",
       "charId": "KamalaKhan"
     },
-    "047c7c3c1c787e38": {
+    "defffedc0e0c0000": {
       "name": "Kang the Conqueror (Aphelion)",
       "charId": "PVE_KangTheConqueror_Incursion"
     },
-    "387e7e7e3d6d0000": {
+    "b1bf3f3f7e600000": {
       "name": "Karnak",
       "charId": "Karnak"
     },
-    "1a7e7e1c187ee600": {
+    "3f3f1e1e1c18181d": {
       "name": "Kate Bishop",
       "charId": "KateBishop"
     },
-    "7eeefe4c0cfb0000": {
+    "f7ef120e0627c560": {
       "name": "Killmonger (Aphelion)",
       "charId": "PVE_Killmonger_Incursion"
     },
-    "187c7e7eff720000": {
+    "3f3f3f8ec0e06030": {
       "name": "Kingpin",
       "charId": "KingpinOperator"
     },
-    "3c7e3e3e18fe1200": {
+    "3e3fbe3e1e040087": {
       "name": "Kitty Pryde",
       "charId": "KittyPryde"
     },
-    "1e3e7e7ffc580000": {
+    "fffc3e3c20343408": {
       "name": "Knull",
       "charId": "PVE_Boss_Knull"
     },
-    "207c7efe1f2f0300": {
+    "fefeff1d00040606": {
       "name": "Korath the Pursuer",
       "charId": "Korath"
     },
-    "3c7e7e5cc7e31000": {
+    "7f138f830383c3e1": {
       "name": "Korg",
       "charId": "Korg"
     },
-    "003c3cfcfbfd0e00": {
+    "3ee2783c60f0783c": {
       "name": "Kraven the Hunter",
       "charId": "KravenTheHunter"
     },
-    "3cfe7c7c7c7c0000": {
+    "7e7e5ee2f2381040": {
       "name": "Kree Operator",
       "charId": "KreeOperator"
     },
-    "307c7c3cfcfe2400": {
+    "be3b9eba8a8290e0": {
       "name": "Kree Cyborg",
       "charId": "KreeDmg_Offense"
     },
-    "183c7c7c6cfef000": {
+    "febebe4e42c48600": {
       "name": "Kree Reaper",
       "charId": "S_KreeDmg_Speed"
     },
-    "387e7e7efc780000": {
+    "e5ff7f3d1c101800": {
       "name": "Kree Oracle",
       "charId": "KreeSupport_HoT"
     },
-    "1c7c3c7efcfa0400": {
+    "7f7f6f2f89808004": {
       "name": "Kree Royal Guard",
       "charId": "KreeTank_Counter"
     },
-    "4c3c7c3c3cfe1e00": {
+    "a0ae3e3e3e0070fa": {
       "name": "Lady Bullseye",
       "charId": "LadyBullseye"
     },
-    "3e3e3e3e5c5b0c00": {
+    "067f3fbf9e0c0009": {
       "name": "Lady Deathstrike",
       "charId": "LadyDeathstrike"
     },
-    "1c7eff9f0cec4000": {
+    "3f3f3f1e0e000e0d": {
       "name": "Lilandra",
       "charId": "Lilandra"
     },
-    "3c7c7c7afaf30000": {
+    "fee0a07c9cc0f078": {
       "name": "Living Mummy",
       "charId": "LivingMummy"
     },
-    "003c7e78faff5800": {
+    "8674084070f9f9fd": {
       "name": "Lizard",
       "charId": "Lizard"
     },
-    "3f7e7c3c1cfb0000": {
+    "fe7e3e3e1e190100": {
       "name": "Loki",
       "charId": "LokiNPC"
     },
-    "323f7c3fffe00000": {
+    "f8fd78303d9f8080": {
       "name": "Loki (Teen)",
       "charId": "LokiTeen"
     },
-    "1e3e7e7e3e1f0000": {
+    "3a7f1f1f5f2e0000": {
       "name": "Longshot",
       "charId": "Longshot"
     },
-    "307c7c64f0ff7800": {
+    "322e8ac2e0f1f1f8": {
       "name": "Luke Cage",
       "charId": "LukeCage"
     },
-    "1c3f7f7ffb100000": {
+    "bebebefe5cc00000": {
       "name": "Madelyne Pryor (Chaos)",
       "charId": "PVE_ChaosRaid_MadelynePryor"
     },
-    "3c3e7e7e7e740000": {
+    "c0d7dfcce8e0e060": {
       "name": "Magik",
       "charId": "Magik"
     },
-    "3c7e7e7ede830000": {
+    "bf3f1e1e1e8f0100": {
       "name": "Magneto",
       "charId": "Magneto"
     },
-    "3c7efc7cee660000": {
+    "868e8e8ecfc64703": {
       "name": "Man-Thing",
       "charId": "ManThing"
     },
-    "133e7e7efc7a0000": {
+    "3f3fbf3e1e1c0000": {
       "name": "Mantis",
       "charId": "Mantis"
     },
-    "1c1e3e3c3cfe6c00": {
+    "363f3f1c0c70383c": {
       "name": "Maria Hill",
       "charId": "MariaHill"
     },
-    "003cdecff3fb1800": {
+    "9f9d8680c0f0f8f8": {
       "name": "M'Baku",
       "charId": "MBaku"
     },
-    "3c7e5effde104000": {
+    "921dbfbe9e8c0111": {
       "name": "Medusa",
       "charId": "Medusa"
     },
-    "4c5e3f9d7a323a00": {
+    "7f3f3e1e9ccc4000": {
       "name": "Mephisto",
       "charId": "Mephisto"
     },
-    "387c7cfcfef80000": {
+    "7ffe7e3f3e000000": {
       "name": "Mercenary Soldier",
       "charId": "MercDmg_General"
     },
-    "1f7cfc7c7ccb0000": {
+    "7f3f18787c7c0500": {
       "name": "Mercenary Sniper",
       "charId": "MercDmg_Single"
     },
-    "1c7c7e5e6e7f0000": {
+    "fdfd051f1e81c082": {
       "name": "Mercenary Operator",
       "charId": "MercOperator"
     },
-    "387e7afe9bf80000": {
+    "7979793b1d0098e8": {
       "name": "Mercenary Riot Guard",
       "charId": "MercTank_Debuff"
     },
-    "387e7eeef1f80000": {
+    "7d1f8f4360309ce8": {
       "name": "Mercenary Bodyguard",
       "charId": "MercTank_Taunt"
     },
-    "1e3e7e5e1e5f0200": {
+    "1f1f3f1f1e051105": {
       "name": "Minn-Erva",
       "charId": "Minerva"
     },
-    "105c1c3c1cffff00": {
+    "3e3f3f1e1c047019": {
       "name": "Misty Knight",
       "charId": "MistyKnight"
     },
-    "3c3e7c7cc89b0e08": {
+    "f9efbf9e8e000018": {
       "name": "Mockingbird",
       "charId": "Mockingbird"
     },
-    "007e7f7f1e7c4400": {
+    "7f3f1f1f0610181c": {
       "name": "Moondragon",
       "charId": "Moondragon"
     },
-    "3c7e7c7cf8f00600": {
+    "aa3e1cfcfcf88080": {
       "name": "Moon Knight",
       "charId": "MoonKnight"
     },
-    "7c7f7e7e62330000": {
+    "9bdedf8ae6e06000": {
       "name": "Moonstone",
       "charId": "PVE_Moonstone_SentryBoss"
     },
-    "7eff3f3d88080e00": {
+    "7e3f7e3e3c0c0404": {
       "name": "Morbius",
       "charId": "Morbius"
     },
-    "3c7e3e1e1ed9c800": {
+    "bf3f3e1e1e0c001c": {
       "name": "Morgan Le Fay",
       "charId": "MorganLeFay"
     },
-    "387c7c3c7c670e04": {
+    "febe3e3c1c060303": {
       "name": "Mister Fantastic (Aphelion)",
       "charId": "PVE_MrFantastic_Incursion"
     },
-    "1c7c7c7cf8fa6000": {
+    "fefff0fcdc400000": {
       "name": "Mister Fantastic (MCU)",
       "charId": "MrFantasticMCU"
     },
-    "3c7e7460f8ee7200": {
+    "d9c3c0e0e4e0dec5": {
       "name": "Mister Negative",
       "charId": "MrNegative"
     },
-    "1e7e7e3cccfb0000": {
+    "bf7f3f3e0e0000e0": {
       "name": "Mister Sinister",
       "charId": "MrSinister"
     },
-    "1c7e3c1c3aff7000": {
+    "1c3f3e1c2c20799e": {
       "name": "Ms. Marvel",
       "charId": "MsMarvel"
     },
-    "1c3e7e7ef4f60000": {
+    "e0ccd0ccc0e0f3f3": {
       "name": "Ms. Marvel (Classic)",
       "charId": "MsMarvelClassic"
     },
-    "143e7e7c7c7b1800": {
+    "3fbf3f3e1e028100": {
       "name": "Dupe",
       "charId": "MultipleManMinion"
     },
-    "3c7ffe7e7e020000": {
+    "3fdff3fce7000000": {
       "name": "Mysterio",
       "charId": "MysterioMinion"
     },
-    "3c5e5c7c78ce6600": {
+    "1f1f3e3e3c308407": {
       "name": "Mystique",
       "charId": "Mystique"
     },
-    "0c1e3e1c0c3fff10": {
+    "3d3f1f1f0e04103b": {
       "name": "Nakia",
       "charId": "Nakia"
     },
-    "041e7e7e9c3f1e00": {
+    "ba7f3f1e0e203830": {
       "name": "Namor",
       "charId": "Namor"
     },
-    "307c7c3cf8ff0300": {
+    "7e7e7c1c841cbe00": {
       "name": "Nebula",
       "charId": "Nebula"
     },
-    "1c3e3e3e3cfe6000": {
+    "627f3f3c3e303808": {
       "name": "Negasonic",
       "charId": "Negasonic"
     },
-    "7cfe5f7f3f000000": {
+    "338daddf4f3f0000": {
       "name": "Nemesis",
       "charId": "Nemesis"
     },
-    "7c7c7efd9ccc0000": {
+    "3ffe7e1c180c0607": {
       "name": "Nick Fury",
       "charId": "NickFuryOperator"
     },
-    "101e1c3c3c7ef61c": {
+    "01873f3f3e3e1c04": {
       "name": "Nico Minoru",
       "charId": "NicoMinoru"
     },
-    "187e7c3c3cff3000": {
+    "3e3e3f1e1e0e0e02": {
       "name": "Nightcrawler",
       "charId": "Nightcrawler"
     },
-    "3c7e7e3cfc7a0000": {
+    "3e3f3e3e0e383808": {
       "name": "Night Nurse",
       "charId": "NightNurse"
     },
-    "087ceafffcfa0000": {
+    "80e1f1f27a3a9ec0": {
       "name": "Nimrod (Saga)",
       "charId": "PVE_SagaBoss_Nimrod"
     },
-    "3c7e7e7c7d780000": {
+    "ff7fff5f06000000": {
       "name": "Nobu",
       "charId": "NobuOperator"
     },
-    "180c7c3c7cfe7e00": {
+    "3c3c3c184cf0f8f8": {
       "name": "Northstar",
       "charId": "Northstar"
     },
-    "3c7e7e1e5e10403c": {
+    "d9991f9f1f1d0120": {
       "name": "Nova",
       "charId": "Nova"
     },
-    "3c3e7e7e58d03c00": {
+    "fefffe3f1c000000": {
       "name": "Oath",
       "charId": "Oath"
     },
-    "62085e7eff3f0600": {
+    "8080821be0f7fb3f": {
       "name": "Odin",
       "charId": "Odin"
     },
-    "3c7e7e7c7c720100": {
+    "7f3f9f3e0e884800": {
       "name": "Okoye",
       "charId": "Okoye"
     },
-    "3c3c3cfcf9fe0000": {
+    "7c3c30389ce0f0fc": {
       "name": "Old Man Logan",
       "charId": "OldManLogan"
     },
-    "387e7e7efe1a0000": {
+    "9cdfcfc647623010": {
       "name": "Omega Red",
       "charId": "OmegaRed"
     },
-    "3c7efb7f76220000": {
+    "c1f9b9a1b3d38301": {
       "name": "Omega Red (Phoenix Force)",
       "charId": "OmegaRedPhoenix"
     },
-    "ee7f1c1c18f23e00": {
+    "1e1e1e9e9c0c99d1": {
       "name": "Omega Sentinel",
       "charId": "OmegaSentinel"
     },
-    "187c7ef8fe7e0000": {
+    "f8d8803800e1fff9": {
       "name": "Pandapool",
       "charId": "PandaPool"
     },
-    "183c3c1cefff7000": {
+    "101f0b068683e7ff": {
       "name": "Patriot",
       "charId": "Patriot"
     },
-    "307e7e7c38ff8000": {
+    "dede1e1e4c088ccc": {
       "name": "Peggy Carter",
       "charId": "PeggyCarter"
     },
-    "3c7a3c3e3c7e0e00": {
+    "283e3e1e0c3e7a1a": {
       "name": "Peni Parker",
       "charId": "PeniParker"
     },
-    "387c3c3cfcf33200": {
+    "68fe3e3c3e1881c1": {
       "name": "Peter B. Parker",
       "charId": "PeterBParker"
     },
-    "383e3e3cff7e0000": {
+    "1e003e9cdce8f171": {
       "name": "Phantom Rider",
       "charId": "PhantomRider"
     },
-    "1e3e3e1c2ee07622": {
+    "3f3f3f1e4e8081c0": {
       "name": "Photon",
       "charId": "Photon"
     },
-    "7e7e3e3e7cb80000": {
+    "ff3f3e3c0c446018": {
       "name": "Phyla-Vell",
       "charId": "PhylaVell"
     },
-    "1c3e7c7c6ed78100": {
+    "8ebebf9e9c8c0101": {
       "name": "Polaris",
       "charId": "Polaris"
     },
-    "647e9e5e5cf87000": {
+    "3a3b1f8f0f0e1838": {
       "name": "Proxima Midnight",
       "charId": "PVE_ProximaMidnight_Gauntlet"
     },
-    "387e5e1e5cf6c200": {
+    "0f1f1f1f9e0410e3": {
       "name": "Psylocke (Chaos)",
       "charId": "PVE_ChaosRaid_Psylocke"
     },
-    "047c7c3c7cff4600": {
+    "bfbe9e1e4e060302": {
       "name": "Punisher",
       "charId": "Punisher"
     },
-    "3c7c7c3cfce17000": {
+    "fffe7ebe0c010080": {
       "name": "Sentry",
       "charId": "Sentry"
     },
-    "183c7c3adbfe7000": {
+    "ff607c3c3c9880cc": {
       "name": "Shadow King",
       "charId": "ShadowKing"
     },
-    "003e7cfeff7e0000": {
+    "1a1a8f9fe3d3d200": {
       "name": "The Thing",
       "charId": "Thing"
     },
-    "3c7e7f7e6c660000": {
+    "3fbfcedf1e800200": {
       "name": "Dark Xavier",
       "charId": "PVE_SagaBoss_Xavier"
     },
-    "0a5e3e7ce6670f00": {
+    "7f7f3efe26010002": {
       "name": "Sentinel Reinforcement (Sword)",
       "charId": "Sentinel_Sword"
     },
-    "00fefefe3e6c2000": {
+    "3f7f3f3f3e000400": {
       "name": "Strange (Heartless)",
       "charId": "StrangeSupreme"
     },
-    "3c7e7e9e7df00000": {
+    "991f3e3f1d0ec060": {
       "name": "Thanos",
       "charId": "Thanos"
     },
-    "3c7e7c7e3e1e1000": {
+    "3ffebf9d40201e00": {
       "name": "Thor",
       "charId": "ThorNPC"
     },
-    "3e7e7e3c9e070600": {
+    "9fbf3f3f1e000101": {
       "name": "U.S. Agent",
       "charId": "USAgent"
     },
-    "307e7e7cfc7e0000": {
+    "bf3f3c9ccc607010": {
       "name": "Civilian",
       "charId": "VIPMaleCOperator"
     },
-    "7c7e7c7cf83b0000": {
+    "bc88fcfc7c3c6020": {
       "name": "Pyro",
       "charId": "Pyro"
     },
-    "185efe1e7cfe0200": {
+    "3e3e3e1d0c940f07": {
       "name": "Quake",
       "charId": "Quake"
     },
-    "3c3c3c3c7cfe4600": {
+    "fe7e3e7e3c0c0800": {
       "name": "Quasar",
       "charId": "Quasar"
     },
-    "3e3e3e3e3c770200": {
+    "3f3f3f3f1e060001": {
       "name": "Quicksilver",
       "charId": "Quicksilver"
     },
-    "187e7c7e7e3e0400": {
+    "3e3e3e3c9cc1212c": {
       "name": "Rachel Summers",
       "charId": "RachelSummers"
     },
-    "3c7efedc6e720000": {
+    "3fbe1e3c1983e060": {
       "name": "Ravager Boomer",
       "charId": "S_RavagerDmg_AoE"
     },
-    "2c7c7c7cff3c0800": {
+    "2e0e0e3e3e3e3614": {
       "name": "Ravager Stitcher",
       "charId": "S_RavagerSupport_Heal"
     },
-    "183c3c3cfeff0600": {
+    "be5e5e5e84033606": {
       "name": "Ravager Bruiser",
       "charId": "RavagerTank_Taunt"
     },
-    "387e7e3c7c7e0200": {
+    "3f1e1e1e0e862633": {
       "name": "Red Goblin",
       "charId": "RedGoblin"
     },
-    "0c7e7e7e7e670000": {
+    "df7e1f5e5e0c0200": {
       "name": "Red Guardian",
       "charId": "RedGuardian"
     },
-    "041e1e9fff272e00": {
+    "3f3f1f1c1e4d6020": {
       "name": "Red Hulk",
       "charId": "RedHulk"
     },
-    "3c7c7e7cfc7c0000": {
+    "3f8f8e1e0e643446": {
       "name": "Red Skull",
       "charId": "RedSkullOperator"
     },
-    "247e7e3c3cfc8600": {
+    "7f6f0e0e7e40904a": {
       "name": "Rescue",
       "charId": "Rescue"
     },
-    "0f3f3e1fcde13000": {
+    "3f7e1f1e1e0e80c0": {
       "name": "Rhino",
       "charId": "Rhino"
     },
-    "007c7c7e7efe4800": {
+    "3fc7ff07c1692080": {
       "name": "Rocket Raccoon",
       "charId": "RocketRaccoonOperator"
     },
-    "387e3e7e3c7a0a00": {
+    "7fffbf1e0c101800": {
       "name": "Rogue",
       "charId": "Rogue"
     },
-    "207e7efefdcc0000": {
+    "be3e0e06e4bcde00": {
       "name": "Ronan the Accuser",
       "charId": "Ronan"
     },
-    "7efcfecc8d230200": {
+    "bfcbce1e0e068829": {
       "name": "Ronin",
       "charId": "Ronin"
     },
-    "3e7adeffdf000000": {
+    "307f7e7e3f0d0100": {
       "name": "Sabretooth",
       "charId": "Sabretooth"
     },
-    "0c3c362c7fff7000": {
+    "05014c40e3fafcfe": {
       "name": "Captain America (Sam)",
       "charId": "SamWilson"
     },
-    "387c78f8fafe2000": {
+    "7c98905090f0ff37": {
       "name": "Sasquatch",
       "charId": "Sasquatch"
     },
-    "3f7e7c7cfc0c0400": {
+    "e4fefffae800000c": {
       "name": "Satana",
       "charId": "Satana"
     },
-    "043c3e1cc0ff7638": {
+    "7f7f3a000081e1fb": {
       "name": "Scarlet Spider",
       "charId": "ScarletSpider"
     },
-    "283e7e7cdcdae000": {
+    "3cffbfbe1c1c0000": {
       "name": "Scarlet Witch",
       "charId": "ScarletWitch"
     },
-    "1c3e5e5eff610600": {
+    "2f3f1d1d1f636200": {
       "name": "Scientist Supreme",
       "charId": "ScientistSupreme"
     },
-    "187c3e5ee1fe7000": {
+    "7f7f0881c0c8e0f9": {
       "name": "Scorpion",
       "charId": "Scorpion"
     },
-    "7efefe4e047e0000": {
+    "cfcf8c0f070340f3": {
       "name": "Scream",
       "charId": "Scream"
     },
-    "183c3c5e3ffe0e00": {
+    "763e1c1d1d0170bb": {
       "name": "Sebastian Shaw",
       "charId": "SebastianShaw"
     },
-    "0c1e1e3e7efbe000": {
+    "3f3f3f3f1f040800": {
       "name": "Sersi",
       "charId": "Sersi"
     },
-    "0c3e3e3e7c7f0300": {
+    "3fbf3f3e1e800101": {
       "name": "Shang-Chi",
       "charId": "ShangChi"
     },
-    "1c3e7e7e5ebb0000": {
+    "3f7e5e5c29111918": {
       "name": "Sharon Carter",
       "charId": "SharonCarter"
     },
-    "200e7c1e7efe7c00": {
+    "a23f1a1c0c4de0fe": {
       "name": "Shatterstar",
       "charId": "Shatterstar"
     },
-    "145adc7e3e3a0e0c": {
+    "0e1f1f1f1f0e181c": {
       "name": "She-Hulk",
       "charId": "SheHulk"
     },
-    "0c7e5e7eefe30000": {
+    "1f1f0f2f9e86c0c0": {
       "name": "S.H.I.E.L.D. Assault",
       "charId": "War_ShieldDmg_AoE"
     },
-    "3c7c7c7c3cf3c000": {
+    "7ffe7e7e4c020080": {
       "name": "S.H.I.E.L.D. Trooper",
       "charId": "War_ShieldDmg_Defense"
     },
-    "3c7c7e3cfce51000": {
+    "7b7f7e3e0c0082c2": {
       "name": "S.H.I.E.L.D. Medic",
       "charId": "War_ShieldSupport_Heal"
     },
-    "207e7c3c38ffc300": {
+    "bcbe3e5e4c08890d": {
       "name": "S.H.I.E.L.D. Operative",
       "charId": "War_ShieldSupport_Stealth"
     },
-    "187c7e7e7b7a2000": {
+    "3f373f1f8c603820": {
       "name": "S.H.I.E.L.D. Security",
       "charId": "War_ShieldTank_Stun"
     },
-    "207c7c7c7f7d0600": {
+    "6c7e3e3c9cc0e070": {
       "name": "Shocker",
       "charId": "Shocker"
     },
-    "181c7efcfc770600": {
+    "0f04bcbcd8dce521": {
       "name": "Shuri",
       "charId": "Shuri"
     },
-    "01fe3efefe870000": {
+    "3e3f1f9ecf030300": {
       "name": "Sif",
       "charId": "Sif"
     },
-    "3c7efafeba580000": {
+    "89bfbfb25c289808": {
       "name": "Silver Sable",
       "charId": "SilverSable"
     },
-    "080e7e7efdf85800": {
+    "86127ebe9e8c60f0": {
       "name": "Silver Samurai",
       "charId": "SilverSamurai"
     },
-    "3c7e3e7c78be0200": {
+    "bebc9e9c38182263": {
       "name": "Silver Surfer",
       "charId": "SilverSurfer"
     },
-    "3c7e7efc387c0400": {
+    "ffbf3e3c04200cc2": {
       "name": "Songbird",
       "charId": "Songbird"
     },
-    "387c7e3c7cfe0800": {
+    "bf9f8e0e8e848407": {
       "name": "Spider-Man ",
       "charId": "NUESpiderMan"
     },
-    "1c3e7c3c7cfe0220": {
+    "5e7f3f3e0c002435": {
       "name": "Spider-Man 2099",
       "charId": "SpiderMan2099"
     },
-    "1c3e3e1c04f77f00": {
+    "ff3f1f0c0000b3e3": {
       "name": "Spider-Man (Big Time)",
       "charId": "SpiderManBigTime"
     },
-    "3e7e7fde99014010": {
+    "ffb71f1f3c1c0000": {
       "name": "Spider-Man (Noir)",
       "charId": "SpiderManNoir"
     },
-    "3c3c7c7c7ce67000": {
+    "7e7efcfcbc0c0000": {
       "name": "Spider-Man (Pavitr)",
       "charId": "SpiderManPavitr"
     },
-    "1f3e3efccee30000": {
+    "5d5d5eae1e0f4180": {
       "name": "Spider-Punk",
       "charId": "SpiderPunk"
     },
-    "007e7e7e00fe7e00": {
+    "ffff3d03000060fc": {
       "name": "Spider-Slayer",
       "charId": "SpiderSlayer"
     },
-    "187c7e7c607c7e00": {
+    "cfff9f0e0080c4e2": {
       "name": "Spider-Weaver",
       "charId": "SpiderWeaver"
     },
-    "3e0e1e1c187ff610": {
+    "3f1f1e3e1e0c3083": {
       "name": "Spider-Woman",
       "charId": "SpiderWoman"
     },
-    "1c3e3e3cfef32000": {
+    "247e3e3ebe89a180": {
       "name": "Squirrel Girl",
       "charId": "SquirrelGirl"
     },
-    "0c1e7e5e6e7e0e00": {
+    "3f3f1f1f0e80c0a1": {
       "name": "Starbrand",
       "charId": "StarBrand"
     },
-    "3c3e7e7c9e5e0800": {
+    "cc8d0f6f0404bdbc": {
       "name": "Star-Lord",
       "charId": "StarLord"
     },
-    "1c5e5e025ee70f0c": {
+    "1b05050589ffe7c3": {
       "name": "Star-Lord (Annihilation)",
       "charId": "StarLord_Annihilation"
     },
-    "3c7e7e7efcc00200": {
+    "f0f27f3f385c1400": {
       "name": "Stature",
       "charId": "Stature"
     },
-    "3c3c38ff7b3e0800": {
+    "407873f379f03033": {
       "name": "Steel Serpent",
       "charId": "SteelSerpent"
     },
-    "3c3c7c3c3cfe4600": {
+    "fe7e7e7e0e401002": {
       "name": "Storm",
       "charId": "Storm"
     },
-    "e0fefe1e7e230400": {
+    "993f2f2f0e565101": {
       "name": "Stryfe",
       "charId": "Stryfe"
     },
-    "7d3f3e3e5e540200": {
+    "1f0f4f1f3f1e0280": {
       "name": "Sunfire",
       "charId": "Sunfire"
     },
-    "1c7c5c1e2ec1f138": {
+    "bfffb10d47478000": {
       "name": "Sunspot",
       "charId": "Sunspot"
     },
-    "7c7c7e3cfc7c0000": {
+    "8c7c7c5cecf0f020": {
       "name": "Superior Spider-Man",
       "charId": "SuperiorSpiderMan"
     },
-    "3e7e7e7f3e140000": {
+    "7f3f3f1e1f0c0010": {
       "name": "Super Skrull",
       "charId": "SuperSkrull"
     },
-    "1e3f5d7df9690000": {
+    "3f0fdfde5c0c8040": {
       "name": "Swarm",
       "charId": "Swarm"
     },
-    "1c1e7c3c7e7f6000": {
+    "befe7e3c1c012184": {
       "name": "Sword Master",
       "charId": "SwordMaster"
     },
-    "003c3e3c7cf3d318": {
+    "3e3f3f3e1c024161": {
       "name": "Kestrel",
       "charId": "Sybil"
     },
-    "3c7e7ffeea220000": {
+    "7cffdebcaca08000": {
       "name": "Sylvie",
       "charId": "Sylvie"
     },
-    "2c7e3e3e4d7c1c00": {
+    "7f3f3f1f06828018": {
       "name": "Void Knight",
       "charId": "SymbioteSilverSurfer"
     },
-    "3c3e3e38c3c37e00": {
+    "fb7f5cc9c1cc8020": {
       "name": "Spider-Man (Symbiote)",
       "charId": "SymbioteSpiderMan"
     },
-    "3c7e7cece6760400": {
+    "f6d9c68686c0c1e3": {
       "name": "Taskmaster",
       "charId": "Taskmaster"
     },
-    "003e7e7e7ef21c00": {
+    "eddece6e4e1f0000": {
       "name": "Star-Lord (T'Challa)",
       "charId": "TChalla"
     },
-    "3c3e3e3e3f381a00": {
+    "3f3f1f1f1f0f0000": {
       "name": "Thanos (Endgame)",
       "charId": "ThanosEndgame"
     },
-    "3c7c5cbc387f0e00": {
+    "3e3e3e7c3c3018c8": {
       "name": "The Hood",
       "charId": "TheHood"
     },
-    "7f7e7e3c9c852000": {
+    "ffff7e3c1c000300": {
       "name": "The Leader",
       "charId": "TheLeader"
     },
-    "3e3e3e7ebf600200": {
+    "7f3f7f1e2e301000": {
       "name": "Thor (Infinity War)",
       "charId": "Thor_InfinityWar"
     },
-    "3c7c7cfcfce22000": {
+    "fefefebe48008080": {
       "name": "Thunderstrike",
       "charId": "Thunderstrike"
     },
-    "3c7f5ede587b0000": {
+    "363f3f9e1e841058": {
       "name": "Tigra",
       "charId": "Tigra"
     },
-    "1c7e6e7e727a3000": {
+    "dcda749c78b060b8": {
       "name": "Titania",
       "charId": "Titania"
     },
-    "3e7f7e7edc060000": {
+    "9e1f2e1e1f8e0605": {
       "name": "Toad",
       "charId": "Toad"
     },
-    "1c3e7efe7f700000": {
+    "9b1f8f8eece56000": {
       "name": "Green Goblin",
       "charId": "UltGreenGoblin"
     },
-    "3c7e7e7e783e0000": {
+    "3f1d1f0fc4e0f060": {
       "name": "Ultimus",
       "charId": "Ultimus"
     },
-    "38fe7e7e1a3e0400": {
+    "7e3c3c3c1c28612f": {
       "name": "Ultron",
       "charId": "UltronOperator"
     },
-    "087e3e7efcfc1000": {
+    "7f1f5f8f070080cc": {
       "name": "Ultron Fortifier",
       "charId": "UltronDmg_Defense"
     },
-    "487e3e1efef13000": {
+    "3f3f1f0f07c0c0e0": {
       "name": "Ultron Incinerator",
       "charId": "UltronDmg_Offense"
     },
-    "187e7e3e4ee1f000": {
+    "bf1f5f4f870880c0": {
       "name": "Ultron Accelerator",
       "charId": "UltronDmg_Speed"
     },
-    "407e7e7ecee33000": {
+    "df5f7f1f0f030000": {
       "name": "Ultron Fabricator",
       "charId": "UltronSupport_Heal"
     },
-    "407c3e3eeef0f800": {
+    "4d7f3b1f0780e0e0": {
       "name": "Ultron Reinforcer",
       "charId": "UltronTank_Taunt"
     },
-    "3c7e7e1c68fe0600": {
+    "bf9f1e0c8ca08687": {
       "name": "Spider-Man (Miles)",
       "charId": "UltSpiderMan"
     },
-    "3c7e7e7eccc34000": {
+    "7f9d9f9f8f800100": {
       "name": "Union Jack",
       "charId": "UnionJack"
     },
-    "7e7ffd7059f00000": {
+    "fe7df1b0181cc0e0": {
       "name": "Ursa Major",
       "charId": "UrsaMajor"
     },
-    "6b3c2e1c58683e3c": {
+    "8f871f1f1e1c80cc": {
       "name": "Vahl",
       "charId": "Vahl"
     },
-    "145c9c1cfff3e200": {
+    "063f1f1e1b8dc1c1": {
       "name": "Valkyrie",
       "charId": "Valkyrie"
     },
-    "3e7e3e3c2cc6c600": {
+    "3f3f7f3e0e040203": {
       "name": "Vampire Defiler",
       "charId": "VampireBlaster"
     },
-    "3c7e7e7e3e981000": {
+    "f6ff7f7e2e000000": {
       "name": "Vampire Enforcer",
       "charId": "VampireBrawler"
     },
-    "387c7c7c5e4d6410": {
+    "6afefe3e3f180000": {
       "name": "Vampire Stalker",
       "charId": "VampireController"
     },
-    "3c7e7e3e3f060300": {
+    "7f7dfc7e1f080000": {
       "name": "Vampire Brute",
       "charId": "VampireProtector"
     },
-    "3c7e7e7e3e0e0400": {
+    "605fdcfc5d251908": {
       "name": "Vampire Occultist",
       "charId": "VampireSupport"
     },
-    "3c7eee1f0f382a00": {
+    "c2293f1f1f0f0e18": {
       "name": "Venom",
       "charId": "Venom"
     },
-    "383e7e3f7e7a0000": {
+    "eefc7cfcbc580000": {
       "name": "Victoria Hand",
       "charId": "VictoriaHand"
     },
-    "183c3c3cf4ff3a00": {
+    "be3e5e5cc0e0f0c0": {
       "name": "Vision",
       "charId": "Vision"
     },
-    "183e3e7ed87c1e00": {
+    "3f3f3f1e1c0410d8": {
       "name": "Viv Vision",
       "charId": "VivVision"
     },
-    "3c3e7efe76710000": {
+    "da8f8fcfc3e16000": {
       "name": "Vulture",
       "charId": "Vulture"
     },
-    "783e3e1c7cfe6000": {
+    "fb0e1c001e9eb1f1": {
       "name": "Warlock",
       "charId": "Warlock"
     },
-    "607c7c7eebf86000": {
+    "7fbe9f5f2c80c000": {
       "name": "War Machine",
       "charId": "WarMachine"
     },
-    "007e7e1e7cfe1600": {
+    "1e1f1f1f1c60e483": {
       "name": "Wasp",
       "charId": "Wasp"
     },
-    "181e3e7c18fe7e00": {
+    "0e3f3e3e1c0c4473": {
       "name": "White Tiger",
       "charId": "WhiteTiger"
     },
-    "3c7ede3cfc7c0000": {
+    "3f1f0f0e8e006b3a": {
       "name": "Winter Soldier",
       "charId": "WinterSoldier"
     },
-    "7e787c7c3872d010": {
+    "aebefc7c002c7881": {
       "name": "Wolfsbane",
       "charId": "Wolfsbane"
     },
-    "003e7e7efef07000": {
+    "070d0d9f8f8fc6c0": {
       "name": "Wolverine",
       "charId": "Wolverine"
     },
-    "0c3e3e3cfc7f1400": {
+    "3c1f1c1c6c723b07": {
       "name": "Wong",
       "charId": "Wong"
     },
-    "3c3e7f7e7c360000": {
+    "1f3f3f1f1e240013": {
       "name": "X-23",
       "charId": "X23"
     },
-    "7c7e7e7e3c780000": {
+    "eccfdf7e0e804900": {
       "name": "Professor Xavier",
       "charId": "Xavier"
     },
-    "3c7e7e3c3c7e4000": {
+    "3dff3f3e1e202080": {
       "name": "Yelena Belova",
       "charId": "Yelena"
     },
-    "7e7e7e7e7b010000": {
+    "9f7d7f1f1f810000": {
       "name": "Yellowjacket",
       "charId": "Yellowjacket"
     },
-    "1c3c7e7cfc7e0800": {
+    "be053c1e38b85c3c": {
       "name": "Yondu",
       "charId": "Yondu"
     },
-    "003e5e1efcdf6600": {
+    "8f1f1f3e1e1c1803": {
       "name": "Yo-Yo",
       "charId": "YoYo"
     },
-    "183efe9efd730000": {
+    "b81f1e1f8ec0e0f0": {
       "name": "Baron Zemo",
       "charId": "Zemo"
     },
-    "060e3e3eccff1e00": {
+    "1f1f3b1e1e828643": {
       "name": "Iron Man (Zombie)",
       "charId": "ZombieIronMan"
     },
-    "781d3e7a7a7f4000": {
+    "3f2d21615901c4ff": {
       "name": "Juggernaut (Zombie)",
       "charId": "ZombieJuggernaut"
     },
-    "3c7e7e5ece830018": {
+    "ffbf8f89070f0100": {
       "name": "Kestrel (Zombie)",
       "charId": "ZombieKestrel"
     },
-    "78dd7c3c3c7e0c00": {
+    "7e3e3e3e1c207038": {
       "name": "Scarlet Witch (Zombie)",
       "charId": "ZombieScarletWitch"
     },
-    "3c727263e7e37200": {
+    "fbc0c1c1e3c3c1e1": {
       "name": "",
       "charId": "MysteryMan"
     }

@@ -2,7 +2,6 @@ const ext = typeof browser !== "undefined" ? browser : chrome;
 
 // Elements DOM
 const btnAnalyze = document.getElementById("btn-analyze");
-const btnCalibrate = document.getElementById("btn-calibrate");
 const btnDetach = document.getElementById("btn-detach");
 const btnExport = document.getElementById("btn-export");
 const btnImport = document.getElementById("btn-import");
@@ -147,25 +146,6 @@ btnAnalyze.addEventListener("click", async () => {
     setStatus("Erreur: " + e.message, "error");
   } finally {
     setLoading(false);
-  }
-});
-
-// ============================================
-// Bouton Calibrer
-// ============================================
-
-btnCalibrate.addEventListener("click", async () => {
-  try {
-    await ext.runtime.sendMessage({
-      type: "MSF_START_CALIBRATOR",
-      label: "CALIBRATION",
-      showGrid: true
-    });
-    setStatus("Calibrateur lance (ESC pour quitter)");
-    // Fermer le popup apres un delai
-    setTimeout(() => window.close(), 500);
-  } catch (e) {
-    setStatus("Erreur: " + e.message, "error");
   }
 });
 
@@ -733,7 +713,9 @@ function displayWarResult(result) {
   let html = "";
 
   if (result.identified && result.team) {
-    html += `<div class="war-team-identified">Equipe: ${result.team.name}</div>`;
+    // Utiliser variantName si disponible, sinon name
+    const teamDisplayName = result.team.variantName || result.team.name;
+    html += `<div class="war-team-identified">Equipe: ${teamDisplayName}</div>`;
 
     if (result.matchConfidence) {
       html += `<div style="font-size:11px;color:#888;margin-bottom:8px;">Confiance: ${result.matchConfidence}%</div>`;
@@ -746,11 +728,14 @@ function displayWarResult(result) {
       result.counters.slice(0, 5).forEach(c => {
         html += `
           <div class="war-counter-item">
-            <span class="war-counter-name">${c.teamName}</span>
-            <div class="war-counter-meta">
-              <span class="war-counter-confidence">${c.confidence}%</span>
-              ${c.minPower ? `<span class="war-counter-power">${formatPower(c.minPower)}+</span>` : ""}
+            <div class="war-counter-header">
+              <span class="war-counter-name">${c.teamName}</span>
+              <div class="war-counter-meta">
+                <span class="war-counter-confidence">${c.confidence}%</span>
+                ${c.minPower ? `<span class="war-counter-power">${formatPower(c.minPower)}+</span>` : ""}
+              </div>
             </div>
+            ${c.notes ? `<div class="war-counter-notes">${c.notes}</div>` : ""}
           </div>
         `;
       });
@@ -825,6 +810,13 @@ ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       tabPortrait.click();
     }
 
+    sendResponse({ received: true });
+  }
+
+  // Mode multi-equipes
+  if (msg.type === "MSF_MULTI_TEAMS_CAPTURED") {
+    console.log("[Popup] Multi-equipes reçues:", msg.teams.length);
+    handleMultiTeamsCapture(msg.teams);
     sendResponse({ received: true });
   }
 });
@@ -1013,3 +1005,148 @@ btnWarAnalyzePortraits.addEventListener("click", async () => {
 });
 
 // Note: btnCloseWar listener est defini plus haut
+
+// ============================================
+// War Mode - Multi-Teams Analysis
+// ============================================
+
+/**
+ * Gere la capture et l'analyse de plusieurs equipes
+ */
+async function handleMultiTeamsCapture(teams) {
+  setStatus(`Analyse de ${teams.length} equipes...`, "");
+
+  // Ouvrir le panneau War
+  if (warPanel.classList.contains("hidden")) {
+    warPanel.classList.remove("hidden");
+  }
+
+  // Initialiser le WarAnalyzer
+  if (!warAnalyzer) {
+    warAnalyzer = new WarAnalyzer();
+    await warAnalyzer.init();
+  }
+
+  const results = [];
+
+  for (const team of teams) {
+    try {
+      const portraitDataUrls = team.portraits.map(p => p.dataUrl);
+      const result = await warAnalyzer.analyzeEnemyTeamFromPortraits(portraitDataUrls, null);
+      results.push({
+        teamIndex: team.teamIndex,
+        ...result
+      });
+    } catch (e) {
+      console.error(`[Popup] Erreur analyse equipe ${team.teamIndex}:`, e);
+      results.push({
+        teamIndex: team.teamIndex,
+        identified: false,
+        error: e.message
+      });
+    }
+  }
+
+  // Afficher les resultats
+  displayMultiTeamResults(results);
+  setStatus(`✅ ${results.length} equipes analysees`, "success");
+}
+
+/**
+ * Affiche les resultats pour plusieurs equipes
+ */
+function displayMultiTeamResults(results) {
+  let html = `<div class="multi-team-results">`;
+
+  for (const result of results) {
+    html += `<div class="team-result-card">`;
+    html += `<div class="team-result-header">Equipe ${result.teamIndex}</div>`;
+
+    if (result.identified && result.team) {
+      const teamDisplayName = result.team.variantName || result.team.name;
+      html += `<div class="team-result-name">${teamDisplayName}</div>`;
+
+      if (result.counters && result.counters.length > 0) {
+        html += `<div class="team-result-counters">`;
+        result.counters.slice(0, 3).forEach(c => {
+          html += `<div class="mini-counter">
+            <span class="counter-team">${c.teamName}</span>
+            <span class="counter-conf">${c.confidence}%</span>
+          </div>`;
+        });
+        html += `</div>`;
+      } else {
+        html += `<div class="no-counters">Pas de counters</div>`;
+      }
+    } else {
+      html += `<div class="team-unknown">Non identifiee</div>`;
+      if (result.characters) {
+        const names = result.characters.filter(n => n && n !== "?").join(", ");
+        if (names) {
+          html += `<div class="team-chars">${names}</div>`;
+        }
+      }
+    }
+
+    html += `</div>`;
+  }
+
+  html += `</div>`;
+
+  warResult.innerHTML = html;
+  warResult.classList.remove("hidden");
+}
+
+// ============================================
+// War Mode - Barracks Scan
+// ============================================
+
+const btnWarBarracks = document.getElementById("btn-war-barracks");
+const btnWarCalibrate = document.getElementById("btn-war-calibrate");
+const calibrationStatus = document.getElementById("calibration-status");
+
+btnWarCalibrate.addEventListener("click", async () => {
+  try {
+    await ext.runtime.sendMessage({ type: "MSF_CALIBRATE_BARRACKS" });
+    calibrationStatus.textContent = "Calibration lancee - suivez les instructions a l'ecran";
+    calibrationStatus.style.color = "#00d4ff";
+    // Fermer le popup pour voir la calibration
+    setTimeout(() => window.close(), 500);
+  } catch (e) {
+    console.error("[Popup] Erreur calibration:", e);
+    calibrationStatus.textContent = "Erreur: " + e.message;
+    calibrationStatus.style.color = "#ff4444";
+  }
+});
+
+btnWarBarracks.addEventListener("click", async () => {
+  try {
+    // Mode scan par clic - pas besoin de calibration obligatoire
+    await ext.runtime.sendMessage({ type: "MSF_START_CLICK_SCAN" });
+    calibrationStatus.textContent = "Cliquez sur une equipe a scanner";
+    calibrationStatus.style.color = "#00d4ff";
+    // Fermer le popup pour voir l'overlay
+    setTimeout(() => window.close(), 500);
+  } catch (e) {
+    console.error("[Popup] Erreur scan:", e);
+    calibrationStatus.textContent = "Erreur: " + e.message;
+    calibrationStatus.style.color = "#ff4444";
+  }
+});
+
+// Afficher le statut de calibration au chargement
+(async function checkCalibrationStatus() {
+  try {
+    const result = await ext.storage.local.get("msf_barracks_calibration");
+    if (result.msf_barracks_calibration) {
+      const cal = result.msf_barracks_calibration;
+      calibrationStatus.textContent = `Taille carte: ${Math.round(cal.card1.width)}x${Math.round(cal.card1.height)}px`;
+      calibrationStatus.style.color = "#888";
+    } else {
+      calibrationStatus.textContent = "Taille par defaut (290x320px avec EDIT)";
+      calibrationStatus.style.color = "#666";
+    }
+  } catch (e) {
+    console.log("[Popup] Pas de calibration:", e);
+  }
+})();

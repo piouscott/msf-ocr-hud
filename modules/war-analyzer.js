@@ -15,6 +15,34 @@ class WarAnalyzer {
     this.warMetaTeams = [];
     this.portraitsDb = {}; // Hash -> charId mapping
     this.initialized = false;
+
+    // Personnages "modificateurs" qui changent les counters d'une equipe
+    // Format: charId (majuscules) -> suffixe pour l'ID de variante
+    this.teamModifiers = {
+      "ODIN": "odin",
+      "SUPERSKRULL": "superskrull",
+      "MEPHISTO": "mephisto",
+      "DORMAMMU": "dormammu",
+      "COSMICGHOSTRIDER": "cosmicghostrider",
+      "PROFESSORX": "xavier",
+      "PROFESSORXAVIER": "xavier",
+      "TIGRA": "tigra",
+      "MOCKINGBIRD": "tigra",
+      "RONIN": "tigra",
+      "FRANKLINRICHARDS": "franklin",
+      "KNULL": "knull",
+      "ARES": "ares",
+      "BLACKKNIGHT": "blackknight",
+      "DOOM": "doom",
+      "KANG": "kang",
+      "KANGTHECONQUEROR": "kang",
+      "CAPTAINBRITAIN": "captainbritain",
+      "APOCALYPSE": "apocalypse",
+      "PHOENIXFORCE": "phoenixforce",
+      "PHOENIX": "phoenixforce",
+      "JEANGREY": "phoenixforce",
+      "JEANGREY_PHOENIX": "phoenixforce"
+    };
   }
 
   /**
@@ -418,7 +446,7 @@ class WarAnalyzer {
 
     const counters = this.countersData[teamId].map(counter => {
       const counterTeam = this.teamsData.find(t => t.id === counter.team);
-      const minPower = enemyPower ? Math.round(enemyPower * counter.minPowerRatio) : null;
+      const minPower = enemyPower ? Math.round(enemyPower * (counter.minPowerRatio || 1)) : null;
 
       return {
         teamId: counter.team,
@@ -431,6 +459,38 @@ class WarAnalyzer {
     });
 
     return counters.sort((a, b) => b.confidence - a.confidence);
+  }
+
+  /**
+   * Recupere les counters en tenant compte des variantes d'equipe
+   * @param {string} baseTeamId - ID de l'equipe de base
+   * @param {string[]} charIds - CharIds detectes (pour detecter les modificateurs)
+   * @param {number} enemyPower - Puissance ennemie (optionnel)
+   * @returns {object} - { counters: [], variantUsed: string }
+   */
+  getCountersWithVariants(baseTeamId, charIds, enemyPower = null) {
+    // Detecter toutes les variantes possibles
+    const variants = this._detectTeamVariants(baseTeamId, charIds);
+
+    // Chercher la premiere variante qui a des counters definis
+    for (const variantId of variants) {
+      if (this.countersData[variantId] && this.countersData[variantId].length > 0) {
+        console.log(`[WarAnalyzer] Counters trouves pour variante: ${variantId}`);
+        return {
+          counters: this.getCountersForTeam(variantId, enemyPower),
+          variantUsed: variantId,
+          isVariant: variantId !== baseTeamId
+        };
+      }
+    }
+
+    // Aucun counter trouve
+    console.log(`[WarAnalyzer] Aucun counter trouve pour ${baseTeamId} ni ses variantes`);
+    return {
+      counters: [],
+      variantUsed: baseTeamId,
+      isVariant: false
+    };
   }
 
   /**
@@ -604,6 +664,7 @@ class WarAnalyzer {
 
   /**
    * Helper: charge une image et retourne ses pixels
+   * Applique un crop central de 60% pour ignorer les bordures UI du jeu
    */
   _getImageData(dataUrl, size) {
     return new Promise((resolve, reject) => {
@@ -615,12 +676,21 @@ class WarAnalyzer {
 
       img.onload = () => {
         clearTimeout(timeout);
-        console.log("[WarAnalyzer] Image chargee:", size + "x" + size);
+        console.log("[WarAnalyzer] Image chargee:", img.width + "x" + img.height);
+
         const canvas = document.createElement("canvas");
         canvas.width = size;
         canvas.height = size;
         const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, size, size);
+
+        // Crop central de 60% pour ignorer les bordures circulaires et UI
+        const cropRatio = 0.6;
+        const srcSize = Math.min(img.width, img.height);
+        const cropSize = srcSize * cropRatio;
+        const offsetX = (img.width - cropSize) / 2;
+        const offsetY = (img.height - cropSize) / 2;
+
+        ctx.drawImage(img, offsetX, offsetY, cropSize, cropSize, 0, 0, size, size);
         const data = ctx.getImageData(0, 0, size, size);
         resolve(data);
       };
@@ -666,7 +736,7 @@ class WarAnalyzer {
   /**
    * Trouve le meilleur match pour un hash dans la base de portraits
    */
-  findPortraitMatch(hash, threshold = 70) {
+  findPortraitMatch(hash, threshold = 80) {
     let bestMatch = null;
     let bestSimilarity = 0;
 
@@ -762,6 +832,9 @@ class WarAnalyzer {
       .filter(p => p.charId)
       .map(p => p.charId);
 
+    console.log("[WarAnalyzer] Portraits identifies:", identifiedPortraits.map(p => `${p.name} (charId: ${p.charId})`));
+    console.log("[WarAnalyzer] CharIds pour recherche equipe:", charIds);
+
     // 3. Extraire les noms pour affichage
     const characterNames = identifiedPortraits.map(p => p.name || "?");
 
@@ -790,8 +863,17 @@ class WarAnalyzer {
       };
     }
 
-    // 5. Recuperer les counters
-    const counters = this.getCountersForTeam(teamResult.team.id, enemyPower);
+    // 5. Recuperer les counters (avec detection des variantes)
+    const countersResult = this.getCountersWithVariants(teamResult.team.id, charIds, enemyPower);
+
+    // Construire le nom de la variante si applicable
+    let variantName = teamResult.team.name;
+    if (countersResult.isVariant) {
+      // Extraire les modificateurs du nom de variante
+      const mods = countersResult.variantUsed.replace(teamResult.team.id + "_", "").split("_");
+      const modNames = mods.map(m => m.charAt(0).toUpperCase() + m.slice(1)).join(" + ");
+      variantName = `${teamResult.team.name} + ${modNames}`;
+    }
 
     return {
       identified: true,
@@ -800,12 +882,14 @@ class WarAnalyzer {
       team: {
         id: teamResult.team.id,
         name: teamResult.team.name,
-        nameFr: teamResult.team.nameFr
+        nameFr: teamResult.team.nameFr,
+        variantId: countersResult.variantUsed,
+        variantName: variantName
       },
       matchConfidence: teamResult.confidence,
       matchCount: teamResult.matchCount,
-      counters: counters,
-      message: `${teamResult.team.name} identifie (${teamResult.confidence}%)`
+      counters: countersResult.counters,
+      message: `${variantName} identifie (${teamResult.confidence}%)`
     };
   }
 
@@ -817,6 +901,9 @@ class WarAnalyzer {
       return { team: null, matchCount: 0, confidence: 0 };
     }
 
+    // Normaliser les charIds en majuscules pour comparaison
+    const normalizedCharIds = charIds.map(id => id.toUpperCase());
+
     // 1. Chercher dans teams.json
     let bestTeam = null;
     let bestMatchCount = 0;
@@ -824,7 +911,9 @@ class WarAnalyzer {
     for (const team of this.teamsData) {
       if (!team.memberIds) continue;
 
-      const matchCount = charIds.filter(id => team.memberIds.includes(id)).length;
+      // Normaliser les memberIds de l'équipe
+      const normalizedMemberIds = team.memberIds.map(id => id.toUpperCase());
+      const matchCount = normalizedCharIds.filter(id => normalizedMemberIds.includes(id)).length;
 
       if (matchCount > bestMatchCount) {
         bestMatchCount = matchCount;
@@ -840,7 +929,9 @@ class WarAnalyzer {
       for (const metaTeam of this.warMetaTeams) {
         if (!metaTeam.squad) continue;
 
-        const matchCount = charIds.filter(id => metaTeam.squad.includes(id)).length;
+        // Normaliser les IDs du squad
+        const normalizedSquad = metaTeam.squad.map(id => id.toUpperCase());
+        const matchCount = normalizedCharIds.filter(id => normalizedSquad.includes(id)).length;
 
         if (matchCount > bestMetaMatchCount) {
           bestMetaMatchCount = matchCount;
@@ -864,11 +955,68 @@ class WarAnalyzer {
       ? Math.round((bestMatchCount / Math.min(5, charIds.length)) * 100)
       : 0;
 
+    // Rejeter si moins de 3 matches (60% minimum pour 5 persos)
+    if (bestMatchCount < 3) {
+      console.log(`[WarAnalyzer] Match insuffisant: ${bestMatchCount}/5 (${confidence}%) pour ${bestTeam?.name || 'aucune'}`);
+      return {
+        team: null,
+        matchCount: bestMatchCount,
+        confidence: 0
+      };
+    }
+
     return {
       team: bestTeam,
       matchCount: bestMatchCount,
       confidence: confidence
     };
+  }
+
+  /**
+   * Detecte la variante d'une equipe en fonction des modificateurs presents
+   * @param {string} baseTeamId - ID de l'equipe de base (ex: "absoluteaforce")
+   * @param {string[]} charIds - Liste des charIds detectes
+   * @returns {string[]} - Liste des IDs de variantes possibles (du plus specifique au plus general)
+   */
+  _detectTeamVariants(baseTeamId, charIds) {
+    const normalizedIds = charIds.map(id => id.toUpperCase());
+    const modifiersFound = new Set();
+
+    // Detecter les modificateurs presents
+    for (const [charId, suffix] of Object.entries(this.teamModifiers)) {
+      if (normalizedIds.includes(charId)) {
+        modifiersFound.add(suffix);
+      }
+    }
+
+    const modifiersArray = Array.from(modifiersFound).sort();
+    const variants = [];
+
+    // Generer toutes les combinaisons de variantes (du plus specifique au moins specifique)
+    if (modifiersArray.length > 0) {
+      // Variante complete (tous les modificateurs)
+      variants.push(baseTeamId + "_" + modifiersArray.join("_"));
+
+      // Variantes partielles (combinaisons de 2 modificateurs)
+      if (modifiersArray.length >= 2) {
+        for (let i = 0; i < modifiersArray.length; i++) {
+          for (let j = i + 1; j < modifiersArray.length; j++) {
+            variants.push(baseTeamId + "_" + modifiersArray[i] + "_" + modifiersArray[j]);
+          }
+        }
+      }
+
+      // Variantes avec un seul modificateur
+      for (const mod of modifiersArray) {
+        variants.push(baseTeamId + "_" + mod);
+      }
+    }
+
+    // Toujours ajouter l'equipe de base en dernier (fallback)
+    variants.push(baseTeamId);
+
+    console.log(`[WarAnalyzer] Variantes detectees pour ${baseTeamId}:`, variants);
+    return variants;
   }
 
   /**

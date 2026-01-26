@@ -562,15 +562,6 @@ ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true; // Reponse asynchrone
   }
 
-  if (msg.action === "startCalibrator") {
-    startCropCalibrator({
-      label: msg.label || "CROP",
-      showGrid: msg.showGrid || false
-    });
-    sendResponse({ success: true });
-    return true;
-  }
-
   if (msg.action === "startPortraitCapture") {
     startPortraitCapture({
       dataUrl: msg.dataUrl,
@@ -594,6 +585,31 @@ ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       sendResponse({ portraits: [] });
     });
     return true; // Réponse asynchrone
+  }
+
+  if (msg.type === "MSF_CALIBRATE_BARRACKS") {
+    startBarracksCalibration();
+    sendResponse({ success: true });
+    return true;
+  }
+
+  if (msg.type === "MSF_SHOW_BARRACKS_SCAN") {
+    showBarracksScanButtons();
+    sendResponse({ success: true });
+    return true;
+  }
+
+  if (msg.type === "MSF_START_CLICK_SCAN") {
+    startClickToScan();
+    sendResponse({ success: true });
+    return true;
+  }
+
+  if (msg.type === "MSF_GET_BARRACKS_CALIBRATION") {
+    ext.storage.local.get("msf_barracks_calibration").then(result => {
+      sendResponse({ calibration: result.msf_barracks_calibration || null });
+    });
+    return true;
   }
 });
 
@@ -722,204 +738,6 @@ function loadImage(dataUrl) {
     img.src = dataUrl;
   });
 }
-
-// ============================================
-// Calibrateur de zones avec sauvegarde
-// ============================================
-
-const ZONE_STEPS = [
-  { slot: 1, zone: "team_power", label: "SLOT 1 - Zone PUISSANCE (texte chiffres)" },
-  { slot: 1, zone: "portrait_1", label: "SLOT 1 - Portrait 1 (gauche)" },
-  { slot: 1, zone: "portrait_2", label: "SLOT 1 - Portrait 2" },
-  { slot: 1, zone: "portrait_3", label: "SLOT 1 - Portrait 3 (centre)" },
-  { slot: 1, zone: "portrait_4", label: "SLOT 1 - Portrait 4" },
-  { slot: 1, zone: "portrait_5", label: "SLOT 1 - Portrait 5 (droite)" },
-  { slot: 2, zone: "team_power", label: "SLOT 2 - Zone PUISSANCE" },
-  { slot: 2, zone: "portrait_1", label: "SLOT 2 - Portrait 1" },
-  { slot: 2, zone: "portrait_2", label: "SLOT 2 - Portrait 2" },
-  { slot: 2, zone: "portrait_3", label: "SLOT 2 - Portrait 3" },
-  { slot: 2, zone: "portrait_4", label: "SLOT 2 - Portrait 4" },
-  { slot: 2, zone: "portrait_5", label: "SLOT 2 - Portrait 5" },
-  { slot: 3, zone: "team_power", label: "SLOT 3 - Zone PUISSANCE" },
-  { slot: 3, zone: "portrait_1", label: "SLOT 3 - Portrait 1" },
-  { slot: 3, zone: "portrait_2", label: "SLOT 3 - Portrait 2" },
-  { slot: 3, zone: "portrait_3", label: "SLOT 3 - Portrait 3" },
-  { slot: 3, zone: "portrait_4", label: "SLOT 3 - Portrait 4" },
-  { slot: 3, zone: "portrait_5", label: "SLOT 3 - Portrait 5" },
-  { slot: 4, zone: "team_power", label: "SLOT 4 - Zone PUISSANCE" },
-  { slot: 4, zone: "portrait_1", label: "SLOT 4 - Portrait 1" },
-  { slot: 4, zone: "portrait_2", label: "SLOT 4 - Portrait 2" },
-  { slot: 4, zone: "portrait_3", label: "SLOT 4 - Portrait 3" },
-  { slot: 4, zone: "portrait_4", label: "SLOT 4 - Portrait 4" },
-  { slot: 4, zone: "portrait_5", label: "SLOT 4 - Portrait 5" }
-];
-
-function startCropCalibrator(options) {
-  options = options || {};
-  const showGrid = options.showGrid !== false;
-  const stepIndex = options.stepIndex || 0;
-  const calibrationData = options.calibrationData || { slots: [
-    { slotNumber: 1, zones: {} },
-    { slotNumber: 2, zones: {} },
-    { slotNumber: 3, zones: {} },
-    { slotNumber: 4, zones: {} }
-  ]};
-
-  const currentStep = ZONE_STEPS[stepIndex];
-  if (!currentStep) {
-    // Calibration terminee - sauvegarder
-    saveCalibration(calibrationData);
-    return;
-  }
-
-  const overlay = document.createElement("div");
-  overlay.id = "msf-calib";
-  overlay.style.cssText = "position:fixed;inset:0;z-index:2147483647;cursor:crosshair;background:rgba(0,0,0,0.3)";
-  document.body.appendChild(overlay);
-
-  if (showGrid) {
-    const grid = document.createElement("div");
-    grid.style.cssText = "position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 49px,rgba(0,229,255,0.1) 49px,rgba(0,229,255,0.1) 50px),repeating-linear-gradient(90deg,transparent,transparent 49px,rgba(0,229,255,0.1) 49px,rgba(0,229,255,0.1) 50px);pointer-events:none";
-    overlay.appendChild(grid);
-  }
-
-  const box = document.createElement("div");
-  box.style.cssText = "position:absolute;border:2px solid #0ff;background:rgba(0,255,255,0.15);box-sizing:border-box";
-  overlay.appendChild(box);
-
-  const info = document.createElement("div");
-  info.style.cssText = "position:fixed;left:50%;top:20px;transform:translateX(-50%);background:rgba(0,0,0,0.95);color:#fff;padding:16px 24px;border-radius:12px;font:14px sans-serif;text-align:center;max-width:500px";
-  info.innerHTML = `
-    <div style="color:#0ff;font-weight:bold;font-size:16px;margin-bottom:8px">
-      Etape ${stepIndex + 1}/${ZONE_STEPS.length}
-    </div>
-    <div style="margin-bottom:12px">${currentStep.label}</div>
-    <div style="font-size:12px;color:#888">
-      Dessine un rectangle autour de la zone<br>
-      <b>ENTREE</b> = Valider | <b>ESC</b> = Quitter | <b>S</b> = Passer
-    </div>
-  `;
-  overlay.appendChild(info);
-
-  const coords = document.createElement("pre");
-  coords.style.cssText = "position:fixed;right:16px;bottom:16px;background:rgba(0,0,0,0.9);color:#0ff;padding:12px;border-radius:8px;font:12px monospace;margin:0";
-  coords.textContent = "Selectionnez une zone...";
-  overlay.appendChild(coords);
-
-  let startX = 0, startY = 0, endX = 0, endY = 0;
-  let dragging = false;
-  let hasSelection = false;
-  const W = window.innerWidth;
-  const H = window.innerHeight;
-
-  function clamp(v, min, max) {
-    return Math.max(min, Math.min(max, v));
-  }
-
-  function updateBox() {
-    const x = Math.min(startX, endX);
-    const y = Math.min(startY, endY);
-    const w = Math.abs(endX - startX);
-    const h = Math.abs(endY - startY);
-    box.style.left = x + "px";
-    box.style.top = y + "px";
-    box.style.width = w + "px";
-    box.style.height = h + "px";
-
-    const rx = (x / W).toFixed(4);
-    const ry = (y / H).toFixed(4);
-    const rw = (w / W).toFixed(4);
-    const rh = (h / H).toFixed(4);
-    coords.textContent = `x: ${rx}, y: ${ry}\nw: ${rw}, h: ${rh}`;
-  }
-
-  function getZoneData() {
-    const x = Math.min(startX, endX);
-    const y = Math.min(startY, endY);
-    const w = Math.abs(endX - startX);
-    const h = Math.abs(endY - startY);
-    return {
-      x: x / W,
-      y: y / H,
-      w: w / W,
-      h: h / H
-    };
-  }
-
-  function saveAndNext() {
-    if (hasSelection) {
-      const slotIdx = currentStep.slot - 1;
-      calibrationData.slots[slotIdx].zones[currentStep.zone] = getZoneData();
-    }
-    overlay.remove();
-    startCropCalibrator({
-      showGrid,
-      stepIndex: stepIndex + 1,
-      calibrationData
-    });
-  }
-
-  function skip() {
-    overlay.remove();
-    startCropCalibrator({
-      showGrid,
-      stepIndex: stepIndex + 1,
-      calibrationData
-    });
-  }
-
-  overlay.addEventListener("mousedown", function(e) {
-    if (e.target === info || e.target === coords) return;
-    dragging = true;
-    hasSelection = false;
-    startX = clamp(e.clientX, 0, W);
-    startY = clamp(e.clientY, 0, H);
-    endX = startX;
-    endY = startY;
-    updateBox();
-  });
-
-  overlay.addEventListener("mousemove", function(e) {
-    if (!dragging) return;
-    endX = clamp(e.clientX, 0, W);
-    endY = clamp(e.clientY, 0, H);
-    updateBox();
-  });
-
-  overlay.addEventListener("mouseup", function() {
-    if (dragging && Math.abs(endX - startX) > 5 && Math.abs(endY - startY) > 5) {
-      hasSelection = true;
-    }
-    dragging = false;
-  });
-
-  window.addEventListener("keydown", function handler(e) {
-    if (e.key === "Escape") {
-      overlay.remove();
-      window.removeEventListener("keydown", handler);
-      alert("Calibration annulee");
-    } else if (e.key === "Enter" && hasSelection) {
-      window.removeEventListener("keydown", handler);
-      saveAndNext();
-    } else if (e.key === "s" || e.key === "S") {
-      window.removeEventListener("keydown", handler);
-      skip();
-    }
-  });
-}
-
-async function saveCalibration(data) {
-  try {
-    await ext.storage.local.set({ msfZonesConfig: data });
-    alert("Calibration sauvegardee avec succes!\n\nLes nouvelles zones seront utilisees pour l'analyse.");
-    console.log("[MSF] Calibration sauvegardee:", data);
-  } catch (e) {
-    console.error("[MSF] Erreur sauvegarde:", e);
-    alert("Erreur lors de la sauvegarde: " + e.message);
-  }
-}
-
-window.startCropCalibrator = startCropCalibrator;
 
 // ============================================
 // Capture de portraits pour le mode War
@@ -1338,5 +1156,874 @@ function startPortraitCapture(options) {
 }
 
 window.startPortraitCapture = startPortraitCapture;
+
+// ============================================
+// Barracks Calibration & Scan
+// ============================================
+
+/**
+ * Lance la calibration des zones barracks
+ * L'utilisateur clique sur 2 points pour definir une carte d'equipe
+ */
+function startBarracksCalibration() {
+  // Ne s'execute que dans la frame principale pour eviter les doublons
+  if (window.self !== window.top) {
+    console.log("[MSF] Calibration ignoree (pas top frame)");
+    return;
+  }
+
+  // Verifier si l'overlay existe deja
+  if (document.getElementById("msf-barracks-calibration")) {
+    console.log("[MSF] Calibration deja en cours");
+    return;
+  }
+
+  console.log("[MSF] Debut calibration barracks");
+
+  // Creer l'overlay de calibration
+  const overlay = document.createElement("div");
+  overlay.id = "msf-barracks-calibration";
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 999999;
+    cursor: crosshair;
+  `;
+
+  // Instructions
+  const instructions = document.createElement("div");
+  instructions.style.cssText = `
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a2e;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 8px;
+    font-family: sans-serif;
+    font-size: 16px;
+    z-index: 1000000;
+    text-align: center;
+    border: 2px solid #00d4ff;
+  `;
+  instructions.innerHTML = `
+    <strong>Calibration Barracks</strong><br>
+    <span id="calibration-step">Etape 1/2: Cliquez sur le coin HAUT-GAUCHE de la carte equipe 1</span>
+  `;
+  overlay.appendChild(instructions);
+
+  // Marqueur visuel
+  const marker = document.createElement("div");
+  marker.style.cssText = `
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    background: #00ff00;
+    border: 2px solid white;
+    border-radius: 50%;
+    display: none;
+    z-index: 1000001;
+    pointer-events: none;
+  `;
+  overlay.appendChild(marker);
+
+  let clickCount = 0;
+  let point1 = null;
+  let point2 = null;
+
+  overlay.addEventListener("click", (e) => {
+    clickCount++;
+    const x = e.clientX;
+    const y = e.clientY;
+
+    if (clickCount === 1) {
+      point1 = { x, y };
+      // Afficher le marqueur
+      marker.style.left = (x - 5) + "px";
+      marker.style.top = (y - 5) + "px";
+      marker.style.display = "block";
+      document.getElementById("calibration-step").textContent =
+        "Etape 2/2: Cliquez sur le coin BAS-DROIT de la carte equipe 1";
+    } else if (clickCount === 2) {
+      point2 = { x, y };
+
+      // Calculer les dimensions
+      const cardWidth = point2.x - point1.x;
+      const cardHeight = point2.y - point1.y;
+
+      if (cardWidth < 50 || cardHeight < 50) {
+        alert("Zone trop petite. Recommencez.");
+        clickCount = 0;
+        point1 = null;
+        marker.style.display = "none";
+        document.getElementById("calibration-step").textContent =
+          "Etape 1/2: Cliquez sur le coin HAUT-GAUCHE de la carte equipe 1";
+        return;
+      }
+
+      // Sauvegarder la calibration
+      const calibration = {
+        card1: { x: point1.x, y: point1.y, width: cardWidth, height: cardHeight },
+        cardSpacing: cardWidth + 20, // Espacement estime entre cartes
+        screenWidth: window.innerWidth,
+        screenHeight: window.innerHeight,
+        timestamp: Date.now()
+      };
+
+      ext.storage.local.set({ msf_barracks_calibration: calibration }).then(() => {
+        console.log("[MSF] Calibration sauvegardee:", calibration);
+
+        // Afficher confirmation
+        instructions.innerHTML = `
+          <strong style="color:#00ff00;">Calibration reussie !</strong><br>
+          Carte: ${cardWidth}x${cardHeight}px<br>
+          Vous pouvez maintenant utiliser "Scan Barracks"
+        `;
+
+        setTimeout(() => {
+          overlay.remove();
+        }, 2000);
+      });
+    }
+  });
+
+  // Bouton annuler
+  const btnCancel = document.createElement("button");
+  btnCancel.textContent = "Annuler";
+  btnCancel.style.cssText = `
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 30px;
+    background: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    z-index: 1000000;
+  `;
+  btnCancel.addEventListener("click", () => overlay.remove());
+  overlay.appendChild(btnCancel);
+
+  document.body.appendChild(overlay);
+}
+
+/**
+ * Affiche les boutons de scan sur les cartes d'equipe
+ */
+async function showBarracksScanButtons() {
+  // Ne s'execute que dans la frame principale
+  if (window.self !== window.top) {
+    return;
+  }
+
+  console.log("[MSF] Affichage boutons scan barracks");
+
+  // Charger la calibration
+  const result = await ext.storage.local.get("msf_barracks_calibration");
+  const calibration = result.msf_barracks_calibration;
+
+  if (!calibration) {
+    alert("Calibration requise. Cliquez d'abord sur 'Calibrer'.");
+    return;
+  }
+
+  // Verifier si la taille d'ecran a change
+  if (Math.abs(calibration.screenWidth - window.innerWidth) > 50 ||
+      Math.abs(calibration.screenHeight - window.innerHeight) > 50) {
+    alert("La taille de fenetre a change. Veuillez recalibrer.");
+    return;
+  }
+
+  // Supprimer les anciens boutons
+  document.querySelectorAll(".msf-barracks-scan-btn").forEach(el => el.remove());
+
+  // Creer les 5 boutons de scan
+  for (let i = 0; i < 5; i++) {
+    const btn = document.createElement("button");
+    btn.className = "msf-barracks-scan-btn";
+    btn.textContent = "📷 " + (i + 1);
+    btn.dataset.teamIndex = i;
+
+    const xPos = calibration.card1.x + (i * calibration.cardSpacing) + calibration.card1.width / 2 - 30;
+    const yPos = calibration.card1.y - 40;
+
+    btn.style.cssText = `
+      position: fixed;
+      left: ${xPos}px;
+      top: ${yPos}px;
+      padding: 8px 15px;
+      background: #00d4ff;
+      color: #000;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 999999;
+      box-shadow: 0 2px 10px rgba(0,212,255,0.5);
+      transition: transform 0.1s;
+    `;
+
+    btn.addEventListener("mouseenter", () => btn.style.transform = "scale(1.1)");
+    btn.addEventListener("mouseleave", () => btn.style.transform = "scale(1)");
+
+    btn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const teamIndex = parseInt(btn.dataset.teamIndex);
+      const debugMode = e.shiftKey; // Shift+clic = mode debug
+      console.log("[MSF] Scan equipe", teamIndex + 1, debugMode ? "(DEBUG)" : "");
+      await captureTeamPortraits(calibration, teamIndex, debugMode);
+    });
+
+    document.body.appendChild(btn);
+  }
+
+  // Bouton Debug
+  const debugBtn = document.createElement("button");
+  debugBtn.className = "msf-barracks-scan-btn";
+  debugBtn.textContent = "🔍 Debug";
+  debugBtn.title = "Afficher les zones de capture";
+  debugBtn.style.cssText = `
+    position: fixed;
+    right: 120px;
+    top: 20px;
+    padding: 10px 20px;
+    background: #ff9900;
+    color: black;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    z-index: 999999;
+  `;
+  debugBtn.addEventListener("click", async () => {
+    await captureTeamPortraits(calibration, 0, true); // Debug sur equipe 1
+  });
+  document.body.appendChild(debugBtn);
+
+  // Bouton pour fermer
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "msf-barracks-scan-btn";
+  closeBtn.textContent = "✖ Fermer";
+  closeBtn.style.cssText = `
+    position: fixed;
+    right: 20px;
+    top: 20px;
+    padding: 10px 20px;
+    background: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    z-index: 999999;
+  `;
+  closeBtn.addEventListener("click", () => {
+    document.querySelectorAll(".msf-barracks-scan-btn").forEach(el => el.remove());
+    document.querySelectorAll(".msf-debug-overlay").forEach(el => el.remove());
+  });
+  document.body.appendChild(closeBtn);
+}
+
+/**
+ * Capture les 5 portraits d'une equipe
+ */
+async function captureTeamPortraits(calibration, teamIndex, debugMode = false) {
+  console.log("[MSF] Capture portraits equipe", teamIndex + 1);
+
+  // Calculer la position de la carte
+  const cardX = calibration.card1.x + (teamIndex * calibration.cardSpacing);
+  const cardY = calibration.card1.y;
+  const cardW = calibration.card1.width;
+  const cardH = calibration.card1.height;
+
+  // Capture de l'ecran
+  const screenshot = await captureVisibleTab();
+  if (!screenshot) {
+    alert("Erreur capture ecran");
+    return;
+  }
+
+  // Charger l'image
+  const img = await loadImage(screenshot);
+
+  // Calculer les positions relatives des 5 portraits dans la carte
+  // Structure: header (12%), row1 portraits (28%), row2 portraits (28%), edit btn
+  // Les portraits sont organises: 2 en haut, 3 en bas
+  // On capture uniquement les VISAGES, pas les chiffres de puissance en dessous
+
+  const portraitWidth = cardW * 0.25;   // Largeur du portrait (~25% de la carte)
+  const portraitHeight = cardW * 0.25;  // Hauteur = largeur (carre)
+
+  // Positions ajustees apres debug visuel - decalees vers la droite
+  const portraitPositions = [
+    // Ligne du haut (2 portraits)
+    { x: cardX + cardW * 0.19, y: cardY + cardH * 0.18 },
+    { x: cardX + cardW * 0.56, y: cardY + cardH * 0.18 },
+    // Ligne du bas (3 portraits)
+    { x: cardX + cardW * 0.07, y: cardY + cardH * 0.51 },
+    { x: cardX + cardW * 0.38, y: cardY + cardH * 0.51 },
+    { x: cardX + cardW * 0.69, y: cardY + cardH * 0.51 },
+  ];
+
+  // Mode debug: afficher les zones de capture
+  if (debugMode) {
+    showDebugOverlay(cardX, cardY, cardW, cardH, portraitPositions, portraitWidth, portraitHeight);
+    return;
+  }
+
+  const portraits = [];
+
+  for (let i = 0; i < 5; i++) {
+    const pos = portraitPositions[i];
+
+    // Creer un canvas pour extraire le portrait
+    const canvas = document.createElement("canvas");
+    canvas.width = portraitWidth;
+    canvas.height = portraitHeight;
+    const ctx = canvas.getContext("2d");
+
+    // Ratio entre l'image et l'ecran
+    const scaleX = img.naturalWidth / window.innerWidth;
+    const scaleY = img.naturalHeight / window.innerHeight;
+
+    ctx.drawImage(
+      img,
+      pos.x * scaleX,
+      pos.y * scaleY,
+      portraitWidth * scaleX,
+      portraitHeight * scaleY,
+      0,
+      0,
+      portraitWidth,
+      portraitHeight
+    );
+
+    portraits.push({
+      index: i,
+      dataUrl: canvas.toDataURL("image/png")
+    });
+  }
+
+  console.log("[MSF] Portraits captures:", portraits.length);
+
+  // Sauvegarder et notifier
+  await ext.storage.local.set({ msf_war_portraits: portraits });
+  ext.runtime.sendMessage({
+    type: "MSF_PORTRAITS_CAPTURED",
+    portraits: portraits
+  });
+
+  // Feedback visuel
+  const feedback = document.createElement("div");
+  feedback.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 212, 255, 0.9);
+    color: black;
+    padding: 20px 40px;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    z-index: 1000000;
+  `;
+  feedback.textContent = "✓ Equipe " + (teamIndex + 1) + " capturee !";
+  document.body.appendChild(feedback);
+  setTimeout(() => feedback.remove(), 1500);
+}
+
+/**
+ * Capture l'onglet visible via le background script
+ */
+async function captureVisibleTab() {
+  return new Promise((resolve) => {
+    ext.runtime.sendMessage({ type: "MSF_CAPTURE_TAB" }, (response) => {
+      if (response && response.dataUrl) {
+        resolve(response.dataUrl);
+      } else {
+        resolve(null);
+      }
+    });
+  });
+}
+
+/**
+ * Affiche un overlay de debug pour visualiser les zones de capture
+ */
+function showDebugOverlay(cardX, cardY, cardW, cardH, positions, portW, portH) {
+  // Supprimer l'ancien overlay
+  document.querySelectorAll(".msf-debug-overlay").forEach(el => el.remove());
+
+  // Rectangle de la carte
+  const cardOverlay = document.createElement("div");
+  cardOverlay.className = "msf-debug-overlay";
+  cardOverlay.style.cssText = `
+    position: fixed;
+    left: ${cardX}px;
+    top: ${cardY}px;
+    width: ${cardW}px;
+    height: ${cardH}px;
+    border: 3px solid #00ff00;
+    background: rgba(0, 255, 0, 0.1);
+    z-index: 999998;
+    pointer-events: none;
+  `;
+  document.body.appendChild(cardOverlay);
+
+  // Rectangles des portraits
+  positions.forEach((pos, i) => {
+    const portOverlay = document.createElement("div");
+    portOverlay.className = "msf-debug-overlay";
+    portOverlay.style.cssText = `
+      position: fixed;
+      left: ${pos.x}px;
+      top: ${pos.y}px;
+      width: ${portW}px;
+      height: ${portH}px;
+      border: 2px solid #ff00ff;
+      background: rgba(255, 0, 255, 0.2);
+      z-index: 999999;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 20px;
+      text-shadow: 0 0 3px black;
+    `;
+    portOverlay.textContent = (i + 1);
+    document.body.appendChild(portOverlay);
+  });
+
+  // Bouton pour fermer
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "msf-debug-overlay";
+  closeBtn.textContent = "Fermer Debug";
+  closeBtn.style.cssText = `
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    padding: 10px 20px;
+    background: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 1000000;
+  `;
+  closeBtn.addEventListener("click", () => {
+    document.querySelectorAll(".msf-debug-overlay").forEach(el => el.remove());
+  });
+  document.body.appendChild(closeBtn);
+
+  // Info
+  const info = document.createElement("div");
+  info.className = "msf-debug-overlay";
+  info.style.cssText = `
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 20px;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    border-radius: 5px;
+    z-index: 1000000;
+    font-family: monospace;
+  `;
+  info.innerHTML = `Carte: ${Math.round(cardW)}x${Math.round(cardH)}px | Portrait: ${Math.round(portW)}x${Math.round(portH)}px`;
+  document.body.appendChild(info);
+}
+
+window.startBarracksCalibration = startBarracksCalibration;
+window.showBarracksScanButtons = showBarracksScanButtons;
+
+// ============================================
+// Mode Scan par Clic (Option 2 - plus flexible)
+// ============================================
+
+/**
+ * Lance le mode scan par clic
+ * L'utilisateur clique sur une equipe et les portraits sont extraits autour du clic
+ */
+async function startClickToScan() {
+  // Ne s'execute que dans la frame principale
+  if (window.self !== window.top) {
+    return;
+  }
+
+  // Supprimer tout overlay existant
+  document.querySelectorAll(".msf-click-scan-overlay").forEach(el => el.remove());
+
+  console.log("[MSF] Mode scan par clic active");
+
+  // Charger la calibration pour avoir les dimensions de carte
+  const result = await ext.storage.local.get("msf_barracks_calibration");
+  const calibration = result.msf_barracks_calibration;
+
+  // Dimensions par defaut incluant le bouton EDIT pour une reference fixe
+  const cardWidth = calibration ? calibration.card1.width : 290;
+  const cardHeight = calibration ? calibration.card1.height : 320;
+
+  // Creer l'overlay
+  const overlay = document.createElement("div");
+  overlay.className = "msf-click-scan-overlay";
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 999999;
+    cursor: crosshair;
+  `;
+
+  // Instructions
+  const instructions = document.createElement("div");
+  instructions.className = "msf-click-scan-overlay";
+  instructions.style.cssText = `
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a2e;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 8px;
+    font-family: sans-serif;
+    font-size: 16px;
+    z-index: 1000000;
+    text-align: center;
+    border: 2px solid #00d4ff;
+  `;
+  instructions.innerHTML = `
+    <strong>Mode Scan</strong><br>
+    Cliquez au CENTRE d'une carte<br>
+    <span style="color:#00d4ff;font-size:13px;">SHIFT+Clic = Scanner TOUTES les equipes visibles</span>
+  `;
+  overlay.appendChild(instructions);
+
+  // Indicateur de zone (suit la souris)
+  const zoneIndicator = document.createElement("div");
+  zoneIndicator.className = "msf-click-scan-overlay";
+  zoneIndicator.style.cssText = `
+    position: fixed;
+    width: ${cardWidth}px;
+    height: ${cardHeight}px;
+    border: 3px solid #00d4ff;
+    background: rgba(0, 212, 255, 0.1);
+    pointer-events: none;
+    z-index: 999998;
+    display: none;
+  `;
+  document.body.appendChild(zoneIndicator);
+
+  // Suivre la souris pour afficher la zone
+  const mouseMoveHandler = (e) => {
+    zoneIndicator.style.display = "block";
+    zoneIndicator.style.left = (e.clientX - cardWidth / 2) + "px";
+    zoneIndicator.style.top = (e.clientY - cardHeight / 2) + "px";
+  };
+  overlay.addEventListener("mousemove", mouseMoveHandler);
+
+  // Clic pour capturer
+  overlay.addEventListener("click", async (e) => {
+    const clickX = e.clientX;
+    const clickY = e.clientY;
+    const multiMode = e.shiftKey; // SHIFT = scanner toutes les equipes
+
+    console.log("[MSF] Clic detecte a:", clickX, clickY, multiMode ? "(multi-equipes)" : "(equipe unique)");
+
+    // Retirer l'overlay AVANT de capturer pour avoir un ecran propre
+    document.querySelectorAll(".msf-click-scan-overlay").forEach(el => el.remove());
+
+    // Attendre un frame pour que le DOM soit mis a jour
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+    // Capturer le screenshot MAINTENANT (ecran propre, sans overlay)
+    const screenshot = await captureVisibleTab();
+
+    // Afficher un feedback de chargement APRES la capture
+    const loadingFeedback = document.createElement("div");
+    loadingFeedback.id = "msf-loading-feedback";
+    loadingFeedback.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 20px 40px;
+      border-radius: 10px;
+      font-size: 18px;
+      z-index: 1000000;
+    `;
+    loadingFeedback.textContent = multiMode ? "Analyse des equipes..." : "Analyse en cours...";
+    document.body.appendChild(loadingFeedback);
+
+    if (multiMode) {
+      // Mode multi-equipes: capturer toutes les equipes a partir de ce clic
+      await captureMultipleTeams(clickX, clickY, cardWidth, cardHeight, screenshot, 5);
+    } else {
+      // Mode equipe unique
+      await capturePortraitsAroundClick(clickX, clickY, cardWidth, cardHeight, screenshot);
+    }
+
+    // Retirer le feedback
+    loadingFeedback.remove();
+  });
+
+  // Bouton annuler
+  const btnCancel = document.createElement("button");
+  btnCancel.className = "msf-click-scan-overlay";
+  btnCancel.textContent = "Annuler (ESC)";
+  btnCancel.style.cssText = `
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 30px;
+    background: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    z-index: 1000000;
+  `;
+  btnCancel.addEventListener("click", () => {
+    document.querySelectorAll(".msf-click-scan-overlay").forEach(el => el.remove());
+  });
+  overlay.appendChild(btnCancel);
+
+  // ESC pour annuler
+  const escHandler = (e) => {
+    if (e.key === "Escape") {
+      document.querySelectorAll(".msf-click-scan-overlay").forEach(el => el.remove());
+      window.removeEventListener("keydown", escHandler);
+    }
+  };
+  window.addEventListener("keydown", escHandler);
+
+  document.body.appendChild(overlay);
+}
+
+/**
+ * Capture les 5 portraits autour d'un point de clic
+ * @param {string} screenshot - Screenshot deja capture (pour eviter d'inclure le feedback)
+ */
+async function capturePortraitsAroundClick(clickX, clickY, cardWidth, cardHeight, screenshot) {
+  console.log("[MSF] Capture portraits autour de:", clickX, clickY);
+
+  // Le clic est au centre de la carte
+  const cardX = clickX - cardWidth / 2;
+  const cardY = clickY - cardHeight / 2;
+
+  // Utiliser le screenshot passe en parametre
+  if (!screenshot) {
+    alert("Erreur: pas de screenshot");
+    return;
+  }
+
+  // Charger l'image
+  const img = await loadImage(screenshot);
+
+  // Calculer les positions des portraits (meme logique que captureTeamPortraits)
+  const portraitWidth = cardWidth * 0.25;
+  const portraitHeight = cardWidth * 0.25;
+
+  // Positions recalculees pour carte incluant bouton EDIT (hauteur 320 au lieu de 260)
+  const portraitPositions = [
+    // Ligne du haut (2 portraits) - environ 15% depuis le haut
+    { x: cardX + cardWidth * 0.19, y: cardY + cardHeight * 0.15 },
+    { x: cardX + cardWidth * 0.56, y: cardY + cardHeight * 0.15 },
+    // Ligne du bas (3 portraits) - environ 42% depuis le haut
+    { x: cardX + cardWidth * 0.07, y: cardY + cardHeight * 0.42 },
+    { x: cardX + cardWidth * 0.38, y: cardY + cardHeight * 0.42 },
+    { x: cardX + cardWidth * 0.69, y: cardY + cardHeight * 0.42 },
+  ];
+
+  const portraits = [];
+
+  // Ratio entre l'image et l'ecran
+  const scaleX = img.naturalWidth / window.innerWidth;
+  const scaleY = img.naturalHeight / window.innerHeight;
+
+  for (let i = 0; i < 5; i++) {
+    const pos = portraitPositions[i];
+
+    const canvas = document.createElement("canvas");
+    canvas.width = portraitWidth;
+    canvas.height = portraitHeight;
+    const ctx = canvas.getContext("2d");
+
+    ctx.drawImage(
+      img,
+      pos.x * scaleX,
+      pos.y * scaleY,
+      portraitWidth * scaleX,
+      portraitHeight * scaleY,
+      0,
+      0,
+      portraitWidth,
+      portraitHeight
+    );
+
+    portraits.push({
+      index: i,
+      dataUrl: canvas.toDataURL("image/png")
+    });
+  }
+
+  console.log("[MSF] Portraits captures:", portraits.length);
+
+  // Sauvegarder et notifier
+  await ext.storage.local.set({ msf_war_portraits: portraits });
+  ext.runtime.sendMessage({
+    type: "MSF_PORTRAITS_CAPTURED",
+    portraits: portraits
+  });
+
+  // Feedback visuel
+  const feedback = document.createElement("div");
+  feedback.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 212, 255, 0.9);
+    color: black;
+    padding: 20px 40px;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    z-index: 1000000;
+  `;
+  feedback.textContent = "✓ Equipe capturee !";
+  document.body.appendChild(feedback);
+  setTimeout(() => feedback.remove(), 1500);
+}
+
+/**
+ * Capture plusieurs equipes a partir du clic sur la premiere carte
+ * @param {number} firstCardX - Position X du centre de la premiere carte
+ * @param {number} firstCardY - Position Y du centre de la premiere carte
+ * @param {number} cardWidth - Largeur d'une carte
+ * @param {number} cardHeight - Hauteur d'une carte
+ * @param {string} screenshot - Screenshot deja capture
+ * @param {number} teamCount - Nombre d'equipes a capturer (defaut: 5)
+ */
+async function captureMultipleTeams(firstCardX, firstCardY, cardWidth, cardHeight, screenshot, teamCount = 5) {
+  console.log("[MSF] Capture de", teamCount, "equipes");
+
+  if (!screenshot) {
+    alert("Erreur: pas de screenshot");
+    return;
+  }
+
+  const img = await loadImage(screenshot);
+  const scaleX = img.naturalWidth / window.innerWidth;
+  const scaleY = img.naturalHeight / window.innerHeight;
+
+  // Espacement entre les cartes (environ 8px)
+  const cardSpacing = 8;
+  const totalCardWidth = cardWidth + cardSpacing;
+
+  const allTeams = [];
+  const portraitWidth = cardWidth * 0.25;
+  const portraitHeight = cardWidth * 0.25;
+
+  for (let teamIdx = 0; teamIdx < teamCount; teamIdx++) {
+    // Position du centre de cette carte
+    const cardCenterX = firstCardX + (teamIdx * totalCardWidth);
+    const cardX = cardCenterX - cardWidth / 2;
+    const cardY = firstCardY - cardHeight / 2;
+
+    // Verifier que la carte est dans l'ecran
+    if (cardX + cardWidth > window.innerWidth) {
+      console.log(`[MSF] Carte ${teamIdx + 1} hors ecran, arret`);
+      break;
+    }
+
+    // Positions des portraits pour cette carte
+    const portraitPositions = [
+      { x: cardX + cardWidth * 0.19, y: cardY + cardHeight * 0.15 },
+      { x: cardX + cardWidth * 0.56, y: cardY + cardHeight * 0.15 },
+      { x: cardX + cardWidth * 0.07, y: cardY + cardHeight * 0.42 },
+      { x: cardX + cardWidth * 0.38, y: cardY + cardHeight * 0.42 },
+      { x: cardX + cardWidth * 0.69, y: cardY + cardHeight * 0.42 },
+    ];
+
+    const portraits = [];
+
+    for (let i = 0; i < 5; i++) {
+      const pos = portraitPositions[i];
+      const canvas = document.createElement("canvas");
+      canvas.width = portraitWidth;
+      canvas.height = portraitHeight;
+      const ctx = canvas.getContext("2d");
+
+      ctx.drawImage(
+        img,
+        pos.x * scaleX,
+        pos.y * scaleY,
+        portraitWidth * scaleX,
+        portraitHeight * scaleY,
+        0,
+        0,
+        portraitWidth,
+        portraitHeight
+      );
+
+      portraits.push({
+        index: i,
+        dataUrl: canvas.toDataURL("image/png")
+      });
+    }
+
+    allTeams.push({
+      teamIndex: teamIdx + 1,
+      portraits: portraits
+    });
+
+    console.log(`[MSF] Equipe ${teamIdx + 1} capturee`);
+  }
+
+  console.log("[MSF] Total equipes capturees:", allTeams.length);
+
+  // Sauvegarder et notifier
+  await ext.storage.local.set({ msf_multi_teams: allTeams });
+  ext.runtime.sendMessage({
+    type: "MSF_MULTI_TEAMS_CAPTURED",
+    teams: allTeams
+  });
+
+  // Feedback visuel
+  const feedback = document.createElement("div");
+  feedback.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 212, 255, 0.9);
+    color: black;
+    padding: 20px 40px;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    z-index: 1000000;
+  `;
+  feedback.textContent = `✓ ${allTeams.length} equipes capturees !`;
+  document.body.appendChild(feedback);
+  setTimeout(() => feedback.remove(), 2000);
+}
+
+window.startClickToScan = startClickToScan;
 
 console.log("[MSF] Calibrateur pret - Tapez: startCropCalibrator()");

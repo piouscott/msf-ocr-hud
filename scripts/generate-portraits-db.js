@@ -58,7 +58,15 @@ async function computePortraitHash(imageBuffer) {
   // Créer un canvas de sampleSize x sampleSize
   const canvas = createCanvas(sampleSize, sampleSize);
   const ctx = canvas.getContext("2d");
-  ctx.drawImage(img, 0, 0, sampleSize, sampleSize);
+
+  // Crop central de 60% pour matcher le traitement in-game
+  const cropRatio = 0.6;
+  const srcSize = Math.min(img.width, img.height);
+  const cropSize = srcSize * cropRatio;
+  const offsetX = (img.width - cropSize) / 2;
+  const offsetY = (img.height - cropSize) / 2;
+
+  ctx.drawImage(img, offsetX, offsetY, cropSize, cropSize, 0, 0, sampleSize, sampleSize);
 
   const imageData = ctx.getImageData(0, 0, sampleSize, sampleSize);
   const pixels = imageData.data;

@@ -24,13 +24,6 @@ ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true; // Reponse asynchrone
   }
 
-  if (msg.type === "MSF_START_CALIBRATOR") {
-    handleStartCalibrator(msg).then(sendResponse).catch(e => {
-      sendResponse({ error: e.message });
-    });
-    return true;
-  }
-
   if (msg.type === "MSF_SYNC_COUNTERS") {
     handleSyncCounters(msg.url).then(sendResponse).catch(e => {
       sendResponse({ success: false, message: e.message });
@@ -50,6 +43,38 @@ ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     // Broadcast to all extension pages (popup)
     ext.runtime.sendMessage(msg);
     sendResponse({ relayed: true });
+    return true;
+  }
+
+  // Capture l'onglet visible pour le scan barracks
+  if (msg.type === "MSF_CAPTURE_TAB") {
+    handleCaptureTab().then(sendResponse).catch(e => {
+      sendResponse({ error: e.message });
+    });
+    return true;
+  }
+
+  // Lancer la calibration barracks
+  if (msg.type === "MSF_CALIBRATE_BARRACKS") {
+    handleBarracksCommand("MSF_CALIBRATE_BARRACKS").then(sendResponse).catch(e => {
+      sendResponse({ error: e.message });
+    });
+    return true;
+  }
+
+  // Afficher les boutons de scan barracks
+  if (msg.type === "MSF_SHOW_BARRACKS_SCAN") {
+    handleBarracksCommand("MSF_SHOW_BARRACKS_SCAN").then(sendResponse).catch(e => {
+      sendResponse({ error: e.message });
+    });
+    return true;
+  }
+
+  // Mode scan par clic
+  if (msg.type === "MSF_START_CLICK_SCAN") {
+    handleBarracksCommand("MSF_START_CLICK_SCAN").then(sendResponse).catch(e => {
+      sendResponse({ error: e.message });
+    });
     return true;
   }
 });
@@ -91,22 +116,6 @@ async function handleAnalyzeRequest() {
 
     throw new Error("Content script non accessible: " + e.message);
   }
-}
-
-async function handleStartCalibrator(msg) {
-  const [tab] = await ext.tabs.query({ active: true, currentWindow: true });
-
-  if (!tab) {
-    throw new Error("Aucun onglet actif");
-  }
-
-  await ext.tabs.sendMessage(tab.id, {
-    action: "startCalibrator",
-    label: msg.label || "CROP",
-    showGrid: msg.showGrid || false
-  });
-
-  return { success: true };
 }
 
 /**
@@ -179,6 +188,34 @@ async function handleSyncCounters(url) {
       count: 0
     };
   }
+}
+
+/**
+ * Capture l'onglet visible et retourne le dataUrl
+ */
+async function handleCaptureTab() {
+  const [tab] = await ext.tabs.query({ active: true, currentWindow: true });
+
+  if (!tab) {
+    throw new Error("Aucun onglet actif");
+  }
+
+  const dataUrl = await ext.tabs.captureVisibleTab(tab.windowId, { format: "png" });
+  return { dataUrl };
+}
+
+/**
+ * Envoie une commande barracks au content script
+ */
+async function handleBarracksCommand(type) {
+  const [tab] = await ext.tabs.query({ active: true, currentWindow: true });
+
+  if (!tab) {
+    throw new Error("Aucun onglet actif");
+  }
+
+  await ext.tabs.sendMessage(tab.id, { type });
+  return { success: true };
 }
 
 // Ancien handler pour clic direct (backup si pas de popup)

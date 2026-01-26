@@ -516,14 +516,20 @@ button:active {
 
 .war-counter-item {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 0;
+  flex-direction: column;
+  padding: 8px 0;
   border-bottom: 1px solid #333;
 }
 
 .war-counter-item:last-child {
   border-bottom: none;
+}
+
+.war-counter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 
 .war-counter-name {
@@ -543,6 +549,14 @@ button:active {
 
 .war-counter-power {
   color: #888;
+}
+
+.war-counter-notes {
+  font-size: 11px;
+  color: #aaa;
+  margin-top: 4px;
+  font-style: italic;
+  line-height: 1.3;
 }
 
 /* War Tabs */
@@ -660,4 +674,121 @@ button:active {
 .war-portrait-slot .portrait-badge.unknown {
   background: #ff6b6b;
   color: #fff;
+}
+
+/* Multi-Team Results */
+.multi-team-results {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.multi-team-header {
+  font-size: 13px;
+  color: #00d4ff;
+  font-weight: 600;
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+.team-result-card {
+  background: #2d2d44;
+  border-radius: 8px;
+  padding: 10px;
+  border-left: 3px solid #444;
+}
+
+.team-result-card.identified {
+  border-left-color: #51cf66;
+}
+
+.team-result-card.unknown {
+  border-left-color: #ff6b6b;
+}
+
+.team-result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.team-result-index {
+  font-size: 10px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.team-result-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #51cf66;
+}
+
+.team-result-name.unknown {
+  color: #ff6b6b;
+  font-style: italic;
+}
+
+.team-chars {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.team-chars .char-tag {
+  font-size: 10px;
+  background: #1a1a2e;
+  color: #aaa;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.team-result-counters {
+  border-top: 1px solid #444;
+  padding-top: 8px;
+}
+
+.counters-label {
+  font-size: 10px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.mini-counters-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mini-counter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.counter-team {
+  flex: 1;
+  color: #00d4ff;
+}
+
+.counter-conf {
+  color: #ffd43b;
+  font-weight: 500;
+  min-width: 30px;
+  text-align: right;
+}
+
+.no-counters {
+  font-size: 11px;
+  color: #666;
+  font-style: italic;
+  text-align: center;
+  padding: 4px;
 }
