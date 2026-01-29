@@ -886,24 +886,20 @@ function startPortraitCapture(options) {
       const srcW = w * scaleX;
       const srcH = h * scaleY;
 
-      const cellW = srcW / GRID_COLS;
-      const cellH = srcH / GRID_ROWS;
       const portraits = [];
 
-      // Taille du carre = min des dimensions de cellule
-      const squareSize = Math.min(cellW, cellH) * 0.85; // 85% pour eviter les bords
-      const outSize = Math.max(64, Math.round(squareSize));
+      // Taille du portrait = ~12% de la largeur de selection (petit pour eviter les chiffres)
+      const portraitSize = srcW * 0.12;
+      const outSize = Math.max(64, Math.round(portraitSize));
 
-      // Layout MSF War: 2 portraits en haut (centres), 3 en bas
-      // Positions en colonnes (0-indexed):
-      // - Ligne 0: col 0.5, 1.5 (centres entre les lignes de la grille)
-      // - Ligne 1: col 0, 1, 2
+      // Layout MSF War - selection = zone portraits SANS header
+      // Row 1 portraits: 0-25%, Row 1 power: 25-35%, Row 2 portraits: 40-65%, Row 2 power: 65-80%
       const positions = [
-        { col: 0.5, row: 0 },  // Portrait 1 - haut gauche
-        { col: 1.5, row: 0 },  // Portrait 2 - haut droite
-        { col: 0, row: 1 },    // Portrait 3 - bas gauche
-        { col: 1, row: 1 },    // Portrait 4 - bas centre
-        { col: 2, row: 1 }     // Portrait 5 - bas droite
+        { xPct: 0.30, yPct: 0.12 },  // Portrait 1 - haut gauche (tres haut)
+        { xPct: 0.70, yPct: 0.12 },  // Portrait 2 - haut droite (tres haut)
+        { xPct: 0.20, yPct: 0.48 },  // Portrait 3 - bas gauche
+        { xPct: 0.50, yPct: 0.48 },  // Portrait 4 - bas centre
+        { xPct: 0.80, yPct: 0.48 }   // Portrait 5 - bas droite
       ];
 
       for (let i = 0; i < Math.min(count, positions.length); i++) {
@@ -914,15 +910,15 @@ function startPortraitCapture(options) {
         portraitCanvas.height = outSize;
         const pCtx = portraitCanvas.getContext("2d");
 
-        // Centre de la cellule (positions decimales pour les 2 du haut)
-        const cellCenterX = srcX + pos.col * cellW + cellW / 2;
-        const cellCenterY = srcY + pos.row * cellH + cellH / 2;
+        // Centre du portrait en coordonnees image
+        const centerX = srcX + srcW * pos.xPct;
+        const centerY = srcY + srcH * pos.yPct;
 
         // Coin superieur gauche du carre centre
-        const cropX = cellCenterX - squareSize / 2;
-        const cropY = cellCenterY - squareSize / 2;
+        const cropX = centerX - portraitSize / 2;
+        const cropY = centerY - portraitSize / 2;
 
-        pCtx.drawImage(bgImage, cropX, cropY, squareSize, squareSize, 0, 0, outSize, outSize);
+        pCtx.drawImage(bgImage, cropX, cropY, portraitSize, portraitSize, 0, 0, outSize, outSize);
 
         portraits.push({ dataUrl: portraitCanvas.toDataURL("image/png") });
       }
