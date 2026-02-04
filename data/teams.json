@@ -1,7 +1,7 @@
 {
   "description": "MSF Teams for counter suggestions",
-  "version": 2,
-  "lastUpdate": "2026-01-19",
+  "version": 4,
+  "lastUpdate": "2026-01-31",
   "teams": [
     {
       "id": "aforce",
@@ -1280,6 +1280,499 @@
       ],
       "isVariant": true,
       "memberCount": 6
+    },
+    {
+      "id": "gamma",
+      "name": "GAMMA",
+      "nameFr": "GAMMA",
+      "members": [
+        "Abomination",
+        "Brawn",
+        "Hulk",
+        "Red Hulk",
+        "She-Hulk"
+      ],
+      "memberIds": [
+        "Abomination",
+        "Brawn",
+        "Hulk",
+        "RedHulk",
+        "SheHulk"
+      ],
+      "tags": ["gamma"]
+    },
+    {
+      "id": "astral",
+      "name": "ASTRAL",
+      "nameFr": "ASTRAL",
+      "members": [
+        "America Chavez",
+        "Ancient One",
+        "Clea",
+        "Doctor Strange",
+        "Wong"
+      ],
+      "memberIds": [
+        "AmericaChavez",
+        "AncientOne",
+        "Clea",
+        "DoctorStrange",
+        "Wong"
+      ],
+      "tags": ["astral"]
+    },
+    {
+      "id": "orchis",
+      "name": "ORCHIS",
+      "nameFr": "ORCHIS",
+      "members": [
+        "Bastion",
+        "Lady Deathstrike",
+        "Nimrod",
+        "Omega Sentinel",
+        "Sentinel"
+      ],
+      "memberIds": [
+        "Bastion",
+        "LadyDeathstrike",
+        "Nimrod",
+        "OmegaSentinel",
+        "Sentinel"
+      ],
+      "tags": ["orchis"]
+    },
+    {
+      "id": "illuminati",
+      "name": "ILLUMINATI",
+      "nameFr": "ILLUMINATI",
+      "members": [
+        "Black Bolt",
+        "Captain Britain",
+        "Iron Man",
+        "Mister Fantastic",
+        "Namor",
+        "Professor X"
+      ],
+      "memberIds": [
+        "BlackBolt",
+        "CaptainBritain",
+        "IronMan",
+        "MrFantastic",
+        "Namor",
+        "ProfessorX"
+      ],
+      "tags": ["illuminati"],
+      "isVariant": true,
+      "memberCount": 6
+    },
+    {
+      "id": "eternals",
+      "name": "ETERNALS",
+      "nameFr": "ÉTERNELS",
+      "members": [
+        "Ikaris",
+        "Kingo",
+        "Makkari",
+        "Sersi",
+        "Thena"
+      ],
+      "memberIds": [
+        "Ikaris",
+        "Kingo",
+        "Makkari",
+        "Sersi",
+        "Thena"
+      ],
+      "tags": ["eternals"]
+    },
+    {
+      "id": "blackorder",
+      "name": "BLACK ORDER",
+      "nameFr": "ORDRE NOIR",
+      "members": [
+        "Corvus Glaive",
+        "Cull Obsidian",
+        "Ebony Maw",
+        "Proxima Midnight",
+        "Thanos"
+      ],
+      "memberIds": [
+        "CorvusGlaive",
+        "CullObsidian",
+        "EbonyMaw",
+        "ProximaMidnight",
+        "Thanos"
+      ],
+      "tags": ["blackorder"]
+    },
+    {
+      "id": "underworld",
+      "name": "UNDERWORLD",
+      "nameFr": "PÈGRE",
+      "members": [
+        "Green Goblin",
+        "Kingpin",
+        "Mister Negative",
+        "Nobu",
+        "Taskmaster"
+      ],
+      "memberIds": [
+        "GreenGoblin",
+        "Kingpin",
+        "MrNegative",
+        "Nobu",
+        "Taskmaster"
+      ],
+      "tags": ["underworld"]
+    },
+    {
+      "id": "sinistersix",
+      "name": "SINISTER SIX",
+      "nameFr": "SINISTER SIX",
+      "members": [
+        "Electro",
+        "Green Goblin",
+        "Mysterio",
+        "Rhino",
+        "Shocker",
+        "Vulture"
+      ],
+      "memberIds": [
+        "Electro",
+        "GreenGoblin",
+        "Mysterio",
+        "Rhino",
+        "Shocker",
+        "Vulture"
+      ],
+      "tags": ["sinistersix"],
+      "isVariant": true,
+      "memberCount": 6
+    },
+    {
+      "id": "tangled",
+      "name": "TANGLED",
+      "nameFr": "ENCHEVÊTRÉ",
+      "members": [
+        "Zombie Hunter Spidey",
+        "Scarlet Witch (Zombie)"
+      ],
+      "memberIds": [
+        "ZombieSpidey",
+        "ZombieScarletWitch"
+      ],
+      "tags": ["tangled"],
+      "isPartial": true,
+      "memberCount": 2
+    },
+    {
+      "id": "infestation",
+      "name": "INFESTATION",
+      "nameFr": "INFESTATION",
+      "members": [
+        "Anti-Venom",
+        "Big Time",
+        "Scream",
+        "Web of Pain",
+        "Web of Suffering"
+      ],
+      "memberIds": [
+        "AntiVenom",
+        "BigTime",
+        "Scream",
+        "WebOfPain",
+        "WebOfSuffering"
+      ],
+      "tags": ["infestation"]
+    },
+    {
+      "id": "immortalxmen",
+      "name": "IMMORTAL X-MEN",
+      "nameFr": "X-MEN IMMORTELS",
+      "members": [
+        "Colossus",
+        "Emma Frost",
+        "Hope Summers",
+        "Magik",
+        "Nightcrawler"
+      ],
+      "memberIds": [
+        "Colossus",
+        "EmmaFrost",
+        "HopeSummers",
+        "Magik",
+        "Nightcrawler"
+      ],
+      "tags": ["immortalxmen"]
+    },
+    {
+      "id": "insidioussix",
+      "name": "INSIDIOUS SIX",
+      "nameFr": "INSIDIEUX SIX",
+      "members": [
+        "Doctor Octopus",
+        "Electro",
+        "Green Goblin (Classic)",
+        "Rhino",
+        "Shocker",
+        "Vulture"
+      ],
+      "memberIds": [
+        "DoctorOctopus",
+        "Electro",
+        "GreenGoblinGlider",
+        "Rhino",
+        "Shocker",
+        "Vulture"
+      ],
+      "tags": ["insidioussix"],
+      "isVariant": true,
+      "memberCount": 6
+    },
+    {
+      "id": "spiderweaver",
+      "name": "SPIDER-WEAVER",
+      "nameFr": "TISSEUSE-ARAIGNÉE",
+      "members": [
+        "Silk",
+        "Spider-Weaver",
+        "Spider-Man 2099",
+        "Spider-Man (Noir)",
+        "Spider-Woman"
+      ],
+      "memberIds": [
+        "Silk",
+        "SpiderWeaver",
+        "SpiderMan2099",
+        "SpiderManNoir",
+        "SpiderWoman"
+      ],
+      "tags": ["spiderweaver"]
+    },
+    {
+      "id": "accursed_cosmicghostrider",
+      "name": "ACCURSED + Cosmic Ghost Rider",
+      "nameFr": "MAUDITS + Cosmic Ghost Rider",
+      "members": [],
+      "memberIds": [],
+      "tags": ["accursed"],
+      "isVariant": true
+    },
+    {
+      "id": "accursed_mephisto",
+      "name": "ACCURSED + Mephisto",
+      "nameFr": "MAUDITS + Mephisto",
+      "members": [],
+      "memberIds": [],
+      "tags": ["accursed"],
+      "isVariant": true
+    },
+    {
+      "id": "fantasticfourmcu_tigra",
+      "name": "FANTASTIC FOUR (MCU) + Tigra",
+      "nameFr": "QUATRE FANTASTIQUES (MCU) + Tigra",
+      "members": [],
+      "memberIds": [],
+      "tags": ["fantasticfourmcu"],
+      "isVariant": true
+    },
+    {
+      "id": "absoluteaforce_superskrull_dormammu",
+      "name": "ABSOLUTE A-FORCE + Super Skrull + Dormammu",
+      "nameFr": "ABSOLUTE A-FORCE + Super Skrull + Dormammu",
+      "members": [],
+      "memberIds": [],
+      "tags": ["absoluteaforce"],
+      "isVariant": true
+    },
+    {
+      "id": "absoluteaforce_superskrull",
+      "name": "ABSOLUTE A-FORCE + Super Skrull",
+      "nameFr": "ABSOLUTE A-FORCE + Super Skrull",
+      "members": [],
+      "memberIds": [],
+      "tags": ["absoluteaforce"],
+      "isVariant": true
+    },
+    {
+      "id": "absoluteaforce_odin",
+      "name": "ABSOLUTE A-FORCE + Odin",
+      "nameFr": "ABSOLUTE A-FORCE + Odin",
+      "members": [],
+      "memberIds": [],
+      "tags": ["absoluteaforce"],
+      "isVariant": true
+    },
+    {
+      "id": "absoluteaforce_mephisto_superskrull",
+      "name": "ABSOLUTE A-FORCE + Mephisto + Super Skrull",
+      "nameFr": "ABSOLUTE A-FORCE + Mephisto + Super Skrull",
+      "members": [],
+      "memberIds": [],
+      "tags": ["absoluteaforce"],
+      "isVariant": true
+    },
+    {
+      "id": "cabal_kang",
+      "name": "CABAL + Kang",
+      "nameFr": "CABALE + Kang",
+      "members": [],
+      "memberIds": [],
+      "tags": ["cabal"],
+      "isVariant": true
+    },
+    {
+      "id": "cabal_blackknight_doom",
+      "name": "CABAL + Black Knight + Doom",
+      "nameFr": "CABALE + Black Knight + Doom",
+      "members": [],
+      "memberIds": [],
+      "tags": ["cabal"],
+      "isVariant": true
+    },
+    {
+      "id": "hivemind_mephisto",
+      "name": "HIVE-MIND + Mephisto",
+      "nameFr": "HIVE-MIND + Mephisto",
+      "members": [],
+      "memberIds": [],
+      "tags": ["hivemind"],
+      "isVariant": true
+    },
+    {
+      "id": "hivemind_superskrull",
+      "name": "HIVE-MIND + Super Skrull",
+      "nameFr": "HIVE-MIND + Super Skrull",
+      "members": [],
+      "memberIds": [],
+      "tags": ["hivemind"],
+      "isVariant": true
+    },
+    {
+      "id": "hivemind_knull",
+      "name": "HIVE-MIND + Knull",
+      "nameFr": "HIVE-MIND + Knull",
+      "members": [],
+      "memberIds": [],
+      "tags": ["hivemind"],
+      "isVariant": true
+    },
+    {
+      "id": "hivemind_knull_mephisto",
+      "name": "HIVE-MIND + Knull + Mephisto",
+      "nameFr": "HIVE-MIND + Knull + Mephisto",
+      "members": [],
+      "memberIds": [],
+      "tags": ["hivemind"],
+      "isVariant": true
+    },
+    {
+      "id": "hivemind_ares",
+      "name": "HIVE-MIND + Ares",
+      "nameFr": "HIVE-MIND + Ares",
+      "members": [],
+      "memberIds": [],
+      "tags": ["hivemind"],
+      "isVariant": true
+    },
+    {
+      "id": "illuminati_captainbritain",
+      "name": "ILLUMINATI + Captain Britain",
+      "nameFr": "ILLUMINATI + Captain Britain",
+      "members": [],
+      "memberIds": [],
+      "tags": ["illuminati"],
+      "isVariant": true
+    },
+    {
+      "id": "newavenger_apocalypse",
+      "name": "NEW AVENGERS + Apocalypse",
+      "nameFr": "NOUVEAUX VENGEURS + Apocalypse",
+      "members": [],
+      "memberIds": [],
+      "tags": ["newavenger"],
+      "isVariant": true
+    },
+    {
+      "id": "nightstalker_mephisto",
+      "name": "NIGHTSTALKER + Mephisto",
+      "nameFr": "NIGHTSTALKER + Mephisto",
+      "members": [],
+      "memberIds": [],
+      "tags": ["nightstalker"],
+      "isVariant": true
+    },
+    {
+      "id": "orchis_odin",
+      "name": "ORCHIS + Odin",
+      "nameFr": "ORCHIS + Odin",
+      "members": [],
+      "memberIds": [],
+      "tags": ["orchis"],
+      "isVariant": true
+    },
+    {
+      "id": "orchis_mephisto",
+      "name": "ORCHIS + Mephisto",
+      "nameFr": "ORCHIS + Mephisto",
+      "members": [],
+      "memberIds": [],
+      "tags": ["orchis"],
+      "isVariant": true
+    },
+    {
+      "id": "orchis_ares_mephisto",
+      "name": "ORCHIS + Ares + Mephisto",
+      "nameFr": "ORCHIS + Ares + Mephisto",
+      "members": [],
+      "memberIds": [],
+      "tags": ["orchis"],
+      "isVariant": true
+    },
+    {
+      "id": "outoftime_mephisto",
+      "name": "OUT OF TIME + Mephisto",
+      "nameFr": "HORS DU TEMPS + Mephisto",
+      "members": [],
+      "memberIds": [],
+      "tags": ["outoftime"],
+      "isVariant": true
+    },
+    {
+      "id": "blackknight_odin_mephisto_doom_superskrull",
+      "name": "Black Knight + Odin + Mephisto + Doom + Super Skrull",
+      "nameFr": "Black Knight + Odin + Mephisto + Doom + Super Skrull",
+      "members": [],
+      "memberIds": [],
+      "tags": ["horseman"],
+      "isVariant": true
+    },
+    {
+      "id": "blackknight_cosmicghostrider_odin",
+      "name": "Black Knight + Cosmic Ghost Rider + Odin",
+      "nameFr": "Black Knight + Cosmic Ghost Rider + Odin",
+      "members": [],
+      "memberIds": [],
+      "tags": ["horseman"],
+      "isVariant": true
+    },
+    {
+      "id": "spidersociety_mephisto",
+      "name": "SPIDER-SOCIETY + Mephisto",
+      "nameFr": "SPIDER-SOCIETY + Mephisto",
+      "members": [],
+      "memberIds": [],
+      "tags": ["spidersociety"],
+      "isVariant": true
+    },
+    {
+      "id": "xtreme_phoenixforce",
+      "name": "X-TREME X-MEN + Phoenix Force",
+      "nameFr": "X-TREME X-MEN + Phoenix Force",
+      "members": [],
+      "memberIds": [],
+      "tags": ["xtreme"],
+      "isVariant": true
     }
   ]
 }

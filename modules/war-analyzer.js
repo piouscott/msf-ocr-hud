@@ -13,7 +13,8 @@ class WarAnalyzer {
     this.teamsData = [];
     this.countersData = {};
     this.warMetaTeams = [];
-    this.portraitsDb = {}; // Hash -> charId mapping
+    this.portraitsDb = {}; // charId -> { name, hash, hist } mapping
+    this.hashIndex = {}; // hash -> charId for quick lookups
     this.initialized = false;
 
     // Personnages "modificateurs" qui changent les counters d'une equipe
@@ -69,7 +70,7 @@ class WarAnalyzer {
       console.error("[WarAnalyzer] Erreur chargement noms:", e);
     }
 
-    // Charger la base de portraits (hash -> nom/charId)
+    // Charger la base de portraits (charId -> { name, hash, hist })
     try {
       const portraitsUrl = typeof ext !== "undefined"
         ? ext.runtime.getURL("data/portraits.json")
@@ -77,14 +78,22 @@ class WarAnalyzer {
       const portraitsRes = await fetch(portraitsUrl);
       const portraitsJson = await portraitsRes.json();
       this.portraitsDb = portraitsJson.portraits || {};
-      console.log(`[WarAnalyzer] ${Object.keys(this.portraitsDb).length} portraits charges`);
+      this.hashIndex = portraitsJson.hashIndex || {};
+      console.log(`[WarAnalyzer] ${Object.keys(this.portraitsDb).length} portraits charges (v${portraitsJson.version || 1})`);
 
       // Charger aussi les portraits depuis le storage local (ajouts utilisateur)
       if (typeof ext !== "undefined") {
         try {
           const stored = await ext.storage.local.get("msfPortraits");
           if (stored.msfPortraits) {
-            Object.assign(this.portraitsDb, stored.msfPortraits);
+            // Fusionner avec la base (ancien format: hash -> {name, charId})
+            for (const [hash, data] of Object.entries(stored.msfPortraits)) {
+              const charId = data.charId || data;
+              if (charId && !this.portraitsDb[charId]) {
+                this.portraitsDb[charId] = { name: data.name || charId, hash: hash };
+                this.hashIndex[hash] = charId;
+              }
+            }
             console.log(`[WarAnalyzer] +${Object.keys(stored.msfPortraits).length} portraits depuis storage`);
           }
         } catch (e) {
@@ -620,14 +629,13 @@ class WarAnalyzer {
         canvas.height = size;
         const ctx = canvas.getContext("2d");
 
-        // Crop central de 60% pour ignorer les bordures circulaires et UI
-        const cropRatio = 0.6;
-        const srcSize = Math.min(img.width, img.height);
-        const cropSize = srcSize * cropRatio;
-        const offsetX = (img.width - cropSize) / 2;
-        const offsetY = (img.height - cropSize) / 2;
+        // Crop: garder seulement les 70% du haut pour eviter le texte de puissance
+        // qui s'affiche en bas du portrait dans le jeu
+        const cropTopPercent = 0.70;
+        const srcHeight = img.height * cropTopPercent;
 
-        ctx.drawImage(img, offsetX, offsetY, cropSize, cropSize, 0, 0, size, size);
+        console.log(`[WarAnalyzer] Taille source: ${img.width}x${img.height}, crop haut 70% = ${img.width}x${Math.round(srcHeight)}`);
+        ctx.drawImage(img, 0, 0, img.width, srcHeight, 0, 0, size, size);
         const data = ctx.getImageData(0, 0, size, size);
         resolve(data);
       };
@@ -641,6 +649,87 @@ class WarAnalyzer {
       console.log("[WarAnalyzer] Debut chargement image");
       img.src = dataUrl;
     });
+  }
+
+  /**
+   * Convertit RGB en HSV
+   */
+  rgbToHsv(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const diff = max - min;
+
+    let h = 0;
+    if (diff !== 0) {
+      if (max === r) h = 60 * (((g - b) / diff) % 6);
+      else if (max === g) h = 60 * ((b - r) / diff + 2);
+      else h = 60 * ((r - g) / diff + 4);
+    }
+    if (h < 0) h += 360;
+
+    const s = max === 0 ? 0 : diff / max;
+    const v = max;
+
+    return { h, s, v };
+  }
+
+  /**
+   * Calcule l'histogramme Hue pondere par saturation
+   * Plus discriminant que RGB pour les personnages avec des couleurs distinctives
+   */
+  async computeHueHistogram(imageDataUrl) {
+    const img = await this.loadImage(imageDataUrl);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext("2d");
+
+    const cropTopPercent = 0.70;
+    const srcHeight = img.height * cropTopPercent;
+
+    ctx.drawImage(img, 0, 0, img.width, srcHeight, 0, 0, 64, 64);
+
+    const imageData = ctx.getImageData(0, 0, 64, 64);
+    const pixels = imageData.data;
+
+    const hueBins = 36;
+    const hist = new Array(hueBins).fill(0);
+    let totalWeight = 0;
+
+    for (let i = 0; i < pixels.length; i += 4) {
+      const { h, s, v } = this.rgbToHsv(pixels[i], pixels[i + 1], pixels[i + 2]);
+
+      if (s > 0.2 && v > 0.2) {
+        const hueIdx = Math.min(Math.floor(h / 10), hueBins - 1);
+        const weight = s * v;
+        hist[hueIdx] += weight;
+        totalWeight += weight;
+      }
+    }
+
+    if (totalWeight > 0) {
+      for (let i = 0; i < hueBins; i++) {
+        hist[i] = hist[i] / totalWeight;
+      }
+    }
+
+    return hist;
+  }
+
+  /**
+   * Calcule la similarite entre deux histogrammes Hue (Bhattacharyya)
+   */
+  hueHistogramSimilarity(hist1, hist2) {
+    if (!hist1 || !hist2 || hist1.length !== hist2.length) return 0;
+
+    let sum = 0;
+    for (let i = 0; i < hist1.length; i++) {
+      sum += Math.sqrt(hist1[i] * hist2[i]);
+    }
+
+    return sum;
   }
 
   /**
@@ -671,64 +760,180 @@ class WarAnalyzer {
   }
 
   /**
-   * Trouve le meilleur match pour un hash dans la base de portraits
+   * Trouve le meilleur match via histogramme Hue
+   * Plus discriminant que RGB pour les personnages avec des couleurs distinctives
+   * threshold: similarite minimale en % (defaut 90%)
+   * minGap: ecart minimum avec le 2eme match (defaut 1.5%)
    */
-  findPortraitMatch(hash, threshold = 80) {
-    let bestMatch = null;
-    let bestSimilarity = 0;
+  findPortraitMatchByHue(captureHue, threshold = 90, minGap = 1.5) {
+    const candidates = [];
 
-    for (const [dbHash, nameOrData] of Object.entries(this.portraitsDb)) {
-      const sim = this.hashSimilarity(hash, dbHash);
+    for (const [charId, data] of Object.entries(this.portraitsDb)) {
+      if (!data.hue) continue;
 
-      if (sim > bestSimilarity && sim >= threshold) {
-        bestSimilarity = sim;
+      const sim = this.hueHistogramSimilarity(captureHue, data.hue);
+      const simPercent = sim * 100;
 
-        // Le format peut etre soit une string (nom) soit un objet {name, charId}
-        if (typeof nameOrData === "string") {
-          bestMatch = {
-            name: nameOrData,
-            charId: this.nameToId[nameOrData.toUpperCase()] || null,
-            similarity: sim,
-            hash: dbHash
-          };
-        } else {
-          bestMatch = {
-            name: nameOrData.name || "Inconnu",
-            charId: nameOrData.charId || null,
-            similarity: sim,
-            hash: dbHash
-          };
-        }
+      if (simPercent >= threshold) {
+        candidates.push({
+          name: data.name || charId,
+          charId: charId,
+          similarity: Math.round(simPercent * 10) / 10,
+          hash: data.hash
+        });
       }
     }
 
-    return bestMatch;
+    candidates.sort((a, b) => b.similarity - a.similarity);
+
+    if (candidates.length > 0) {
+      console.log(`[WarAnalyzer] Top ${Math.min(5, candidates.length)} matches (Hue):`);
+      candidates.slice(0, 5).forEach((c, i) => {
+        console.log(`  ${i + 1}. ${c.name}: ${c.similarity}%`);
+      });
+    } else {
+      console.log(`[WarAnalyzer] Aucun candidat Hue >= ${threshold}%`);
+    }
+
+    if (candidates.length >= 2) {
+      const gap = candidates[0].similarity - candidates[1].similarity;
+      if (gap < minGap) {
+        console.log(`[WarAnalyzer] Match ambigu: ecart de ${gap.toFixed(1)}% entre ${candidates[0].name} et ${candidates[1].name}`);
+        const match = candidates[0];
+        match.ambiguous = true;
+        match.alternatives = candidates.slice(1, 3);
+        return match;
+      }
+    }
+
+    if (candidates.length > 0 && candidates[0].similarity >= threshold) {
+      return candidates[0];
+    }
+
+    return null;
+  }
+
+  /**
+   * Trouve le meilleur match pour un hash dans la base de portraits (legacy pHash)
+   * threshold: similarite minimale (defaut 75%)
+   * minGap: ecart minimum avec le 2eme match pour accepter (defaut 3%)
+   */
+  findPortraitMatch(hash, threshold = 75, minGap = 3) {
+    const candidates = [];
+
+    // D'abord verifier si le hash exact existe dans l'index
+    if (this.hashIndex && this.hashIndex[hash]) {
+      const charId = this.hashIndex[hash];
+      const data = this.portraitsDb[charId];
+      if (data) {
+        return {
+          name: data.name || charId,
+          charId: charId,
+          similarity: 100,
+          hash: hash
+        };
+      }
+    }
+
+    // Sinon comparer avec tous les portraits (ancien format ou fallback)
+    for (const [key, value] of Object.entries(this.portraitsDb)) {
+      let dbHash, name, charId;
+
+      // Nouveau format: key = charId, value = { name, hash, hist }
+      if (typeof value === "object" && value.hash) {
+        dbHash = value.hash;
+        name = value.name;
+        charId = key;
+      }
+      // Ancien format: key = hash, value = { name, charId } ou string
+      else if (typeof value === "object") {
+        dbHash = key;
+        name = value.name || "Inconnu";
+        charId = value.charId || null;
+      } else {
+        dbHash = key;
+        name = value;
+        charId = this.nameToId[value.toUpperCase()] || null;
+      }
+
+      const sim = this.hashSimilarity(hash, dbHash);
+
+      if (sim >= threshold) {
+        candidates.push({ name, charId, similarity: sim, hash: dbHash });
+      }
+    }
+
+    candidates.sort((a, b) => b.similarity - a.similarity);
+
+    if (candidates.length > 0) {
+      console.log(`[WarAnalyzer] Hash capture: ${hash}`);
+      console.log(`[WarAnalyzer] Top ${Math.min(5, candidates.length)} matches (pHash):`);
+      candidates.slice(0, 5).forEach((c, i) => {
+        console.log(`  ${i + 1}. ${c.name}: ${c.similarity}%`);
+      });
+    }
+
+    if (candidates.length >= 2) {
+      const gap = candidates[0].similarity - candidates[1].similarity;
+      if (gap < minGap) {
+        const match = candidates[0];
+        match.ambiguous = true;
+        match.alternatives = candidates.slice(1, 3);
+        return match;
+      }
+    }
+
+    return candidates.length > 0 ? candidates[0] : null;
   }
 
   /**
    * Identifie une liste de portraits et retourne les personnages
+   * Utilise l'histogramme Hue (plus discriminant que RGB)
+   * avec fallback sur pHash si pas d'histogramme Hue dans la base
    */
   async identifyPortraits(portraitDataUrls) {
     const identified = [];
+    const hasHueHistograms = Object.values(this.portraitsDb).some(p => p && p.hue);
 
     console.log(`[WarAnalyzer] Debut identification de ${portraitDataUrls.length} portraits`);
+    console.log(`[WarAnalyzer] Mode: ${hasHueHistograms ? "Histogramme Hue" : "pHash (legacy)"}`);
 
     for (let i = 0; i < portraitDataUrls.length; i++) {
       const dataUrl = portraitDataUrls[i];
       try {
         console.log(`[WarAnalyzer] Traitement portrait ${i + 1}/${portraitDataUrls.length}`);
-        const hash = await this.computePortraitHash(dataUrl);
-        console.log(`[WarAnalyzer] Hash calcule pour portrait ${i + 1}: ${hash}`);
 
-        const match = this.findPortraitMatch(hash);
+        let match = null;
+
+        // Methode principale: histogramme Hue (plus discriminant)
+        if (hasHueHistograms) {
+          const hueHist = await this.computeHueHistogram(dataUrl);
+          match = this.findPortraitMatchByHue(hueHist, 90, 1.5);
+          if (match) {
+            match.method = "hue";
+          }
+        }
+
+        // Fallback: pHash si base sans histogrammes Hue ou pas de match
+        if (!match) {
+          const hash = await this.computePortraitHash(dataUrl);
+          console.log(`[WarAnalyzer] Fallback pHash, hash: ${hash}`);
+          match = this.findPortraitMatch(hash, 75, 3);
+          if (match) {
+            match.method = "pHash";
+          }
+        }
 
         if (match) {
-          console.log(`[WarAnalyzer] Match trouve: ${match.name} (${match.similarity}%)`);
+          console.log(`[WarAnalyzer] Match trouve: ${match.name} (${match.similarity}%) via ${match.method}${match.ambiguous ? " [AMBIGU]" : ""}`);
           identified.push({
             name: match.name,
             charId: match.charId,
             similarity: match.similarity,
-            hash: hash
+            hash: match.hash,
+            method: match.method,
+            ambiguous: match.ambiguous || false,
+            alternatives: match.alternatives || []
           });
         } else {
           console.log(`[WarAnalyzer] Aucun match pour portrait ${i + 1}`);
@@ -736,11 +941,11 @@ class WarAnalyzer {
             name: null,
             charId: null,
             similarity: 0,
-            hash: hash
+            hash: null
           });
         }
       } catch (e) {
-        console.error(`[WarAnalyzer] Erreur hash portrait ${i + 1}:`, e);
+        console.error(`[WarAnalyzer] Erreur identification portrait ${i + 1}:`, e);
         identified.push({
           name: null,
           charId: null,

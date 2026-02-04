@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Script pour générer la base de données des portraits MSF
- * Télécharge les images depuis l'API et calcule les hashes pHash
+ * Télécharge les images depuis l'API et calcule les hashes pHash + histogrammes RGB
  *
  * Usage: node scripts/generate-portraits-db.js
  */
@@ -46,27 +46,22 @@ function downloadImage(url) {
 }
 
 /**
- * Calcule le hash perceptuel d'une image (identique à war-analyzer.js)
+ * Calcule le hash perceptuel d'une image
  */
 async function computePortraitHash(imageBuffer) {
   const hashSize = 8;
   const sampleSize = 32;
 
-  // Charger l'image avec canvas
   const img = await loadImage(imageBuffer);
 
-  // Créer un canvas de sampleSize x sampleSize
   const canvas = createCanvas(sampleSize, sampleSize);
   const ctx = canvas.getContext("2d");
 
-  // Crop central de 60% pour matcher le traitement in-game
-  const cropRatio = 0.6;
-  const srcSize = Math.min(img.width, img.height);
-  const cropSize = srcSize * cropRatio;
-  const offsetX = (img.width - cropSize) / 2;
-  const offsetY = (img.height - cropSize) / 2;
+  // Crop: garder seulement les 70% du haut
+  const cropTopPercent = 0.70;
+  const srcHeight = img.height * cropTopPercent;
 
-  ctx.drawImage(img, offsetX, offsetY, cropSize, cropSize, 0, 0, sampleSize, sampleSize);
+  ctx.drawImage(img, 0, 0, img.width, srcHeight, 0, 0, sampleSize, sampleSize);
 
   const imageData = ctx.getImageData(0, 0, sampleSize, sampleSize);
   const pixels = imageData.data;
@@ -120,6 +115,74 @@ async function computePortraitHash(imageBuffer) {
 }
 
 /**
+ * Convertit RGB en HSV
+ */
+function rgbToHsv(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const diff = max - min;
+
+  let h = 0;
+  if (diff !== 0) {
+    if (max === r) h = 60 * (((g - b) / diff) % 6);
+    else if (max === g) h = 60 * ((b - r) / diff + 2);
+    else h = 60 * ((r - g) / diff + 4);
+  }
+  if (h < 0) h += 360;
+
+  const s = max === 0 ? 0 : diff / max;
+  const v = max;
+
+  return { h, s, v };
+}
+
+/**
+ * Calcule l'histogramme Hue pondéré par saturation
+ * Plus discriminant que RGB pour les personnages avec des couleurs distinctives
+ * 36 bins (10° chacun) pour capturer les nuances de teinte
+ */
+async function computeHueHistogram(imageBuffer) {
+  const img = await loadImage(imageBuffer);
+
+  const canvas = createCanvas(64, 64);
+  const ctx = canvas.getContext("2d");
+
+  const cropTopPercent = 0.70;
+  const srcHeight = img.height * cropTopPercent;
+
+  ctx.drawImage(img, 0, 0, img.width, srcHeight, 0, 0, 64, 64);
+
+  const imageData = ctx.getImageData(0, 0, 64, 64);
+  const pixels = imageData.data;
+
+  const hueBins = 36;
+  const hist = new Array(hueBins).fill(0);
+  let totalWeight = 0;
+
+  for (let i = 0; i < pixels.length; i += 4) {
+    const { h, s, v } = rgbToHsv(pixels[i], pixels[i + 1], pixels[i + 2]);
+
+    // Ignorer les pixels trop sombres ou trop peu saturés
+    if (s > 0.2 && v > 0.2) {
+      const hueIdx = Math.min(Math.floor(h / 10), hueBins - 1);
+      const weight = s * v;
+      hist[hueIdx] += weight;
+      totalWeight += weight;
+    }
+  }
+
+  // Normaliser
+  if (totalWeight > 0) {
+    for (let i = 0; i < hueBins; i++) {
+      hist[i] = Math.round((hist[i] / totalWeight) * 10000) / 10000;
+    }
+  }
+
+  return hist;
+}
+
+/**
  * Programme principal
  */
 async function main() {
@@ -139,6 +202,7 @@ async function main() {
   console.log(`${characters.length} personnages trouvés\n`);
 
   const portraits = {};
+  const hashIndex = {}; // Index par hash pour lookup rapide
   let success = 0;
   let failed = 0;
   let cached = 0;
@@ -176,14 +240,19 @@ async function main() {
       }
     }
 
-    // Calculer le hash
+    // Calculer le hash et l'histogramme Hue
     try {
       const hash = await computePortraitHash(imageBuffer);
+      const hueHist = await computeHueHistogram(imageBuffer);
 
-      portraits[hash] = {
+      portraits[charId] = {
         name: name,
-        charId: charId
+        hash: hash,
+        hue: hueHist
       };
+
+      // Index par hash pour lookup rapide
+      hashIndex[hash] = charId;
 
       success++;
 
@@ -198,11 +267,12 @@ async function main() {
 
   // Sauvegarder le fichier
   const output = {
-    description: "Hash perceptuels des portraits de personnages MSF",
-    version: 2,
+    description: "Hash perceptuels et histogrammes Hue des portraits MSF",
+    version: 4,
     generatedAt: new Date().toISOString(),
     count: Object.keys(portraits).length,
-    portraits: portraits
+    portraits: portraits,
+    hashIndex: hashIndex
   };
 
   fs.writeFileSync(OUTPUT_FILE, JSON.stringify(output, null, 2));

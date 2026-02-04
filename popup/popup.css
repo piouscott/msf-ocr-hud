@@ -664,6 +664,16 @@ button:active {
   color: #fff;
 }
 
+.war-portrait-slot .portrait-badge.ambiguous {
+  background: #ffd43b;
+  color: #1a1a2e;
+}
+
+.war-portrait-slot.ambiguous {
+  border-color: #ffd43b;
+  border-style: dashed;
+}
+
 /* Multi-Team Results */
 .multi-team-results {
   display: flex;

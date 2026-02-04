@@ -78,6 +78,21 @@ let teamsData = [];
 let countersData = {};
 let currentSlots = []; // Resultats du dernier scan
 
+/**
+ * Convertit le niveau de confiance en symboles visuels (triangles)
+ * 95% = ▲▲▲ (20% punch up)
+ * 80% = ▲▲ (10% punch up)
+ * 65% = ▲ (5% punch up)
+ * 50% = ⊜ (even match)
+ */
+function confidenceToSymbols(confidence) {
+  if (confidence >= 95) return '<span style="color:#51cf66">▲▲▲</span>';
+  if (confidence >= 80) return '<span style="color:#51cf66">▲▲</span>';
+  if (confidence >= 65) return '<span style="color:#51cf66">▲</span>';
+  if (confidence >= 50) return '<span style="color:#fcc419">⊜</span>';
+  return '<span style="color:#ff6b6b">▼</span>';
+}
+
 // ============================================
 // Chargement des donnees (equipes + counters)
 // ============================================
@@ -458,7 +473,7 @@ function generateCountersHtml(counters) {
       ${counters.slice(0, 3).map(c => `
         <div class="counter-item">
           <span class="counter-name">${c.teamName}</span>
-          <span class="counter-confidence">${c.confidence}%</span>
+          <span class="counter-confidence">${confidenceToSymbols(c.confidence)}</span>
           ${c.minPower ? `<span class="counter-power">${formatPower(c.minPower)}+</span>` : ""}
         </div>
       `).join("")}
@@ -731,7 +746,7 @@ function displayWarResult(result) {
             <div class="war-counter-header">
               <span class="war-counter-name">${c.teamName}</span>
               <div class="war-counter-meta">
-                <span class="war-counter-confidence">${c.confidence}%</span>
+                <span class="war-counter-confidence">${confidenceToSymbols(c.confidence)}</span>
                 ${c.minPower ? `<span class="war-counter-power">${formatPower(c.minPower)}+</span>` : ""}
               </div>
             </div>
@@ -831,18 +846,39 @@ function updateWarPortraitsDisplay() {
     const portrait = capturedWarPortraits[i];
 
     if (portrait && portrait.dataUrl) {
+      // Preparer l'affichage du nom avec alternatives si ambigu
+      let nameDisplay = "";
+      if (portrait.name) {
+        nameDisplay = `<div class="portrait-name">${portrait.name}</div>`;
+        if (portrait.ambiguous && portrait.alternatives && portrait.alternatives.length > 0) {
+          const alts = portrait.alternatives.map(a => `${a.name} (${a.similarity}%)`).join(", ");
+          nameDisplay = `<div class="portrait-name" title="Ambigu: ${alts}">${portrait.name}?</div>`;
+        }
+      }
+
+      // Determiner le badge
+      let badge = "";
+      if (portrait.similarity) {
+        if (portrait.ambiguous) {
+          badge = `<div class="portrait-badge ambiguous" title="Match ambigu">?!</div>`;
+        } else if (portrait.similarity >= 70) {
+          badge = `<div class="portrait-badge good">\u2713</div>`;
+        } else {
+          badge = `<div class="portrait-badge unknown">?</div>`;
+        }
+      }
+
       slot.innerHTML = `
         <img src="${portrait.dataUrl}" alt="Portrait ${i + 1}">
-        ${portrait.name ? `<div class="portrait-name">${portrait.name}</div>` : ""}
-        ${portrait.similarity ? `<div class="portrait-badge ${portrait.similarity >= 70 ? 'good' : 'unknown'}">${portrait.similarity >= 70 ? '✓' : '?'}</div>` : ""}
+        ${nameDisplay}
+        ${badge}
       `;
       slot.classList.add("has-portrait");
-      if (portrait.name && portrait.similarity >= 70) {
-        slot.classList.add("identified");
-      }
+      slot.classList.toggle("identified", portrait.name && portrait.similarity >= 70 && !portrait.ambiguous);
+      slot.classList.toggle("ambiguous", portrait.ambiguous || false);
     } else {
       slot.innerHTML = `<div class="portrait-placeholder">${i + 1}</div>`;
-      slot.classList.remove("has-portrait", "identified");
+      slot.classList.remove("has-portrait", "identified", "ambiguous");
     }
   });
 }
@@ -988,6 +1024,8 @@ btnWarAnalyzePortraits.addEventListener("click", async () => {
           capturedWarPortraits[i].similarity = p.similarity;
           capturedWarPortraits[i].charId = p.charId;
           capturedWarPortraits[i].hash = p.hash;
+          capturedWarPortraits[i].ambiguous = p.ambiguous || false;
+          capturedWarPortraits[i].alternatives = p.alternatives || [];
         }
       });
       updateWarPortraitsDisplay();
@@ -1069,7 +1107,7 @@ function displayMultiTeamResults(results) {
         result.counters.slice(0, 3).forEach(c => {
           html += `<div class="mini-counter">
             <span class="counter-team">${c.teamName}</span>
-            <span class="counter-conf">${c.confidence}%</span>
+            <span class="counter-conf">${confidenceToSymbols(c.confidence)}</span>
           </div>`;
         });
         html += `</div>`;

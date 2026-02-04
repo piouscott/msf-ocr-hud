@@ -9,6 +9,17 @@ let mergedCounters = {};
 // Source des counters pour chaque equipe
 let counterSources = {};
 
+/**
+ * Convertit le niveau de confiance en symboles visuels (triangles)
+ */
+function confidenceToSymbols(confidence) {
+  if (confidence >= 95) return '<span style="color:#51cf66">▲▲▲</span>';
+  if (confidence >= 80) return '<span style="color:#51cf66">▲▲</span>';
+  if (confidence >= 65) return '<span style="color:#51cf66">▲</span>';
+  if (confidence >= 50) return '<span style="color:#fcc419">⊜</span>';
+  return '<span style="color:#ff6b6b">▼</span>';
+}
+
 // Charger les donnees avec les 3 niveaux
 async function loadData() {
   try {
@@ -24,6 +35,8 @@ async function loadData() {
     const countersJson = await countersRes.json();
 
     teamsData = teamsJson.teams || [];
+    // Trier les equipes par ordre alphabetique
+    teamsData.sort((a, b) => a.name.localeCompare(b.name));
     defaultCounters = countersJson.counters || {};
 
     // Charger les counters remote depuis storage
@@ -100,7 +113,8 @@ function renderTeams() {
     section.className = "team-section";
     section.dataset.teamId = team.id;
 
-    const counters = mergedCounters[team.id] || [];
+    // Trier les counters par confiance (du plus haut au plus bas)
+    const counters = (mergedCounters[team.id] || []).slice().sort((a, b) => b.confidence - a.confidence);
     const source = counterSources[team.id] || "default";
 
     section.innerHTML = `
@@ -143,6 +157,16 @@ function renderTeams() {
   document.querySelectorAll(".btn-reset").forEach(btn => {
     btn.addEventListener("click", () => resetTeamCounters(btn.dataset.team));
   });
+
+  // Mettre a jour le symbole quand la confiance change
+  document.querySelectorAll(".counter-confidence").forEach(input => {
+    input.addEventListener("input", () => {
+      const symbol = input.previousElementSibling;
+      if (symbol && symbol.classList.contains("confidence-symbol")) {
+        symbol.innerHTML = confidenceToSymbols(parseInt(input.value) || 0);
+      }
+    });
+  });
 }
 
 function renderCounterRow(counter, index) {
@@ -153,6 +177,7 @@ function renderCounterRow(counter, index) {
   return `
     <div class="counter-row" data-index="${index}">
       <select class="counter-team">${teamOptions}</select>
+      <span class="confidence-symbol">${confidenceToSymbols(counter.confidence)}</span>
       <input type="number" class="counter-confidence" value="${counter.confidence}" min="0" max="100" title="Confiance %">
       <input type="number" class="counter-ratio" value="${counter.minPowerRatio}" min="0.5" max="2" step="0.1" title="Ratio puissance">
       <input type="text" class="counter-notes" value="${counter.notes || ""}" placeholder="Notes">
@@ -171,6 +196,15 @@ function addCounter(teamId) {
   const row = template.firstElementChild;
 
   row.querySelector(".btn-remove").addEventListener("click", () => row.remove());
+
+  // Mettre a jour le symbole quand la confiance change
+  const confidenceInput = row.querySelector(".counter-confidence");
+  confidenceInput.addEventListener("input", () => {
+    const symbol = confidenceInput.previousElementSibling;
+    if (symbol && symbol.classList.contains("confidence-symbol")) {
+      symbol.innerHTML = confidenceToSymbols(parseInt(confidenceInput.value) || 0);
+    }
+  });
 
   list.insertBefore(row, addBtn);
 }

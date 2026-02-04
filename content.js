@@ -740,28 +740,29 @@ function loadImage(dataUrl) {
 }
 
 // ============================================
-// Capture de portraits pour le mode War
+// Capture de portraits pour le mode War (MODE CLIC DIRECT)
 // ============================================
 
 function startPortraitCapture(options) {
   const { dataUrl, count } = options;
-
-  // Disposition MSF War: 2 portraits en haut, 3 en bas (total 5)
-  // Ligne 1: positions 0, 1 (centres sur colonnes 0.5 et 1.5 d'une grille 3 colonnes)
-  // Ligne 2: positions 2, 3, 4 (colonnes 0, 1, 2)
-  const GRID_COLS = 3;
-  const GRID_ROWS = 2;
+  const PORTRAIT_SIZE = 100; // Taille de capture en pixels ecran (augmente pour meilleure precision)
 
   // Charger l'image de fond
   const bgImage = new Image();
   bgImage.onload = () => {
-    createCaptureOverlay();
+    createClickCaptureOverlay();
   };
   bgImage.src = dataUrl;
 
-  function createCaptureOverlay() {
+  function createClickCaptureOverlay() {
     const W = window.innerWidth;
     const H = window.innerHeight;
+    const scaleX = bgImage.naturalWidth / W;
+    const scaleY = bgImage.naturalHeight / H;
+
+    const portraits = [];
+    let currentIndex = 0;
+    let keyHandler = null;
 
     const overlay = document.createElement("div");
     overlay.id = "msf-portrait-capture";
@@ -778,42 +779,41 @@ function startPortraitCapture(options) {
     dimmer.style.cssText = "position:absolute;inset:0;background:rgba(0,0,0,0.3);pointer-events:none";
     overlay.appendChild(dimmer);
 
-    // Box de selection principale
-    const box = document.createElement("div");
-    box.style.cssText = "position:absolute;border:3px solid #ff922b;background:rgba(255,146,43,0.1);box-sizing:border-box;pointer-events:none";
-    overlay.appendChild(box);
-
-    // Lignes de separation pour grille 3x2
-    const vSeparators = []; // 2 lignes verticales
-    const hSeparators = []; // 1 ligne horizontale
-
-    for (let i = 1; i < GRID_COLS; i++) {
-      const sep = document.createElement("div");
-      sep.style.cssText = "position:absolute;width:2px;background:#ff922b;opacity:0.7;pointer-events:none;display:none";
-      box.appendChild(sep);
-      vSeparators.push(sep);
-    }
-    for (let i = 1; i < GRID_ROWS; i++) {
-      const sep = document.createElement("div");
-      sep.style.cssText = "position:absolute;height:2px;background:#ff922b;opacity:0.7;pointer-events:none;display:none";
-      box.appendChild(sep);
-      hSeparators.push(sep);
-    }
+    // Curseur visuel (carre de preview)
+    const cursor = document.createElement("div");
+    cursor.style.cssText = `position:absolute;width:${PORTRAIT_SIZE}px;height:${PORTRAIT_SIZE}px;border:3px solid #ff922b;background:rgba(255,146,43,0.2);box-sizing:border-box;pointer-events:none;display:none;transform:translate(-50%,-50%)`;
+    overlay.appendChild(cursor);
 
     // Instructions
     const info = document.createElement("div");
     info.id = "msf-portrait-info";
     info.style.cssText = "position:fixed;left:50%;top:20px;transform:translateX(-50%);background:rgba(0,0,0,0.95);color:#fff;padding:16px 24px;border-radius:12px;font:14px sans-serif;text-align:center;max-width:500px;z-index:2147483648";
-    info.innerHTML = `
-      <div style="color:#ff922b;font-weight:bold;font-size:16px;margin-bottom:8px">
-        Capture des ${count} portraits
-      </div>
-      <div style="margin-bottom:12px">Selectionnez la zone contenant les 5 portraits (2 en haut, 3 en bas)</div>
-      <div style="font-size:12px;color:#888">
-        <b>ENTREE</b> = Valider | <b>ESC</b> = Annuler
-      </div>
-    `;
     overlay.appendChild(info);
+
+    function updateInfo() {
+      const remaining = count - currentIndex;
+      if (remaining > 0) {
+        info.innerHTML = `
+          <div style="color:#ff922b;font-weight:bold;font-size:16px;margin-bottom:8px">
+            Cliquez sur le portrait ${currentIndex + 1}/${count}
+          </div>
+          <div style="margin-bottom:8px">Cliquez directement sur le visage du personnage</div>
+          <div style="font-size:12px;color:#888">
+            <b>ESC</b> = Annuler | <b>Retour arriere</b> = Annuler dernier clic
+          </div>
+        `;
+      } else {
+        info.innerHTML = `
+          <div style="color:#51cf66;font-weight:bold;font-size:16px;margin-bottom:8px">
+            ${count} portraits captures !
+          </div>
+          <div style="font-size:12px;color:#888">
+            Cliquez <b>Valider</b> ou appuyez sur <b>ENTREE</b>
+          </div>
+        `;
+      }
+    }
+    updateInfo();
 
     // Mini previews
     const previewsContainer = document.createElement("div");
@@ -828,324 +828,202 @@ function startPortraitCapture(options) {
     }
     overlay.appendChild(previewsContainer);
 
-    document.body.appendChild(overlay);
-
-    let startX = 0, startY = 0, endX = 0, endY = 0;
-    let dragging = false;
-    let hasSelection = false;
-    let keyHandler = null; // Déclarer ici pour être accessible dans finishCapture
-
-    function clamp(v, min, max) {
-      return Math.max(min, Math.min(max, v));
-    }
-
-    function updateBox() {
-      const x = Math.min(startX, endX);
-      const y = Math.min(startY, endY);
-      const w = Math.abs(endX - startX);
-      const h = Math.abs(endY - startY);
-
-      box.style.left = x + "px";
-      box.style.top = y + "px";
-      box.style.width = w + "px";
-      box.style.height = h + "px";
-
-      // Mettre a jour les separateurs verticaux (colonnes)
-      const colW = w / GRID_COLS;
-      vSeparators.forEach((sep, i) => {
-        sep.style.display = w > 50 ? "block" : "none";
-        sep.style.left = (colW * (i + 1)) + "px";
-        sep.style.top = "0";
-        sep.style.height = h + "px";
-      });
-
-      // Mettre a jour les separateurs horizontaux (lignes)
-      const rowH = h / GRID_ROWS;
-      hSeparators.forEach((sep, i) => {
-        sep.style.display = h > 50 ? "block" : "none";
-        sep.style.left = "0";
-        sep.style.top = (rowH * (i + 1)) + "px";
-        sep.style.width = w + "px";
-      });
-    }
-
-    function captureAllPortraits() {
-      const x = Math.min(startX, endX);
-      const y = Math.min(startY, endY);
-      const w = Math.abs(endX - startX);
-      const h = Math.abs(endY - startY);
-
-      if (w < 50 || h < 50) return null;
-
-      // Calculer les coordonnees dans l'image originale
-      const scaleX = bgImage.naturalWidth / W;
-      const scaleY = bgImage.naturalHeight / H;
-
-      const srcX = x * scaleX;
-      const srcY = y * scaleY;
-      const srcW = w * scaleX;
-      const srcH = h * scaleY;
-
-      const portraits = [];
-
-      // Taille du portrait = ~12% de la largeur de selection (petit pour eviter les chiffres)
-      const portraitSize = srcW * 0.12;
-      const outSize = Math.max(64, Math.round(portraitSize));
-
-      // Layout MSF War - selection = zone portraits SANS header
-      // Row 1 portraits: 0-25%, Row 1 power: 25-35%, Row 2 portraits: 40-65%, Row 2 power: 65-80%
-      const positions = [
-        { xPct: 0.30, yPct: 0.12 },  // Portrait 1 - haut gauche (tres haut)
-        { xPct: 0.70, yPct: 0.12 },  // Portrait 2 - haut droite (tres haut)
-        { xPct: 0.20, yPct: 0.48 },  // Portrait 3 - bas gauche
-        { xPct: 0.50, yPct: 0.48 },  // Portrait 4 - bas centre
-        { xPct: 0.80, yPct: 0.48 }   // Portrait 5 - bas droite
-      ];
-
-      for (let i = 0; i < Math.min(count, positions.length); i++) {
-        const pos = positions[i];
-
-        const portraitCanvas = document.createElement("canvas");
-        portraitCanvas.width = outSize;
-        portraitCanvas.height = outSize;
-        const pCtx = portraitCanvas.getContext("2d");
-
-        // Centre du portrait en coordonnees image
-        const centerX = srcX + srcW * pos.xPct;
-        const centerY = srcY + srcH * pos.yPct;
-
-        // Coin superieur gauche du carre centre
-        const cropX = centerX - portraitSize / 2;
-        const cropY = centerY - portraitSize / 2;
-
-        pCtx.drawImage(bgImage, cropX, cropY, portraitSize, portraitSize, 0, 0, outSize, outSize);
-
-        portraits.push({ dataUrl: portraitCanvas.toDataURL("image/png") });
-      }
-
-      return portraits;
-    }
-
-    function updatePreviews(portraits) {
-      portraits.forEach((p, i) => {
-        const preview = document.getElementById(`portrait-preview-${i}`);
-        if (preview && p.dataUrl) {
-          preview.innerHTML = `<img src="${p.dataUrl}" style="width:100%;height:100%;object-fit:cover">`;
-          preview.style.borderStyle = "solid";
-          preview.style.borderColor = "#51cf66";
-        }
-      });
-    }
-
-    function finishCapture(portraits) {
-      console.log("[MSF] finishCapture appelé, portraits:", portraits ? portraits.length : 0);
-
-      // Nettoyer les event listeners
-      if (keyHandler) {
-        window.removeEventListener("keydown", keyHandler, true);
-        document.removeEventListener("keydown", keyHandler, true);
-        console.log("[MSF] Event listeners supprimés");
-      }
-
-      // Supprimer l'overlay du DOM de manière agressive
-      try {
-        // Supprimer tous les éléments de l'overlay par ID
-        const elementsToRemove = [
-          "msf-portrait-capture",
-          "msf-portrait-info",
-          "msf-portrait-previews",
-          "msf-portrait-buttons"
-        ];
-
-        elementsToRemove.forEach(id => {
-          const el = document.getElementById(id);
-          if (el) {
-            el.style.display = "none";
-            el.remove();
-            console.log(`[MSF] Élément #${id} supprimé`);
-          }
-        });
-
-        // Supprimer aussi par référence
-        if (overlay && overlay.parentNode) {
-          overlay.style.display = "none";
-          overlay.parentNode.removeChild(overlay);
-          console.log("[MSF] Overlay supprimé par référence");
-        }
-
-        // Recherche exhaustive de tous les éléments MSF portrait restants
-        const allMsfElements = document.querySelectorAll("[id^='msf-portrait'], [id*='portrait-preview']");
-        if (allMsfElements.length > 0) {
-          allMsfElements.forEach((el, idx) => {
-            el.remove();
-            console.log(`[MSF] Élément résiduel ${idx} (${el.id}) supprimé`);
-          });
-        }
-      } catch (e) {
-        console.error("[MSF] Erreur suppression overlay:", e);
-      }
-
-      if (portraits && portraits.length > 0) {
-        // Sauvegarder dans ext.storage.local (partagé entre content script et popup)
-        ext.storage.local.set({ msf_war_portraits: portraits }).then(() => {
-          console.log(`[MSF] ${portraits.length} portraits sauvegardes dans storage`);
-
-          // Envoyer un message au popup pour qu'il se mette à jour
-          ext.runtime.sendMessage({
-            type: "MSF_PORTRAITS_CAPTURED",
-            portraits: portraits
-          }).then(() => {
-            console.log("[MSF] Message envoyé au popup");
-          }).catch(err => {
-            console.log("[MSF] Popup fermé, les portraits seront chargés à la prochaine ouverture");
-          });
-        }).catch(e => {
-          console.warn("[MSF] Erreur sauvegarde storage:", e);
-        });
-      } else {
-        alert("Aucun portrait capture");
-      }
-    }
-
-    overlay.addEventListener("mousedown", function(e) {
-      // Ignorer les clics sur les elements UI (info, previews, boutons)
-      if (e.target === info ||
-          e.target === previewsContainer ||
-          e.target.tagName === "BUTTON" ||
-          e.target.closest("button") ||
-          info.contains(e.target) ||
-          previewsContainer.contains(e.target)) {
-        return;
-      }
-
-      console.log("[MSF] mousedown - starting selection");
-      dragging = true;
-      hasSelection = false;
-      startX = clamp(e.clientX, 0, W);
-      startY = clamp(e.clientY, 0, H);
-      endX = startX;
-      endY = startY;
-      updateBox();
-    });
-
-    overlay.addEventListener("mousemove", function(e) {
-      if (!dragging) return;
-      endX = clamp(e.clientX, 0, W);
-      endY = clamp(e.clientY, 0, H);
-      updateBox();
-
-      // Preview en temps reel
-      if (Math.abs(endX - startX) > 50 && Math.abs(endY - startY) > 20) {
-        const portraits = captureAllPortraits();
-        if (portraits) {
-          updatePreviews(portraits);
-        }
-      }
-    });
-
-    overlay.addEventListener("mouseup", function() {
-      const width = Math.abs(endX - startX);
-      const height = Math.abs(endY - startY);
-      console.log("[MSF] mouseup - dragging:", dragging, "width:", width, "height:", height);
-
-      if (dragging && width > 50 && height > 20) {
-        hasSelection = true;
-        console.log("[MSF] Selection validee:", hasSelection);
-      } else {
-        console.log("[MSF] Selection trop petite ou pas de dragging");
-      }
-      dragging = false;
-    });
-
-    // Boutons de validation dans l'overlay
+    // Boutons
     const btnContainer = document.createElement("div");
     btnContainer.id = "msf-portrait-buttons";
     btnContainer.style.cssText = "position:fixed;left:50%;bottom:90px;transform:translateX(-50%);display:flex;gap:12px;z-index:2147483648";
 
     const btnValidate = document.createElement("button");
     btnValidate.textContent = "Valider";
-    btnValidate.style.cssText = "padding:10px 24px;background:#51cf66;color:#1a1a2e;border:none;border-radius:6px;font-weight:bold;cursor:pointer;font-size:14px;pointer-events:auto";
-    btnValidate.addEventListener("click", function(e) {
-      e.stopPropagation();
-      console.log("[MSF] Bouton Valider clique, hasSelection:", hasSelection);
-      const portraits = captureAllPortraits();
-      console.log("[MSF] Portraits captures:", portraits ? portraits.length : 0);
-      finishCapture(portraits);
-    });
+    btnValidate.style.cssText = "padding:10px 24px;background:#555;color:#888;border:none;border-radius:6px;font-weight:bold;cursor:not-allowed;font-size:14px;pointer-events:auto";
+    btnValidate.disabled = true;
+
+    const btnReset = document.createElement("button");
+    btnReset.textContent = "Reset";
+    btnReset.style.cssText = "padding:10px 24px;background:#ff922b;color:#1a1a2e;border:none;border-radius:6px;font-weight:bold;cursor:pointer;font-size:14px;pointer-events:auto";
 
     const btnCancel = document.createElement("button");
     btnCancel.textContent = "Annuler";
     btnCancel.style.cssText = "padding:10px 24px;background:#ff6b6b;color:#fff;border:none;border-radius:6px;font-weight:bold;cursor:pointer;font-size:14px;pointer-events:auto";
-    btnCancel.addEventListener("click", function(e) {
-      e.stopPropagation();
-      console.log("[MSF] Bouton Annuler clique");
 
-      // Nettoyer les event listeners
+    btnContainer.appendChild(btnValidate);
+    btnContainer.appendChild(btnReset);
+    btnContainer.appendChild(btnCancel);
+    overlay.appendChild(btnContainer);
+
+    document.body.appendChild(overlay);
+
+    function updatePreview(index, dataUrlImg) {
+      const preview = document.getElementById(`portrait-preview-${index}`);
+      if (preview && dataUrlImg) {
+        preview.innerHTML = `<img src="${dataUrlImg}" style="width:100%;height:100%;object-fit:cover">`;
+        preview.style.borderStyle = "solid";
+        preview.style.borderColor = index === currentIndex - 1 ? "#ff922b" : "#51cf66";
+      }
+    }
+
+    function resetPreview(index) {
+      const preview = document.getElementById(`portrait-preview-${index}`);
+      if (preview) {
+        preview.innerHTML = "";
+        preview.textContent = index + 1;
+        preview.style.borderStyle = "dashed";
+        preview.style.borderColor = "#555";
+      }
+    }
+
+    function captureAtPoint(clientX, clientY) {
+      // Position dans l'image source
+      const srcX = clientX * scaleX;
+      const srcY = clientY * scaleY;
+      const srcSize = PORTRAIT_SIZE * Math.max(scaleX, scaleY);
+
+      const canvas = document.createElement("canvas");
+      canvas.width = 64;
+      canvas.height = 64;
+      const ctx = canvas.getContext("2d");
+
+      // Capturer carre centre sur le clic
+      ctx.drawImage(
+        bgImage,
+        srcX - srcSize / 2,
+        srcY - srcSize / 2,
+        srcSize,
+        srcSize,
+        0, 0, 64, 64
+      );
+
+      return canvas.toDataURL("image/png");
+    }
+
+    function updateButtonState() {
+      if (currentIndex >= count) {
+        btnValidate.disabled = false;
+        btnValidate.style.background = "#51cf66";
+        btnValidate.style.color = "#1a1a2e";
+        btnValidate.style.cursor = "pointer";
+      } else {
+        btnValidate.disabled = true;
+        btnValidate.style.background = "#555";
+        btnValidate.style.color = "#888";
+        btnValidate.style.cursor = "not-allowed";
+      }
+    }
+
+    function cleanup() {
       if (keyHandler) {
         window.removeEventListener("keydown", keyHandler, true);
         document.removeEventListener("keydown", keyHandler, true);
       }
-
-      // Supprimer tous les éléments
       ["msf-portrait-capture", "msf-portrait-info", "msf-portrait-previews", "msf-portrait-buttons"].forEach(id => {
         const el = document.getElementById(id);
-        if (el) {
-          el.style.display = "none";
-          el.remove();
-        }
+        if (el) el.remove();
       });
-
       if (overlay && overlay.parentNode) {
-        overlay.style.display = "none";
         overlay.parentNode.removeChild(overlay);
       }
-
-      // Nettoyage exhaustif
       document.querySelectorAll("[id^='msf-portrait'], [id*='portrait-preview']").forEach(el => el.remove());
+    }
+
+    function finishCapture() {
+      cleanup();
+      if (portraits.length > 0) {
+        const portraitData = portraits.map(p => ({ dataUrl: p }));
+        ext.storage.local.set({ msf_war_portraits: portraitData }).then(() => {
+          console.log(`[MSF] ${portraits.length} portraits sauvegardes`);
+          ext.runtime.sendMessage({
+            type: "MSF_PORTRAITS_CAPTURED",
+            portraits: portraitData
+          }).catch(() => {});
+        });
+      }
+    }
+
+    // Mousemove pour montrer le curseur
+    overlay.addEventListener("mousemove", function(e) {
+      if (currentIndex < count) {
+        cursor.style.display = "block";
+        cursor.style.left = e.clientX + "px";
+        cursor.style.top = e.clientY + "px";
+      } else {
+        cursor.style.display = "none";
+      }
     });
 
-    btnContainer.appendChild(btnValidate);
-    btnContainer.appendChild(btnCancel);
-    overlay.appendChild(btnContainer);
+    // Clic pour capturer
+    overlay.addEventListener("click", function(e) {
+      // Ignorer clics sur UI
+      if (e.target.tagName === "BUTTON" || e.target.closest("button") ||
+          info.contains(e.target) || previewsContainer.contains(e.target) ||
+          btnContainer.contains(e.target)) {
+        return;
+      }
 
-    // Raccourcis clavier avec capture - attacher IMMEDIATEMENT et sur window
+      if (currentIndex >= count) return;
+
+      const dataUrlImg = captureAtPoint(e.clientX, e.clientY);
+      portraits.push(dataUrlImg);
+      updatePreview(currentIndex, dataUrlImg);
+      currentIndex++;
+      updateInfo();
+      updateButtonState();
+
+      // Highlight le preview actuel
+      if (currentIndex < count) {
+        const nextPreview = document.getElementById(`portrait-preview-${currentIndex}`);
+        if (nextPreview) {
+          nextPreview.style.borderColor = "#ff922b";
+        }
+      }
+    });
+
+    // Bouton Valider
+    btnValidate.addEventListener("click", function(e) {
+      e.stopPropagation();
+      if (currentIndex >= count) {
+        finishCapture();
+      }
+    });
+
+    // Bouton Reset
+    btnReset.addEventListener("click", function(e) {
+      e.stopPropagation();
+      portraits.length = 0;
+      currentIndex = 0;
+      for (let i = 0; i < count; i++) {
+        resetPreview(i);
+      }
+      updateInfo();
+      updateButtonState();
+    });
+
+    // Bouton Annuler
+    btnCancel.addEventListener("click", function(e) {
+      e.stopPropagation();
+      cleanup();
+    });
+
+    // Raccourcis clavier
     keyHandler = function(e) {
-      console.log("[MSF] Key pressed:", e.key, "hasSelection:", hasSelection);
       if (e.key === "Escape") {
         e.preventDefault();
         e.stopPropagation();
-        e.stopImmediatePropagation();
-        window.removeEventListener("keydown", keyHandler, true);
-        document.removeEventListener("keydown", keyHandler, true);
-
-        // Supprimer tous les éléments
-        ["msf-portrait-capture", "msf-portrait-info", "msf-portrait-previews", "msf-portrait-buttons"].forEach(id => {
-          const el = document.getElementById(id);
-          if (el) {
-            el.style.display = "none";
-            el.remove();
-          }
-        });
-
-        if (overlay && overlay.parentNode) {
-          overlay.style.display = "none";
-          overlay.parentNode.removeChild(overlay);
-        }
-
-        // Nettoyage exhaustif
-        document.querySelectorAll("[id^='msf-portrait'], [id*='portrait-preview']").forEach(el => el.remove());
-      } else if (e.key === "Enter" && hasSelection) {
+        cleanup();
+      } else if (e.key === "Enter" && currentIndex >= count) {
         e.preventDefault();
         e.stopPropagation();
-        e.stopImmediatePropagation();
-        window.removeEventListener("keydown", keyHandler, true);
-        document.removeEventListener("keydown", keyHandler, true);
-        const portraits = captureAllPortraits();
-        finishCapture(portraits);
+        finishCapture();
+      } else if (e.key === "Backspace" && currentIndex > 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        currentIndex--;
+        portraits.pop();
+        resetPreview(currentIndex);
+        updateInfo();
+        updateButtonState();
       }
     };
 
-    // Attacher sur window ET document pour maximiser les chances
     window.addEventListener("keydown", keyHandler, true);
     document.addEventListener("keydown", keyHandler, true);
   }
@@ -1456,15 +1334,15 @@ async function captureTeamPortraits(calibration, teamIndex, debugMode = false) {
   const portraitWidth = cardW * 0.25;   // Largeur du portrait (~25% de la carte)
   const portraitHeight = cardW * 0.25;  // Hauteur = largeur (carre)
 
-  // Positions ajustees apres debug visuel - decalees vers la droite
+  // Positions calibrees depuis BARRACKS.png (2026-01-30)
   const portraitPositions = [
     // Ligne du haut (2 portraits)
-    { x: cardX + cardW * 0.19, y: cardY + cardH * 0.18 },
-    { x: cardX + cardW * 0.56, y: cardY + cardH * 0.18 },
+    { x: cardX + cardW * 0.12, y: cardY + cardH * 0.13 },
+    { x: cardX + cardW * 0.44, y: cardY + cardH * 0.13 },
     // Ligne du bas (3 portraits)
-    { x: cardX + cardW * 0.07, y: cardY + cardH * 0.51 },
-    { x: cardX + cardW * 0.38, y: cardY + cardH * 0.51 },
-    { x: cardX + cardW * 0.69, y: cardY + cardH * 0.51 },
+    { x: cardX + cardW * 0.03, y: cardY + cardH * 0.45 },
+    { x: cardX + cardW * 0.29, y: cardY + cardH * 0.45 },
+    { x: cardX + cardW * 0.55, y: cardY + cardH * 0.45 },
   ];
 
   // Mode debug: afficher les zones de capture

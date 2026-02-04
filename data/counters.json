@@ -1,509 +1,2736 @@
 {
-  "description": "Base de donnees des counters MSF",
-  "version": 5,
+  "description": "MSF War Counter suggestions - Merged with Marvel Church data",
+  "version": 4,
+  "lastUpdate": "2026-01-31",
+  "source": "https://marvelstrikeforce.church/alliance-war-counters/",
   "counters": {
     "accursed": [
-      { "team": "undying", "confidence": 95 },
-      { "team": "underworld", "confidence": 95 },
-      { "team": "secretwarrior", "confidence": 95 },
-      { "team": "mightyavenger", "confidence": 80 },
-      { "team": "superiorsix", "confidence": 80, "notes": "no Spider Slayer + Vulture" },
-      { "team": "hellfireclub", "confidence": 80 },
-      { "team": "nightstalker", "confidence": 65 },
-      { "team": "illuminati", "confidence": 65 },
-      { "team": "cabal", "confidence": 65, "notes": "+ Songbird + Nova" },
-      { "team": "orchis", "confidence": 65 }
+      {
+        "team": "undying",
+        "confidence": 95
+      },
+      {
+        "team": "underworld",
+        "confidence": 95
+      },
+      {
+        "team": "secretwarrior",
+        "confidence": 95
+      },
+      {
+        "team": "vigilante",
+        "confidence": 95
+      },
+      {
+        "team": "insidioussix",
+        "confidence": 95,
+        "notes": "+ Vulture + Green Goblin, Classic"
+      },
+      {
+        "team": "brimstone",
+        "confidence": 95
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 80
+      },
+      {
+        "team": "superiorsix",
+        "confidence": 80,
+        "notes": "no Spider Slayer + Vulture"
+      },
+      {
+        "team": "hellfireclub",
+        "confidence": 80
+      },
+      {
+        "team": "nightstalker",
+        "confidence": 65
+      },
+      {
+        "team": "illuminati",
+        "confidence": 65
+      },
+      {
+        "team": "cabal",
+        "confidence": 65,
+        "notes": "+ Songbird + Nova"
+      },
+      {
+        "team": "orchis",
+        "confidence": 65
+      }
     ],
     "accursed_cosmicghostrider": [
-      { "team": "secretwarrior", "confidence": 95 },
-      { "team": "vigilante", "confidence": 95 },
-      { "team": "superiorsix", "confidence": 95, "notes": "+ Vulture + Green Goblin (Classic)" }
+      {
+        "team": "secretwarrior",
+        "confidence": 95
+      },
+      {
+        "team": "vigilante",
+        "confidence": 95
+      },
+      {
+        "team": "superiorsix",
+        "confidence": 95,
+        "notes": "+ Vulture + Green Goblin (Classic)"
+      }
     ],
     "accursed_mephisto": [
-      { "team": "brimstone", "confidence": 95 },
-      { "team": "secretwarrior", "confidence": 95 }
+      {
+        "team": "brimstone",
+        "confidence": 95
+      },
+      {
+        "team": "secretwarrior",
+        "confidence": 95
+      }
     ],
     "fantasticfourmcu": [
-      { "team": "mercsformoney", "confidence": 95, "notes": "+ Scarlet Witch (Zombie), no Deathpool" }
+      {
+        "team": "mercsformoney",
+        "confidence": 95,
+        "notes": "+ Scarlet Witch (Zombie), no Deathpool"
+      },
+      {
+        "team": "brimstone",
+        "confidence": 95
+      },
+      {
+        "team": "fantasticfourmcu",
+        "confidence": 95,
+        "notes": "+ Emma Frost, no The Thing"
+      },
+      {
+        "team": "undying",
+        "confidence": 95
+      },
+      {
+        "team": "brimstone",
+        "confidence": 80,
+        "notes": "+ Black Cat"
+      },
+      {
+        "team": "fantasticfourmcu",
+        "confidence": 80,
+        "notes": "+ Mephisto + Emma Frost"
+      },
+      {
+        "team": "liberty",
+        "confidence": 65,
+        "notes": "+ Quasar"
+      },
+      {
+        "team": "fantasticfourmcu",
+        "confidence": 65,
+        "notes": "+ Professor Xavier + Black Cat"
+      }
     ],
     "fantasticfourmcu_tigra": [
-      { "team": "mightyavenger", "confidence": 80 },
-      { "team": "undying", "confidence": 80, "notes": "+ 1" },
-      { "team": "liberty", "confidence": 80 },
-      { "team": "mercsformoney", "confidence": 80 }
+      {
+        "team": "mightyavenger",
+        "confidence": 80
+      },
+      {
+        "team": "undying",
+        "confidence": 80,
+        "notes": "+ 1"
+      },
+      {
+        "team": "liberty",
+        "confidence": 80
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 80
+      }
     ],
     "absoluteaforce": [
-      { "team": "liberty", "confidence": 80, "notes": "Tous ont Taunt, ciblez qui vous voulez sauf Ms. Marvel (Classic)" },
-      { "team": "absoluteaforce", "confidence": 80, "notes": "Mirror - Kahhori attaque Kahhori" },
-      { "team": "gamma", "confidence": 95, "notes": "+ Mephisto, no She-Hulk" },
-      { "team": "knowhere", "confidence": 95, "notes": "+ Odin + Apocalypse" }
+      {
+        "team": "gamma",
+        "confidence": 95,
+        "notes": "+ Mephisto, no She-Hulk"
+      },
+      {
+        "team": "knowhere",
+        "confidence": 95,
+        "notes": "+ Odin + Apocalypse"
+      },
+      {
+        "team": "brimstone",
+        "confidence": 95
+      },
+      {
+        "team": "secretwarrior",
+        "confidence": 95
+      },
+      {
+        "team": "hivemind",
+        "confidence": 95,
+        "notes": "+ Knull + Mephisto, no Venom and Gwenom"
+      },
+      {
+        "team": "undying",
+        "confidence": 95
+      },
+      {
+        "team": "liberty",
+        "confidence": 80,
+        "notes": "Tous ont Taunt, ciblez qui vous voulez sauf Ms. Marvel (Classic)"
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 80,
+        "notes": "Mirror - Kahhori attaque Kahhori"
+      },
+      {
+        "team": "cabal",
+        "confidence": 80,
+        "notes": "+ Mephisto + Ultimus"
+      },
+      {
+        "team": "brimstone",
+        "confidence": 80
+      },
+      {
+        "team": "undying",
+        "confidence": 80,
+        "notes": "+ Mephisto"
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 65,
+        "notes": "+ Black Knight + Super Skrull"
+      },
+      {
+        "team": "secretwarrior",
+        "confidence": 65
+      },
+      {
+        "team": "liberty",
+        "confidence": 65,
+        "notes": "+ Mephisto"
+      },
+      {
+        "team": "orchis",
+        "confidence": 65,
+        "notes": "+ Quasar, no Omega Sentinel"
+      },
+      {
+        "team": "undying",
+        "confidence": 50,
+        "notes": "+ Odin"
+      },
+      {
+        "team": "liberty",
+        "confidence": 50
+      },
+      {
+        "team": "cabal",
+        "confidence": 50,
+        "notes": "+ Apocalypse + Ultimus"
+      }
     ],
     "absoluteaforce_superskrull_dormammu": [
-      { "team": "hivemind", "confidence": 95, "notes": "+ Knull + Mephisto, no Venom/Gwenom" },
-      { "team": "liberty", "confidence": 80 },
-      { "team": "cabal", "confidence": 80, "notes": "+ Mephisto + Ultimus" }
+      {
+        "team": "hivemind",
+        "confidence": 95,
+        "notes": "+ Knull + Mephisto, no Venom/Gwenom"
+      },
+      {
+        "team": "liberty",
+        "confidence": 80
+      },
+      {
+        "team": "cabal",
+        "confidence": 80,
+        "notes": "+ Mephisto + Ultimus"
+      }
     ],
     "absoluteaforce_superskrull": [
-      { "team": "hivemind", "confidence": 95, "notes": "+ Knull + Mephisto, no Venom/Gwenom" },
-      { "team": "absoluteaforce", "confidence": 80 },
-      { "team": "cabal", "confidence": 80, "notes": "+ Mephisto + Ultimus" },
-      { "team": "liberty", "confidence": 80 }
+      {
+        "team": "hivemind",
+        "confidence": 95,
+        "notes": "+ Knull + Mephisto, no Venom/Gwenom"
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 80
+      },
+      {
+        "team": "cabal",
+        "confidence": 80,
+        "notes": "+ Mephisto + Ultimus"
+      },
+      {
+        "team": "liberty",
+        "confidence": 80
+      }
     ],
     "absoluteaforce_odin": [
-      { "team": "hivemind", "confidence": 80, "notes": "+ Knull + Mephisto" },
-      { "team": "liberty", "confidence": 80, "notes": "+ Mephisto, no War Machine" }
+      {
+        "team": "hivemind",
+        "confidence": 80,
+        "notes": "+ Knull + Mephisto"
+      },
+      {
+        "team": "liberty",
+        "confidence": 80,
+        "notes": "+ Mephisto, no War Machine"
+      }
     ],
     "absoluteaforce_mephisto_superskrull": [
-      { "team": "undying", "confidence": 80, "notes": "+ Odin. Focus Mephisto avec Odin Basic" },
-      { "team": "liberty", "confidence": 80, "notes": "+ Knull" }
+      {
+        "team": "undying",
+        "confidence": 80,
+        "notes": "+ Odin. Focus Mephisto avec Odin Basic"
+      },
+      {
+        "team": "liberty",
+        "confidence": 80,
+        "notes": "+ Knull"
+      }
     ],
     "alphaflight": [
-      { "team": "mercsformoney", "confidence": 95 },
-      { "team": "undying", "confidence": 95, "notes": "+ 1" },
-      { "team": "mightyavenger", "confidence": 95 },
-      { "team": "liberty", "confidence": 95 },
-      { "team": "absoluteaforce", "confidence": 80, "notes": "+ Nico Minoru, no Ironheart" },
-      { "team": "illuminati", "confidence": 80, "notes": "with Captain Britain" },
-      { "team": "outoftime", "confidence": 80, "notes": "no Black Knight" },
-      { "team": "vigilante", "confidence": 65 },
-      { "team": "thunderbolt", "confidence": 80 }
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "undying",
+        "confidence": 95,
+        "notes": "+ 1"
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 95
+      },
+      {
+        "team": "liberty",
+        "confidence": 95
+      },
+      {
+        "team": "brimstone",
+        "confidence": 95
+      },
+      {
+        "team": "secretwarrior",
+        "confidence": 95
+      },
+      {
+        "team": "hivemind",
+        "confidence": 95,
+        "notes": "+ Knull + Scarlet Witch (Zombie), no Venom and Gwenom"
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 80,
+        "notes": "+ Nico Minoru, no Ironheart"
+      },
+      {
+        "team": "illuminati",
+        "confidence": 80,
+        "notes": "with Captain Britain"
+      },
+      {
+        "team": "outoftime",
+        "confidence": 80,
+        "notes": "no Black Knight"
+      },
+      {
+        "team": "thunderbolt",
+        "confidence": 80
+      },
+      {
+        "team": "aforce",
+        "confidence": 80,
+        "notes": "+ Apocalypse, no Captain Marvel"
+      },
+      {
+        "team": "liberty",
+        "confidence": 80
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 80,
+        "notes": "+ Odin, no Deathpool"
+      },
+      {
+        "team": "fantasticfourmcu",
+        "confidence": 80,
+        "notes": "MCU"
+      },
+      {
+        "team": "secretwarrior",
+        "confidence": 80
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 80
+      },
+      {
+        "team": "vigilante",
+        "confidence": 65
+      },
+      {
+        "team": "knowhere",
+        "confidence": 65,
+        "notes": "+ Apocalypse, no Star-Lord Annihilation or Thor Infinity War"
+      },
+      {
+        "team": "undying",
+        "confidence": 65,
+        "notes": "+ Apocalypse"
+      },
+      {
+        "team": "liberty",
+        "confidence": 65
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 65,
+        "notes": "+ Nico Minoru, no Ironheart"
+      },
+      {
+        "team": "thunderbolt",
+        "confidence": 65
+      },
+      {
+        "team": "nightstalker",
+        "confidence": 50,
+        "notes": "+ Odin (no Moonknight)  – focus on Northstar"
+      }
     ],
     "annihilator": [
-      { "team": "brimstone", "confidence": 95 },
-      { "team": "secretwarrior", "confidence": 95 },
-      { "team": "absoluteaforce", "confidence": 95 },
-      { "team": "mercsformoney", "confidence": 95 },
-      { "team": "undying", "confidence": 95, "notes": "+ Ares + 1" },
-      { "team": "liberty", "confidence": 95 },
-      { "team": "hivemind", "confidence": 80, "notes": "+ Super Skrull" },
-      { "team": "thunderbolt", "confidence": 80 },
-      { "team": "vigilante", "confidence": 80 },
-      { "team": "weaponx", "confidence": 80 },
-      { "team": "cabal", "confidence": 80, "notes": "+ 2" }
+      {
+        "team": "brimstone",
+        "confidence": 95
+      },
+      {
+        "team": "secretwarrior",
+        "confidence": 95
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "undying",
+        "confidence": 95,
+        "notes": "+ Ares + 1"
+      },
+      {
+        "team": "liberty",
+        "confidence": 95
+      },
+      {
+        "team": "fantasticfourmcu",
+        "confidence": 95,
+        "notes": "MCU"
+      },
+      {
+        "team": "hivemind",
+        "confidence": 95,
+        "notes": "+ Knull, no Venom"
+      },
+      {
+        "team": "hivemind",
+        "confidence": 80,
+        "notes": "+ Super Skrull"
+      },
+      {
+        "team": "thunderbolt",
+        "confidence": 80
+      },
+      {
+        "team": "vigilante",
+        "confidence": 80
+      },
+      {
+        "team": "weaponx",
+        "confidence": 80
+      },
+      {
+        "team": "cabal",
+        "confidence": 80,
+        "notes": "+ 2"
+      },
+      {
+        "team": "secretdefender",
+        "confidence": 80,
+        "notes": "+ Apocalypse"
+      },
+      {
+        "team": "starjammer",
+        "confidence": 80,
+        "notes": "+ Odin (no Havok)  – always use Odin’s Special in first and Basic in second turn"
+      },
+      {
+        "team": "secretwarrior",
+        "confidence": 80
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 80,
+        "notes": "+ Professor Xavier + Knull"
+      },
+      {
+        "team": "liberty",
+        "confidence": 80
+      },
+      {
+        "team": "undying",
+        "confidence": 80,
+        "notes": "+ Odin"
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 80
+      },
+      {
+        "team": "nightstalker",
+        "confidence": 65
+      },
+      {
+        "team": "outoftime",
+        "confidence": 65
+      },
+      {
+        "team": "gamma",
+        "confidence": 65
+      },
+      {
+        "team": "illuminati",
+        "confidence": 65
+      },
+      {
+        "team": "knowhere",
+        "confidence": 65
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 65
+      },
+      {
+        "team": "undying",
+        "confidence": 65,
+        "notes": "+ Odin"
+      },
+      {
+        "team": "aforce",
+        "confidence": 50
+      }
     ],
     "immortalweapon": [
-      { "team": "secretwarrior", "confidence": 95 },
-      { "team": "brimstone", "confidence": 95 },
-      { "team": "undying", "confidence": 95 },
-      { "team": "fantasticfourmcu", "confidence": 95 },
-      { "team": "liberty", "confidence": 80 },
-      { "team": "absoluteaforce", "confidence": 80 },
-      { "team": "vigilante", "confidence": 65, "notes": "Focus Iron Fist" },
-      { "team": "mightyavenger", "confidence": 65 }
+      {
+        "team": "secretwarrior",
+        "confidence": 95
+      },
+      {
+        "team": "brimstone",
+        "confidence": 95
+      },
+      {
+        "team": "undying",
+        "confidence": 95
+      },
+      {
+        "team": "fantasticfourmcu",
+        "confidence": 95,
+        "notes": "MCU"
+      },
+      {
+        "team": "liberty",
+        "confidence": 80
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 80
+      },
+      {
+        "team": "vigilante",
+        "confidence": 65,
+        "notes": "Focus Iron Fist"
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 65
+      },
+      {
+        "team": "hivemind",
+        "confidence": 65,
+        "notes": "+ Knull + Gorr"
+      }
     ],
     "astral": [
-      { "team": "brimstone", "confidence": 95 },
-      { "team": "secretwarrior", "confidence": 95 },
-      { "team": "undying", "confidence": 95, "notes": "+ Ares. Start Scarlet Witch Zombie Basic" },
-      { "team": "mercsformoney", "confidence": 95, "notes": "+ Apocalypse" },
-      { "team": "cabal", "confidence": 95, "notes": "+ Kang + Apocalypse" },
-      { "team": "superiorsix", "confidence": 95, "notes": "+ Vulture + Green Goblin Classic" },
-      { "team": "fantasticfourmcu", "confidence": 80 },
-      { "team": "vigilante", "confidence": 80 },
-      { "team": "hellfireclub", "confidence": 80 },
-      { "team": "liberty", "confidence": 65, "notes": "Stun Strange with Peggy" }
+      {
+        "team": "brimstone",
+        "confidence": 95
+      },
+      {
+        "team": "secretwarrior",
+        "confidence": 95
+      },
+      {
+        "team": "undying",
+        "confidence": 95,
+        "notes": "+ Ares. Start Scarlet Witch Zombie Basic"
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 95,
+        "notes": "+ Apocalypse"
+      },
+      {
+        "team": "cabal",
+        "confidence": 95,
+        "notes": "+ Kang + Apocalypse"
+      },
+      {
+        "team": "superiorsix",
+        "confidence": 95,
+        "notes": "+ Vulture + Green Goblin Classic"
+      },
+      {
+        "team": "insidioussix",
+        "confidence": 95,
+        "notes": "+ Vulture + Green Goblin, Classic"
+      },
+      {
+        "team": "vigilante",
+        "confidence": 95
+      },
+      {
+        "team": "fantasticfourmcu",
+        "confidence": 80,
+        "notes": "MCU"
+      },
+      {
+        "team": "vigilante",
+        "confidence": 80
+      },
+      {
+        "team": "hellfireclub",
+        "confidence": 80
+      },
+      {
+        "team": "secretwarrior",
+        "confidence": 80
+      },
+      {
+        "team": "liberty",
+        "confidence": 80
+      },
+      {
+        "team": "liberty",
+        "confidence": 65,
+        "notes": "Stun Strange with Peggy"
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 65,
+        "notes": "full focus on Strange"
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 65
+      },
+      {
+        "team": "fantasticfourmcu",
+        "confidence": 65,
+        "notes": "MCU"
+      },
+      {
+        "team": "brimstone",
+        "confidence": 65,
+        "notes": "+ Guardian (no Elsa Bloodstone), your Daimon Hellstrom needs to have 1+ Daimonds"
+      }
     ],
     "cabal_kang": [
-      { "team": "liberty", "confidence": 95 },
-      { "team": "absoluteaforce", "confidence": 95 },
-      { "team": "mercsformoney", "confidence": 95 },
-      { "team": "outoftime", "confidence": 95 },
-      { "team": "astral", "confidence": 95 },
-      { "team": "mightyavenger", "confidence": 95 },
-      { "team": "superiorsix", "confidence": 95 },
-      { "team": "knowhere", "confidence": 80 },
-      { "team": "gamma", "confidence": 80 },
-      { "team": "undying", "confidence": 80 },
-      { "team": "hivemind", "confidence": 80, "notes": "+ Knull, no Venom" }
+      {
+        "team": "liberty",
+        "confidence": 95
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "outoftime",
+        "confidence": 95
+      },
+      {
+        "team": "astral",
+        "confidence": 95
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 95
+      },
+      {
+        "team": "superiorsix",
+        "confidence": 95
+      },
+      {
+        "team": "knowhere",
+        "confidence": 80
+      },
+      {
+        "team": "gamma",
+        "confidence": 80
+      },
+      {
+        "team": "aforce",
+        "confidence": 80
+      },
+      {
+        "team": "undying",
+        "confidence": 80
+      },
+      {
+        "team": "newavenger",
+        "confidence": 80
+      },
+      {
+        "team": "xtreme",
+        "confidence": 80
+      },
+      {
+        "team": "illuminati",
+        "confidence": 80
+      },
+      {
+        "team": "hivemind",
+        "confidence": 80,
+        "notes": "+ Knull, no Venom"
+      },
+      {
+        "team": "eternals",
+        "confidence": 65,
+        "notes": "+ Tangled"
+      },
+      {
+        "team": "hivemind",
+        "confidence": 65
+      },
+      {
+        "team": "underworld",
+        "confidence": 65
+      },
+      {
+        "team": "darkhold",
+        "confidence": 65
+      }
     ],
     "cabal_blackknight_doom": [
-      { "team": "mercsformoney", "confidence": 95 },
-      { "team": "mightyavenger", "confidence": 95 },
-      { "team": "weaponx", "confidence": 95, "notes": "+ Ares, no Sabretooth/Wolverine" }
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 95
+      },
+      {
+        "team": "weaponx",
+        "confidence": 95,
+        "notes": "+ Ares, no Sabretooth/Wolverine"
+      }
     ],
     "hellfireclub": [
-      { "team": "brimstone", "confidence": 95 },
-      { "team": "undying", "confidence": 95 },
-      { "team": "secretdefender", "confidence": 95, "notes": "Stun Sebastian with Black Cat Special" },
-      { "team": "secretwarrior", "confidence": 95 },
-      { "team": "illuminati", "confidence": 95 },
-      { "team": "mercsformoney", "confidence": 95 },
-      { "team": "superiorsix", "confidence": 95, "notes": "+ Green Goblin Classic + Vulture" },
-      { "team": "fantasticfourmcu", "confidence": 95 },
-      { "team": "absoluteaforce", "confidence": 80 },
-      { "team": "liberty", "confidence": 80 }
+      {
+        "team": "brimstone",
+        "confidence": 95
+      },
+      {
+        "team": "undying",
+        "confidence": 95
+      },
+      {
+        "team": "secretdefender",
+        "confidence": 95,
+        "notes": "Stun Sebastian with Black Cat Special"
+      },
+      {
+        "team": "secretwarrior",
+        "confidence": 95
+      },
+      {
+        "team": "illuminati",
+        "confidence": 95
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "superiorsix",
+        "confidence": 95,
+        "notes": "+ Green Goblin Classic + Vulture"
+      },
+      {
+        "team": "fantasticfourmcu",
+        "confidence": 95,
+        "notes": "MCU"
+      },
+      {
+        "team": "underworld",
+        "confidence": 95,
+        "notes": "+ Kestrel, no Nobu"
+      },
+      {
+        "team": "insidioussix",
+        "confidence": 95,
+        "notes": "+ Green Goblin (Classic) + Vulture"
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 80
+      },
+      {
+        "team": "liberty",
+        "confidence": 80
+      },
+      {
+        "team": "hivemind",
+        "confidence": 80,
+        "notes": "+ Kull, start with Knull’s Ultimate"
+      }
     ],
     "hivemind": [
-      { "team": "liberty", "confidence": 95 },
-      { "team": "absoluteaforce", "confidence": 95 },
-      { "team": "mercsformoney", "confidence": 95 },
-      { "team": "knowhere", "confidence": 95 },
-      { "team": "astral", "confidence": 95 },
-      { "team": "gamma", "confidence": 95 },
-      { "team": "newavenger", "confidence": 95 },
-      { "team": "underworld", "confidence": 95 },
-      { "team": "nightstalker", "confidence": 80 },
-      { "team": "outoftime", "confidence": 80 },
-      { "team": "weaponx", "confidence": 80 },
-      { "team": "xtreme", "confidence": 80 },
-      { "team": "illuminati", "confidence": 80 },
-      { "team": "annihilator", "confidence": 80 }
+      {
+        "team": "liberty",
+        "confidence": 95
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "knowhere",
+        "confidence": 95
+      },
+      {
+        "team": "astral",
+        "confidence": 95
+      },
+      {
+        "team": "gamma",
+        "confidence": 95
+      },
+      {
+        "team": "newavenger",
+        "confidence": 95
+      },
+      {
+        "team": "underworld",
+        "confidence": 95
+      },
+      {
+        "team": "brimstone",
+        "confidence": 95
+      },
+      {
+        "team": "newavenger",
+        "confidence": 95
+      },
+      {
+        "team": "undying",
+        "confidence": 95,
+        "notes": "+ Odin"
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 95
+      },
+      {
+        "team": "nightstalker",
+        "confidence": 80
+      },
+      {
+        "team": "outoftime",
+        "confidence": 80
+      },
+      {
+        "team": "weaponx",
+        "confidence": 80
+      },
+      {
+        "team": "xtreme",
+        "confidence": 80
+      },
+      {
+        "team": "illuminati",
+        "confidence": 80
+      },
+      {
+        "team": "annihilator",
+        "confidence": 80
+      },
+      {
+        "team": "aforce",
+        "confidence": 80
+      },
+      {
+        "team": "xtreme",
+        "confidence": 80
+      },
+      {
+        "team": "thunderbolt",
+        "confidence": 80
+      },
+      {
+        "team": "secretwarrior",
+        "confidence": 80
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 80
+      },
+      {
+        "team": "underworld",
+        "confidence": 80
+      },
+      {
+        "team": "newavenger",
+        "confidence": 65
+      },
+      {
+        "team": "fantasticfourmcu",
+        "confidence": 65,
+        "notes": "MCU"
+      },
+      {
+        "team": "liberty",
+        "confidence": 65
+      },
+      {
+        "team": "undying",
+        "confidence": 65,
+        "notes": "+ Apocalypse"
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 65,
+        "notes": "focus on Knull from start"
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 65,
+        "notes": "+ Knull, no Vision"
+      },
+      {
+        "team": "weaponx",
+        "confidence": 65,
+        "notes": "+ Ares, no Lady Deathstrike"
+      },
+      {
+        "team": "thunderbolt",
+        "confidence": 65
+      }
     ],
     "hivemind_mephisto": [
-      { "team": "undying", "confidence": 95, "notes": "+ Odin" },
-      { "team": "mightyavenger", "confidence": 80 }
+      {
+        "team": "undying",
+        "confidence": 95,
+        "notes": "+ Odin"
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 80
+      }
     ],
     "hivemind_superskrull": [
-      { "team": "undying", "confidence": 95, "notes": "+ 1" },
-      { "team": "mightyavenger", "confidence": 95 },
-      { "team": "newavenger", "confidence": 65 }
+      {
+        "team": "undying",
+        "confidence": 95,
+        "notes": "+ 1"
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 95
+      },
+      {
+        "team": "newavenger",
+        "confidence": 65
+      }
     ],
     "hivemind_knull": [
-      { "team": "liberty", "confidence": 65 },
-      { "team": "undying", "confidence": 65, "notes": "+ Odin" },
-      { "team": "undying", "confidence": 65, "notes": "+ Apocalypse" }
+      {
+        "team": "liberty",
+        "confidence": 65
+      },
+      {
+        "team": "undying",
+        "confidence": 65,
+        "notes": "+ Odin"
+      },
+      {
+        "team": "undying",
+        "confidence": 65,
+        "notes": "+ Apocalypse"
+      }
     ],
     "hivemind_knull_mephisto": [
-      { "team": "undying", "confidence": 65, "notes": "+ Odin" },
-      { "team": "liberty", "confidence": 65 },
-      { "team": "absoluteaforce", "confidence": 65, "notes": "Focus Knull from start" }
+      {
+        "team": "undying",
+        "confidence": 65,
+        "notes": "+ Odin"
+      },
+      {
+        "team": "liberty",
+        "confidence": 65
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 65,
+        "notes": "Focus Knull from start"
+      }
     ],
     "hivemind_ares": [
-      { "team": "mightyavenger", "confidence": 95 },
-      { "team": "undying", "confidence": 95, "notes": "+ 1" },
-      { "team": "weaponx", "confidence": 65, "notes": "+ Ares, no Lady Deathstrike" }
+      {
+        "team": "mightyavenger",
+        "confidence": 95
+      },
+      {
+        "team": "undying",
+        "confidence": 95,
+        "notes": "+ 1"
+      },
+      {
+        "team": "weaponx",
+        "confidence": 65,
+        "notes": "+ Ares, no Lady Deathstrike"
+      }
     ],
     "starjammer": [
-      { "team": "liberty", "confidence": 95 },
-      { "team": "absoluteaforce", "confidence": 95 },
-      { "team": "astral", "confidence": 95 },
-      { "team": "undying", "confidence": 95, "notes": "+ 1" },
-      { "team": "hivemind", "confidence": 95, "notes": "+ Knull, no Venom" },
-      { "team": "mightyavenger", "confidence": 80 },
-      { "team": "mercsformoney", "confidence": 80 },
-      { "team": "thunderbolt", "confidence": 80 },
-      { "team": "vigilante", "confidence": 80 },
-      { "team": "nightstalker", "confidence": 80 },
-      { "team": "cabal", "confidence": 65, "notes": "+ Kang + 1" }
+      {
+        "team": "liberty",
+        "confidence": 95
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "astral",
+        "confidence": 95
+      },
+      {
+        "team": "undying",
+        "confidence": 95,
+        "notes": "+ 1"
+      },
+      {
+        "team": "hivemind",
+        "confidence": 95,
+        "notes": "+ Knull, no Venom"
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 80
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 80
+      },
+      {
+        "team": "thunderbolt",
+        "confidence": 80
+      },
+      {
+        "team": "vigilante",
+        "confidence": 80
+      },
+      {
+        "team": "nightstalker",
+        "confidence": 80
+      },
+      {
+        "team": "illuminati",
+        "confidence": 80
+      },
+      {
+        "team": "superiorsix",
+        "confidence": 80,
+        "notes": "+ Vulture"
+      },
+      {
+        "team": "hellfireclub",
+        "confidence": 80
+      },
+      {
+        "team": "cabal",
+        "confidence": 65,
+        "notes": "+ Kang + 1"
+      }
     ],
     "illuminati_captainbritain": [
-      { "team": "absoluteaforce", "confidence": 95 },
-      { "team": "mercsformoney", "confidence": 95 },
-      { "team": "undying", "confidence": 95, "notes": "+ 1" },
-      { "team": "gamma", "confidence": 95 },
-      { "team": "knowhere", "confidence": 80 },
-      { "team": "astral", "confidence": 80 },
-      { "team": "outoftime", "confidence": 80 }
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "undying",
+        "confidence": 95,
+        "notes": "+ 1"
+      },
+      {
+        "team": "gamma",
+        "confidence": 95
+      },
+      {
+        "team": "knowhere",
+        "confidence": 80
+      },
+      {
+        "team": "astral",
+        "confidence": 80
+      },
+      {
+        "team": "outoftime",
+        "confidence": 80
+      }
     ],
     "immortalxmen": [
-      { "team": "liberty", "confidence": 95 },
-      { "team": "absoluteaforce", "confidence": 95 },
-      { "team": "mercsformoney", "confidence": 95 },
-      { "team": "undying", "confidence": 95, "notes": "+ 1" },
-      { "team": "mightyavenger", "confidence": 95 },
-      { "team": "astral", "confidence": 95 },
-      { "team": "superiorsix", "confidence": 95, "notes": "+ Vulture + Mysterio" },
-      { "team": "nightstalker", "confidence": 95 },
-      { "team": "newavenger", "confidence": 95 },
-      { "team": "secretdefender", "confidence": 80 }
+      {
+        "team": "liberty",
+        "confidence": 95
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "undying",
+        "confidence": 95,
+        "notes": "+ 1"
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 95
+      },
+      {
+        "team": "astral",
+        "confidence": 95
+      },
+      {
+        "team": "superiorsix",
+        "confidence": 95,
+        "notes": "+ Vulture + Mysterio"
+      },
+      {
+        "team": "nightstalker",
+        "confidence": 95
+      },
+      {
+        "team": "newavenger",
+        "confidence": 95
+      },
+      {
+        "team": "secretwarrior",
+        "confidence": 95
+      },
+      {
+        "team": "newavenger",
+        "confidence": 95
+      },
+      {
+        "team": "hivemind",
+        "confidence": 95,
+        "notes": "+ Knull, no Venom"
+      },
+      {
+        "team": "knowhere",
+        "confidence": 95
+      },
+      {
+        "team": "vigilante",
+        "confidence": 95
+      },
+      {
+        "team": "thunderbolt",
+        "confidence": 95
+      },
+      {
+        "team": "secretdefender",
+        "confidence": 80
+      },
+      {
+        "team": "secretdefender",
+        "confidence": 80
+      },
+      {
+        "team": "hellfireclub",
+        "confidence": 80
+      }
     ],
     "infestation": [
-      { "team": "brimstone", "confidence": 95 },
-      { "team": "absoluteaforce", "confidence": 95 },
-      { "team": "mercsformoney", "confidence": 80 },
-      { "team": "undying", "confidence": 95, "notes": "+ 1" },
-      { "team": "superiorsix", "confidence": 95, "notes": "Classic Green Goblin, Kraven, Doc Oc, Vulture, Mysterio" },
-      { "team": "insidioussix", "confidence": 95, "notes": "+ Vulture + Green Goblin Classic. Don't attack Big Time until GG turn, use Ultimate" },
-      { "team": "fantasticfourmcu", "confidence": 95, "notes": "Stun Big Time with Thing's Ultimate" },
-      { "team": "newavenger", "confidence": 95, "notes": "Stun Big Time with Thing's Ultimate" },
-      { "team": "outoftime", "confidence": 80 },
-      { "team": "knowhere", "confidence": 80, "notes": "Stun Big Time with Nova's Special" },
-      { "team": "ares", "confidence": 80, "notes": "+ Orchis/Nightstalker/Immortal X-Men" },
-      { "team": "hivemind", "confidence": 80, "notes": "+ Knull, no Venom" }
+      {
+        "team": "brimstone",
+        "confidence": 95
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "undying",
+        "confidence": 95,
+        "notes": "+ 1"
+      },
+      {
+        "team": "superiorsix",
+        "confidence": 95,
+        "notes": "Classic Green Goblin, Kraven, Doc Oc, Vulture, Mysterio"
+      },
+      {
+        "team": "insidioussix",
+        "confidence": 95,
+        "notes": "+ Vulture + Green Goblin Classic. Don't attack Big Time until GG turn, use Ultimate"
+      },
+      {
+        "team": "fantasticfourmcu",
+        "confidence": 95,
+        "notes": "Stun Big Time with Thing's Ultimate"
+      },
+      {
+        "team": "newavenger",
+        "confidence": 95,
+        "notes": "Stun Big Time with Thing's Ultimate"
+      },
+      {
+        "team": "newavenger",
+        "confidence": 95,
+        "notes": "Stun Big Time with The Thing’s Ultimate"
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 80
+      },
+      {
+        "team": "outoftime",
+        "confidence": 80
+      },
+      {
+        "team": "knowhere",
+        "confidence": 80,
+        "notes": "Stun Big Time with Nova's Special"
+      },
+      {
+        "team": "ares",
+        "confidence": 80,
+        "notes": "+ Orchis/Nightstalker/Immortal X-Men"
+      },
+      {
+        "team": "hivemind",
+        "confidence": 80,
+        "notes": "+ Knull, no Venom"
+      }
     ],
     "vigilante": [
-      { "team": "liberty", "confidence": 95 },
-      { "team": "absoluteaforce", "confidence": 95 },
-      { "team": "mightyavenger", "confidence": 80, "notes": "Focus Daredevil (Modern) from start - has Taunt. Falcon Special then Ultimate" },
-      { "team": "vigilante", "confidence": 80, "notes": "Silver Sable reduces buffs on offense only. Focus Silver Sable + Hit Monkey, then DD + Punisher, Elektra last" },
-      { "team": "nightstalker", "confidence": 65 }
+      {
+        "team": "liberty",
+        "confidence": 95
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "brimstone",
+        "confidence": 95
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 80,
+        "notes": "Focus Daredevil (Modern) from start - has Taunt. Falcon Special then Ultimate"
+      },
+      {
+        "team": "vigilante",
+        "confidence": 80,
+        "notes": "Silver Sable reduces buffs on offense only. Focus Silver Sable + Hit Monkey, then DD + Punisher, Elektra last"
+      },
+      {
+        "team": "nightstalker",
+        "confidence": 65
+      },
+      {
+        "team": "thunderbolt",
+        "confidence": 50
+      }
     ],
     "liberty": [
-      { "team": "mercsformoney", "confidence": 95, "notes": "+ Nightcrawler, no Deathpool" },
-      { "team": "hivemind", "confidence": 80, "notes": "+ Knull, no Venom" },
-      { "team": "liberty", "confidence": 65, "notes": "Check Overpower levels - if higher, fight unpredictable" },
-      { "team": "absoluteaforce", "confidence": 65, "notes": "+ Odin/Mephisto, no Wasp" }
+      {
+        "team": "mercsformoney",
+        "confidence": 95,
+        "notes": "+ Nightcrawler, no Deathpool"
+      },
+      {
+        "team": "brimstone",
+        "confidence": 95
+      },
+      {
+        "team": "fantasticfourmcu",
+        "confidence": 95,
+        "notes": "+ Emma Frost, no The Thing"
+      },
+      {
+        "team": "hivemind",
+        "confidence": 80,
+        "notes": "+ Knull, no Venom"
+      },
+      {
+        "team": "liberty",
+        "confidence": 65,
+        "notes": "Check Overpower levels - if higher, fight unpredictable"
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 65,
+        "notes": "+ Odin/Mephisto, no Wasp"
+      }
     ],
     "mercsformoney": [
-      { "team": "absoluteaforce", "confidence": 95 },
-      { "team": "mercsformoney", "confidence": 80, "notes": "Mirror" },
-      { "team": "underworld", "confidence": 80 },
-      { "team": "newavenger", "confidence": 80, "notes": "+ Vulture, no Mockingbird" },
-      { "team": "undying", "confidence": 80, "notes": "+ 1" }
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "brimstone",
+        "confidence": 95
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 80,
+        "notes": "Mirror"
+      },
+      {
+        "team": "underworld",
+        "confidence": 80
+      },
+      {
+        "team": "newavenger",
+        "confidence": 80,
+        "notes": "+ Vulture, no Mockingbird"
+      },
+      {
+        "team": "undying",
+        "confidence": 80,
+        "notes": "+ 1"
+      }
     ],
     "mightyavenger": [
-      { "team": "liberty", "confidence": 95 },
-      { "team": "absoluteaforce", "confidence": 95 },
-      { "team": "mercsformoney", "confidence": 95 },
-      { "team": "undying", "confidence": 95, "notes": "+ 1" },
-      { "team": "mightyavenger", "confidence": 95, "notes": "Mirror" },
-      { "team": "astral", "confidence": 95 },
-      { "team": "superiorsix", "confidence": 95, "notes": "+ Vulture + Mysterio" },
-      { "team": "nightstalker", "confidence": 95 },
-      { "team": "odin_mephisto", "confidence": 95, "notes": "+ 4" },
-      { "team": "apocalypse", "confidence": 80, "notes": "+ 4" },
-      { "team": "secretdefender", "confidence": 80 }
+      {
+        "team": "liberty",
+        "confidence": 95
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "undying",
+        "confidence": 95,
+        "notes": "+ 1"
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 95,
+        "notes": "Mirror"
+      },
+      {
+        "team": "astral",
+        "confidence": 95
+      },
+      {
+        "team": "superiorsix",
+        "confidence": 95,
+        "notes": "+ Vulture + Mysterio"
+      },
+      {
+        "team": "nightstalker",
+        "confidence": 95
+      },
+      {
+        "team": "odin_mephisto",
+        "confidence": 95,
+        "notes": "+ 4"
+      },
+      {
+        "team": "apocalypse",
+        "confidence": 80,
+        "notes": "+ 4"
+      },
+      {
+        "team": "secretdefender",
+        "confidence": 80
+      },
+      {
+        "team": "secretdefender",
+        "confidence": 80
+      }
     ],
     "newavenger_apocalypse": [
-      { "team": "liberty", "confidence": 80 },
-      { "team": "outoftime", "confidence": 80 },
-      { "team": "gamma", "confidence": 80, "notes": "+ Apoc" },
-      { "team": "newavenger", "confidence": 80, "notes": "+ Apoc" },
-      { "team": "knowhere", "confidence": 80 },
-      { "team": "undying", "confidence": 80, "notes": "+ Tangled + Apoc" },
-      { "team": "gamma", "confidence": 65 },
-      { "team": "undying", "confidence": 95, "notes": "trio + 2" }
-    ],
-    "newavenger": [
-      { "team": "outoftime", "confidence": 95 },
-      { "team": "mercsformoney", "confidence": 95 },
-      { "team": "liberty", "confidence": 80 },
-      { "team": "astral", "confidence": 80 },
-      { "team": "knowhere", "confidence": 80 },
-      { "team": "superiorsix", "confidence": 80, "notes": "Classic Green Goblin, Kraven, Doc Oc, Vulture, Mysterio" }
+      {
+        "team": "liberty",
+        "confidence": 80
+      },
+      {
+        "team": "outoftime",
+        "confidence": 80
+      },
+      {
+        "team": "gamma",
+        "confidence": 80,
+        "notes": "+ Apoc"
+      },
+      {
+        "team": "newavenger",
+        "confidence": 80,
+        "notes": "+ Apoc"
+      },
+      {
+        "team": "knowhere",
+        "confidence": 80
+      },
+      {
+        "team": "undying",
+        "confidence": 80,
+        "notes": "+ Tangled + Apoc"
+      },
+      {
+        "team": "gamma",
+        "confidence": 65
+      },
+      {
+        "team": "undying",
+        "confidence": 95,
+        "notes": "trio + 2"
+      }
     ],
     "nightstalker": [
-      { "team": "liberty", "confidence": 95 },
-      { "team": "absoluteaforce", "confidence": 95 },
-      { "team": "mercsformoney", "confidence": 95 },
-      { "team": "undying", "confidence": 95, "notes": "+ 1" },
-      { "team": "mightyavenger", "confidence": 95 },
-      { "team": "underworld", "confidence": 95, "notes": "+ Daken, no Nobu" },
-      { "team": "outoftime", "confidence": 95 },
-      { "team": "gamma", "confidence": 95 },
-      { "team": "secretdefender", "confidence": 80 },
-      { "team": "nightstalker", "confidence": 80, "notes": "Mirror" },
-      { "team": "astral", "confidence": 80 },
-      { "team": "vigilante", "confidence": 80 },
-      { "team": "thunderbolt", "confidence": 65 }
+      {
+        "team": "liberty",
+        "confidence": 95
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "undying",
+        "confidence": 95,
+        "notes": "+ 1"
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 95
+      },
+      {
+        "team": "underworld",
+        "confidence": 95,
+        "notes": "+ Daken, no Nobu"
+      },
+      {
+        "team": "outoftime",
+        "confidence": 95
+      },
+      {
+        "team": "gamma",
+        "confidence": 95
+      },
+      {
+        "team": "brimstone",
+        "confidence": 95
+      },
+      {
+        "team": "fantasticfourmcu",
+        "confidence": 95,
+        "notes": "MCU"
+      },
+      {
+        "team": "hivemind",
+        "confidence": 95,
+        "notes": "+ Knull, no Venom"
+      },
+      {
+        "team": "secretdefender",
+        "confidence": 80
+      },
+      {
+        "team": "nightstalker",
+        "confidence": 80,
+        "notes": "Mirror"
+      },
+      {
+        "team": "astral",
+        "confidence": 80
+      },
+      {
+        "team": "vigilante",
+        "confidence": 80
+      },
+      {
+        "team": "secretdefender",
+        "confidence": 80
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 80
+      },
+      {
+        "team": "thunderbolt",
+        "confidence": 65
+      }
     ],
     "nightstalker_mephisto": [
-      { "team": "brimstone", "confidence": 95 },
-      { "team": "fantasticfourmcu", "confidence": 95 },
-      { "team": "undying", "confidence": 95, "notes": "You don't even need Scarlet Witch Zombie" },
-      { "team": "hivemind", "confidence": 95, "notes": "+ Knull, no Venom" },
-      { "team": "mightyavenger", "confidence": 80 }
+      {
+        "team": "brimstone",
+        "confidence": 95
+      },
+      {
+        "team": "fantasticfourmcu",
+        "confidence": 95
+      },
+      {
+        "team": "undying",
+        "confidence": 95,
+        "notes": "You don't even need Scarlet Witch Zombie"
+      },
+      {
+        "team": "hivemind",
+        "confidence": 95,
+        "notes": "+ Knull, no Venom"
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 80
+      }
     ],
     "orchis": [
-      { "team": "liberty", "confidence": 95 },
-      { "team": "absoluteaforce", "confidence": 95 },
-      { "team": "mercsformoney", "confidence": 95 },
-      { "team": "mightyavenger", "confidence": 95 },
-      { "team": "outoftime", "confidence": 95 },
-      { "team": "undying", "confidence": 95, "notes": "+ 2" },
-      { "team": "illuminati", "confidence": 95 },
-      { "team": "vigilante", "confidence": 80 },
-      { "team": "knowhere", "confidence": 80 },
-      { "team": "secretdefender", "confidence": 80, "notes": "+ Apoc" },
-      { "team": "orchis", "confidence": 80, "notes": "Mirror" }
+      {
+        "team": "liberty",
+        "confidence": 95
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 95
+      },
+      {
+        "team": "outoftime",
+        "confidence": 95
+      },
+      {
+        "team": "undying",
+        "confidence": 95,
+        "notes": "+ 2"
+      },
+      {
+        "team": "illuminati",
+        "confidence": 95
+      },
+      {
+        "team": "brimstone",
+        "confidence": 95
+      },
+      {
+        "team": "hivemind",
+        "confidence": 95,
+        "notes": "+ Knull, no Venom"
+      },
+      {
+        "team": "vigilante",
+        "confidence": 80
+      },
+      {
+        "team": "knowhere",
+        "confidence": 80
+      },
+      {
+        "team": "secretdefender",
+        "confidence": 80,
+        "notes": "+ Apoc"
+      },
+      {
+        "team": "orchis",
+        "confidence": 80,
+        "notes": "Mirror"
+      },
+      {
+        "team": "thunderbolt",
+        "confidence": 80
+      },
+      {
+        "team": "secretdefender",
+        "confidence": 80,
+        "notes": "+ Apoc"
+      },
+      {
+        "team": "hellfireclub",
+        "confidence": 80
+      },
+      {
+        "team": "nightstalker",
+        "confidence": 65,
+        "notes": "+ Kestrel"
+      }
     ],
     "orchis_odin": [
-      { "team": "absoluteaforce", "confidence": 95 },
-      { "team": "undying", "confidence": 95, "notes": "+ Odin" }
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "undying",
+        "confidence": 95,
+        "notes": "+ Odin"
+      }
     ],
     "orchis_mephisto": [
-      { "team": "absoluteaforce", "confidence": 95 },
-      { "team": "undying", "confidence": 95, "notes": "+ Odin" },
-      { "team": "spiderweaver", "confidence": 95, "notes": "+ Spider-Man Noir + Kang + Emma Frost + Odin" },
-      { "team": "liberty", "confidence": 95 },
-      { "team": "hivemind", "confidence": 95, "notes": "+ Knull, no Venom" }
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "undying",
+        "confidence": 95,
+        "notes": "+ Odin"
+      },
+      {
+        "team": "spiderweaver",
+        "confidence": 95,
+        "notes": "+ Spider-Man Noir + Kang + Emma Frost + Odin"
+      },
+      {
+        "team": "liberty",
+        "confidence": 95
+      },
+      {
+        "team": "hivemind",
+        "confidence": 95,
+        "notes": "+ Knull, no Venom"
+      }
     ],
     "orchis_ares_mephisto": [
-      { "team": "absoluteaforce", "confidence": 95 },
-      { "team": "undying", "confidence": 95, "notes": "+ Odin" },
-      { "team": "spiderweaver", "confidence": 95, "notes": "+ Spider-Man Noir + Kang + Emma Frost + Odin" },
-      { "team": "liberty", "confidence": 95 }
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "undying",
+        "confidence": 95,
+        "notes": "+ Odin"
+      },
+      {
+        "team": "spiderweaver",
+        "confidence": 95,
+        "notes": "+ Spider-Man Noir + Kang + Emma Frost + Odin"
+      },
+      {
+        "team": "liberty",
+        "confidence": 95
+      }
     ],
     "outoftime": [
-      { "team": "absoluteaforce", "confidence": 95 },
-      { "team": "mercsformoney", "confidence": 95 },
-      { "team": "undying", "confidence": 95, "notes": "+ Apocalypse" },
-      { "team": "astral", "confidence": 95, "notes": "If Ancient One has lev 6 Passive" },
-      { "team": "knowhere", "confidence": 80, "notes": "+ Apocalypse instead of Star-Lord" },
-      { "team": "undying", "confidence": 80, "notes": "3 + Apocalypse" }
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "undying",
+        "confidence": 95,
+        "notes": "+ Apocalypse"
+      },
+      {
+        "team": "astral",
+        "confidence": 95,
+        "notes": "If Ancient One has lev 6 Passive"
+      },
+      {
+        "team": "knowhere",
+        "confidence": 80,
+        "notes": "+ Apocalypse instead of Star-Lord"
+      },
+      {
+        "team": "undying",
+        "confidence": 80,
+        "notes": "3 + Apocalypse"
+      }
     ],
     "outoftime_mephisto": [
-      { "team": "mercsformoney", "confidence": 95, "notes": "+ Odin" },
-      { "team": "mightyavenger", "confidence": 80 },
-      { "team": "hivemind", "confidence": 95, "notes": "+ Knull, no Venom" }
+      {
+        "team": "mercsformoney",
+        "confidence": 95,
+        "notes": "+ Odin"
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 80
+      },
+      {
+        "team": "hivemind",
+        "confidence": 95,
+        "notes": "+ Knull, no Venom"
+      }
     ],
     "blackknight_odin_mephisto_doom_superskrull": [
-      { "team": "scarletwitch", "confidence": 80, "notes": "Zombie + Odin + 3 new Absolute A-Force" }
+      {
+        "team": "scarletwitch",
+        "confidence": 80,
+        "notes": "Zombie + Odin + 3 new Absolute A-Force"
+      }
     ],
     "blackknight_cosmicghostrider_odin": [
-      { "team": "hivemind", "confidence": 95, "notes": "+ Knull + Silver Sable, no Venom/Gvenom. Use Knull Special turn 1" },
-      { "team": "liberty", "confidence": 80, "notes": "+ Mephisto, no War Machine. Mephisto Empowered Basic on Odin" },
-      { "team": "ares_mephisto_blackknight", "confidence": 80, "notes": "+ Phoenix Force. Mephisto Empowered Basic on Odin" }
+      {
+        "team": "hivemind",
+        "confidence": 95,
+        "notes": "+ Knull + Silver Sable, no Venom/Gvenom. Use Knull Special turn 1"
+      },
+      {
+        "team": "liberty",
+        "confidence": 80,
+        "notes": "+ Mephisto, no War Machine. Mephisto Empowered Basic on Odin"
+      },
+      {
+        "team": "ares_mephisto_blackknight",
+        "confidence": 80,
+        "notes": "+ Phoenix Force. Mephisto Empowered Basic on Odin"
+      }
     ],
     "spidersociety": [
-      { "team": "liberty", "confidence": 95, "notes": "Priority: Peter B. Parker first, Ability Block/Stun Peni, Blind Ghost-Spider" },
-      { "team": "absoluteaforce", "confidence": 95 },
-      { "team": "mercsformoney", "confidence": 95 },
-      { "team": "astral", "confidence": 95 },
-      { "team": "outoftime", "confidence": 95 },
-      { "team": "mightyavenger", "confidence": 95 },
-      { "team": "undying", "confidence": 95 },
-      { "team": "hivemind", "confidence": 95, "notes": "+ Knull, no Venom" },
-      { "team": "vigilante", "confidence": 80 },
-      { "team": "knowhere", "confidence": 80 },
-      { "team": "illuminati", "confidence": 80, "notes": "with Captain Britain" },
-      { "team": "nicominoru", "confidence": 80, "notes": "+ Spider-Woman + Jessica Jones + Wasp + Ironheart" },
-      { "team": "orchis", "confidence": 80 },
-      { "team": "superiorsix", "confidence": 65 },
-      { "team": "gamma", "confidence": 65 },
-      { "team": "newavenger", "confidence": 65 }
+      {
+        "team": "liberty",
+        "confidence": 95,
+        "notes": "Priority: Peter B. Parker first, Ability Block/Stun Peni, Blind Ghost-Spider"
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "astral",
+        "confidence": 95
+      },
+      {
+        "team": "outoftime",
+        "confidence": 95
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 95
+      },
+      {
+        "team": "undying",
+        "confidence": 95
+      },
+      {
+        "team": "hivemind",
+        "confidence": 95,
+        "notes": "+ Knull, no Venom"
+      },
+      {
+        "team": "vigilante",
+        "confidence": 80
+      },
+      {
+        "team": "knowhere",
+        "confidence": 80
+      },
+      {
+        "team": "illuminati",
+        "confidence": 80,
+        "notes": "with Captain Britain"
+      },
+      {
+        "team": "nicominoru",
+        "confidence": 80,
+        "notes": "+ Spider-Woman + Jessica Jones + Wasp + Ironheart"
+      },
+      {
+        "team": "orchis",
+        "confidence": 80
+      },
+      {
+        "team": "thunderbolt",
+        "confidence": 80
+      },
+      {
+        "team": "hellfireclub",
+        "confidence": 80
+      },
+      {
+        "team": "superiorsix",
+        "confidence": 65
+      },
+      {
+        "team": "gamma",
+        "confidence": 65
+      },
+      {
+        "team": "newavenger",
+        "confidence": 65
+      },
+      {
+        "team": "newavenger",
+        "confidence": 65
+      }
     ],
     "spidersociety_mephisto": [
-      { "team": "greengoblin", "confidence": 95, "notes": "Classic + Doc Octopus + Lizard + Vulture + Odin" }
+      {
+        "team": "greengoblin",
+        "confidence": 95,
+        "notes": "Classic + Doc Octopus + Lizard + Vulture + Odin"
+      }
     ],
     "superiorsix": [
-      { "team": "liberty", "confidence": 95 },
-      { "team": "absoluteaforce", "confidence": 95 },
-      { "team": "mercsformoney", "confidence": 95 },
-      { "team": "outoftime", "confidence": 95 },
-      { "team": "astral", "confidence": 95 },
-      { "team": "knowhere", "confidence": 80 },
-      { "team": "tangled", "confidence": 80, "notes": "2 + 3 Undying" },
-      { "team": "newavenger", "confidence": 80 },
-      { "team": "gamma", "confidence": 65 },
-      { "team": "nightstalker", "confidence": 65 }
+      {
+        "team": "liberty",
+        "confidence": 95
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "outoftime",
+        "confidence": 95
+      },
+      {
+        "team": "astral",
+        "confidence": 95
+      },
+      {
+        "team": "knowhere",
+        "confidence": 80
+      },
+      {
+        "team": "tangled",
+        "confidence": 80,
+        "notes": "2 + 3 Undying"
+      },
+      {
+        "team": "newavenger",
+        "confidence": 80
+      },
+      {
+        "team": "gamma",
+        "confidence": 65
+      },
+      {
+        "team": "nightstalker",
+        "confidence": 65
+      }
     ],
     "thunderbolt": [
-      { "team": "brimstone", "confidence": 95 },
-      { "team": "undying", "confidence": 95 },
-      { "team": "mightyavenger", "confidence": 95 },
-      { "team": "mercsformoney", "confidence": 95 },
-      { "team": "hellfireclub", "confidence": 80 }
-    ],
-    "xtreme": [
-      { "team": "liberty", "confidence": 95 },
-      { "team": "absoluteaforce", "confidence": 95 },
-      { "team": "mercsformoney", "confidence": 95 },
-      { "team": "knowhere", "confidence": 95 },
-      { "team": "astral", "confidence": 95 },
-      { "team": "mightyavenger", "confidence": 95 },
-      { "team": "hivemind", "confidence": 80, "notes": "+ Knull, no Venom" },
-      { "team": "outoftime", "confidence": 80 },
-      { "team": "gamma", "confidence": 80 },
-      { "team": "newavenger", "confidence": 80 },
-      { "team": "secretdefender", "confidence": 80 },
-      { "team": "undying", "confidence": 80 },
-      { "team": "greengoblin", "confidence": 80, "notes": "Classic + Doc Oc + Vulture + Mysterio + 1" },
-      { "team": "underworld", "confidence": 80 },
-      { "team": "spidersociety", "confidence": 80 },
-      { "team": "illuminati", "confidence": 80 },
-      { "team": "annihilator", "confidence": 65 }
+      {
+        "team": "brimstone",
+        "confidence": 95
+      },
+      {
+        "team": "undying",
+        "confidence": 95
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 95
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "hellfireclub",
+        "confidence": 80
+      }
     ],
     "xtreme_phoenixforce": [
-      { "team": "sinistersix", "confidence": 95, "notes": "+ Vulture + Mysterio, no Spider-Slayer/Kraven/Lizard" },
-      { "team": "liberty", "confidence": 95 },
-      { "team": "absoluteaforce", "confidence": 95 },
-      { "team": "mercsformoney", "confidence": 95 },
-      { "team": "mightyavenger", "confidence": 95 }
+      {
+        "team": "sinistersix",
+        "confidence": 95,
+        "notes": "+ Vulture + Mysterio, no Spider-Slayer/Kraven/Lizard"
+      },
+      {
+        "team": "liberty",
+        "confidence": 95
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 95
+      }
     ],
     "darkhold": [
-      { "team": "orchis", "confidence": 95, "notes": "Nimrod hard counter" },
-      { "team": "gamma", "confidence": 85 },
-      { "team": "eternals", "confidence": 75 }
+      {
+        "team": "orchis",
+        "confidence": 95,
+        "notes": "Nimrod hard counter"
+      },
+      {
+        "team": "gamma",
+        "confidence": 85
+      },
+      {
+        "team": "eternals",
+        "confidence": 75
+      }
     ],
     "gamma": [
-      { "team": "darkhold", "confidence": 90 },
-      { "team": "eternals", "confidence": 80 },
-      { "team": "unlimited", "confidence": 75 }
+      {
+        "team": "liberty",
+        "confidence": 95
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "outoftime",
+        "confidence": 95
+      },
+      {
+        "team": "knowhere",
+        "confidence": 95
+      },
+      {
+        "team": "astral",
+        "confidence": 95
+      },
+      {
+        "team": "secretdefender",
+        "confidence": 95
+      },
+      {
+        "team": "newavenger",
+        "confidence": 95
+      },
+      {
+        "team": "darkhold",
+        "confidence": 90
+      },
+      {
+        "team": "eternals",
+        "confidence": 80
+      },
+      {
+        "team": "unlimited",
+        "confidence": 75
+      },
+      {
+        "team": "aforce",
+        "confidence": 65
+      }
     ],
     "unlimited": [
-      { "team": "orchis", "confidence": 95, "notes": "Mutant killer" },
-      { "team": "blackorder", "confidence": 80 },
-      { "team": "eternals", "confidence": 70 }
+      {
+        "team": "orchis",
+        "confidence": 95,
+        "notes": "Mutant killer"
+      },
+      {
+        "team": "blackorder",
+        "confidence": 80
+      },
+      {
+        "team": "eternals",
+        "confidence": 70
+      }
     ],
     "bifrost": [
-      { "team": "darkhold", "confidence": 85 },
-      { "team": "blackorder", "confidence": 80 },
-      { "team": "gamma", "confidence": 75 }
+      {
+        "team": "darkhold",
+        "confidence": 85
+      },
+      {
+        "team": "blackorder",
+        "confidence": 80
+      },
+      {
+        "team": "gamma",
+        "confidence": 75
+      }
     ],
     "blackorder": [
-      { "team": "eternals", "confidence": 90 },
-      { "team": "darkhold", "confidence": 85 },
-      { "team": "gamma", "confidence": 75 }
+      {
+        "team": "liberty",
+        "confidence": 95
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "outoftime",
+        "confidence": 95
+      },
+      {
+        "team": "knowhere",
+        "confidence": 95
+      },
+      {
+        "team": "astral",
+        "confidence": 95
+      },
+      {
+        "team": "newavenger",
+        "confidence": 95
+      },
+      {
+        "team": "eternals",
+        "confidence": 95,
+        "notes": "+ 3"
+      },
+      {
+        "team": "aforce",
+        "confidence": 95
+      },
+      {
+        "team": "eternals",
+        "confidence": 90
+      },
+      {
+        "team": "darkhold",
+        "confidence": 85
+      },
+      {
+        "team": "blackorder",
+        "confidence": 80
+      },
+      {
+        "team": "gamma",
+        "confidence": 75
+      },
+      {
+        "team": "gamma",
+        "confidence": 65
+      },
+      {
+        "team": "underworld",
+        "confidence": 65
+      }
     ],
     "eternals": [
-      { "team": "darkhold", "confidence": 90 },
-      { "team": "orchis", "confidence": 85 },
-      { "team": "blackorder", "confidence": 80 }
+      {
+        "team": "darkhold",
+        "confidence": 90
+      },
+      {
+        "team": "orchis",
+        "confidence": 85
+      },
+      {
+        "team": "blackorder",
+        "confidence": 80
+      }
     ],
     "cabal": [
-      { "team": "liberty", "confidence": 95 },
-      { "team": "absoluteaforce", "confidence": 95 },
-      { "team": "mercsformoney", "confidence": 95 },
-      { "team": "outoftime", "confidence": 95 },
-      { "team": "astral", "confidence": 95 },
-      { "team": "mightyavenger", "confidence": 95 },
-      { "team": "superiorsix", "confidence": 95 },
-      { "team": "knowhere", "confidence": 80 },
-      { "team": "gamma", "confidence": 80 },
-      { "team": "aforce", "confidence": 80 },
-      { "team": "undying", "confidence": 80 },
-      { "team": "newavenger", "confidence": 80 },
-      { "team": "xtreme", "confidence": 80 },
-      { "team": "illuminati", "confidence": 80 },
-      { "team": "hivemind", "confidence": 80, "notes": "+ Knull, no Venom" },
-      { "team": "eternals", "confidence": 65, "notes": "+ Tangled" },
-      { "team": "underworld", "confidence": 65 },
-      { "team": "darkhold", "confidence": 65 }
-    ],
-    "cabal_kang": [
-      { "team": "liberty", "confidence": 95 },
-      { "team": "absoluteaforce", "confidence": 95 },
-      { "team": "mercsformoney", "confidence": 95 },
-      { "team": "outoftime", "confidence": 95 },
-      { "team": "astral", "confidence": 95 },
-      { "team": "mightyavenger", "confidence": 95 },
-      { "team": "superiorsix", "confidence": 95 },
-      { "team": "knowhere", "confidence": 80 },
-      { "team": "gamma", "confidence": 80 },
-      { "team": "aforce", "confidence": 80 },
-      { "team": "undying", "confidence": 80 },
-      { "team": "newavenger", "confidence": 80 },
-      { "team": "xtreme", "confidence": 80 },
-      { "team": "illuminati", "confidence": 80 },
-      { "team": "hivemind", "confidence": 80, "notes": "+ Knull, no Venom" },
-      { "team": "eternals", "confidence": 65, "notes": "+ Tangled" },
-      { "team": "hivemind", "confidence": 65 },
-      { "team": "underworld", "confidence": 65 },
-      { "team": "darkhold", "confidence": 65 }
-    ],
-    "cabal_blackknight_doom": [
-      { "team": "mercsformoney", "confidence": 95 },
-      { "team": "mightyavenger", "confidence": 95 },
-      { "team": "weaponx", "confidence": 95, "notes": "+ Ares, no Sabretooth/Wolverine" }
+      {
+        "team": "liberty",
+        "confidence": 95
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "outoftime",
+        "confidence": 95
+      },
+      {
+        "team": "astral",
+        "confidence": 95
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 95
+      },
+      {
+        "team": "superiorsix",
+        "confidence": 95
+      },
+      {
+        "team": "weaponx",
+        "confidence": 95,
+        "notes": "+ Ares, no Sabretooth and Wolverine"
+      },
+      {
+        "team": "secretwarrior",
+        "confidence": 95
+      },
+      {
+        "team": "knowhere",
+        "confidence": 80
+      },
+      {
+        "team": "gamma",
+        "confidence": 80
+      },
+      {
+        "team": "aforce",
+        "confidence": 80
+      },
+      {
+        "team": "undying",
+        "confidence": 80
+      },
+      {
+        "team": "newavenger",
+        "confidence": 80
+      },
+      {
+        "team": "xtreme",
+        "confidence": 80
+      },
+      {
+        "team": "illuminati",
+        "confidence": 80
+      },
+      {
+        "team": "hivemind",
+        "confidence": 80,
+        "notes": "+ Knull, no Venom"
+      },
+      {
+        "team": "newavenger",
+        "confidence": 80
+      },
+      {
+        "team": "xtreme",
+        "confidence": 80
+      },
+      {
+        "team": "thunderbolt",
+        "confidence": 80
+      },
+      {
+        "team": "cabal",
+        "confidence": 80,
+        "notes": "+ Kang + Emma Frost"
+      },
+      {
+        "team": "eternals",
+        "confidence": 65,
+        "notes": "+ Tangled"
+      },
+      {
+        "team": "underworld",
+        "confidence": 65
+      },
+      {
+        "team": "darkhold",
+        "confidence": 65
+      },
+      {
+        "team": "tangled",
+        "confidence": 65,
+        "notes": "+ Eternals"
+      },
+      {
+        "team": "hivemind",
+        "confidence": 65
+      }
     ],
     "youngavenger": [
-      { "team": "blackorder", "confidence": 85 },
-      { "team": "darkhold", "confidence": 80 },
-      { "team": "eternals", "confidence": 75 }
+      {
+        "team": "blackorder",
+        "confidence": 85
+      },
+      {
+        "team": "darkhold",
+        "confidence": 80
+      },
+      {
+        "team": "eternals",
+        "confidence": 75
+      }
     ],
     "undying": [
-      { "team": "liberty", "confidence": 95 },
-      { "team": "absoluteaforce", "confidence": 95 },
-      { "team": "mercsformoney", "confidence": 95 },
-      { "team": "mightyavenger", "confidence": 95 },
-      { "team": "astral", "confidence": 95 }
+      {
+        "team": "liberty",
+        "confidence": 95
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 95
+      },
+      {
+        "team": "astral",
+        "confidence": 95
+      }
     ],
     "knowhere": [
-      { "team": "liberty", "confidence": 95 },
-      { "team": "absoluteaforce", "confidence": 95 },
-      { "team": "mercsformoney", "confidence": 95 },
-      { "team": "mightyavenger", "confidence": 95 }
+      {
+        "team": "liberty",
+        "confidence": 95
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 95
+      },
+      {
+        "team": "outoftime",
+        "confidence": 80
+      },
+      {
+        "team": "thunderbolt",
+        "confidence": 80
+      },
+      {
+        "team": "knowhere",
+        "confidence": 65
+      }
+    ],
+    "brimstone": [
+      {
+        "team": "brimstone",
+        "confidence": 95,
+        "notes": "+ Emma Frost, no Elsa Bloodstone"
+      }
+    ],
+    "insidioussix": [
+      {
+        "team": "undying",
+        "confidence": 95
+      },
+      {
+        "team": "brimstone",
+        "confidence": 95
+      },
+      {
+        "team": "secretwarrior",
+        "confidence": 95
+      },
+      {
+        "team": "hivemind",
+        "confidence": 95,
+        "notes": "+ Knull (no Venom)  – start with Knull’s Special"
+      },
+      {
+        "team": "underworld",
+        "confidence": 95,
+        "notes": "+ Kestrel (no Nobu)  – focus on Vulture"
+      },
+      {
+        "team": "cabal",
+        "confidence": 80,
+        "notes": "+ Kang + Super Skrull  – start with Skrull’s Basic"
+      },
+      {
+        "team": "liberty",
+        "confidence": 80
+      },
+      {
+        "team": "fantasticfourmcu",
+        "confidence": 80,
+        "notes": "MCU"
+      },
+      {
+        "team": "orchis",
+        "confidence": 80,
+        "notes": "+ Ares, no Omega Sentinel"
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 65
+      },
+      {
+        "team": "liberty",
+        "confidence": 65
+      }
+    ],
+    "newmutants": [
+      {
+        "team": "orchis",
+        "confidence": 95,
+        "notes": "focus on Magik"
+      },
+      {
+        "team": "insidioussix",
+        "confidence": 95,
+        "notes": "+ Vulture + Green Goblin (Classic), focus on Magik"
+      },
+      {
+        "team": "immortalweapon",
+        "confidence": 95,
+        "notes": "start with Sword Master’s Special"
+      },
+      {
+        "team": "hivemind",
+        "confidence": 95,
+        "notes": "+ Knull"
+      },
+      {
+        "team": "liberty",
+        "confidence": 95
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "fantasticfourmcu",
+        "confidence": 95,
+        "notes": "MCU"
+      },
+      {
+        "team": "hellfireclub",
+        "confidence": 80,
+        "notes": "focus on Magik"
+      },
+      {
+        "team": "illuminati",
+        "confidence": 80
+      },
+      {
+        "team": "astral",
+        "confidence": 50
+      }
+    ],
+    "newavenger": [
+      {
+        "team": "brimstone",
+        "confidence": 95
+      },
+      {
+        "team": "outoftime",
+        "confidence": 95
+      },
+      {
+        "team": "liberty",
+        "confidence": 80
+      },
+      {
+        "team": "astral",
+        "confidence": 80
+      },
+      {
+        "team": "knowhere",
+        "confidence": 80
+      },
+      {
+        "team": "outoftime",
+        "confidence": 80
+      },
+      {
+        "team": "gamma",
+        "confidence": 80,
+        "notes": "+ Apoc"
+      },
+      {
+        "team": "newavenger",
+        "confidence": 80,
+        "notes": "+ Apoc"
+      },
+      {
+        "team": "undying",
+        "confidence": 80,
+        "notes": "+ Tangled+Apoc"
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 65
+      },
+      {
+        "team": "gamma",
+        "confidence": 65
+      },
+      {
+        "team": "illuminati",
+        "confidence": 50
+      },
+      {
+        "team": "superiorsix",
+        "confidence": 80,
+        "notes": "Classic Green Goblin, Kraven, Doc Oc, Vulture, Mysterio"
+      }
+    ],
+    "secretwarrior": [
+      {
+        "team": "insidioussix",
+        "confidence": 95,
+        "notes": "+ Vulture = Green Goblin, Classic"
+      },
+      {
+        "team": "vigilante",
+        "confidence": 95
+      },
+      {
+        "team": "orchis",
+        "confidence": 95
+      },
+      {
+        "team": "nightstalker",
+        "confidence": 95
+      },
+      {
+        "team": "thunderbolt",
+        "confidence": 80
+      }
+    ],
+    "secretdefender": [
+      {
+        "team": "liberty",
+        "confidence": 95
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "outoftime",
+        "confidence": 95
+      },
+      {
+        "team": "knowhere",
+        "confidence": 95
+      },
+      {
+        "team": "astral",
+        "confidence": 95
+      },
+      {
+        "team": "thunderbolt",
+        "confidence": 80
+      },
+      {
+        "team": "gamma",
+        "confidence": 80
+      },
+      {
+        "team": "underworld",
+        "confidence": 80
+      },
+      {
+        "team": "aforce",
+        "confidence": 80
+      }
+    ],
+    "tangledweb": [
+      {
+        "team": "undying",
+        "confidence": 95,
+        "notes": "+ Tangled Web / New Warriors"
+      },
+      {
+        "team": "outoftime",
+        "confidence": 95
+      },
+      {
+        "team": "gamma",
+        "confidence": 95
+      },
+      {
+        "team": "underworld",
+        "confidence": 95
+      },
+      {
+        "team": "knowhere",
+        "confidence": 95
+      },
+      {
+        "team": "illuminati",
+        "confidence": 80
+      },
+      {
+        "team": "aforce",
+        "confidence": 65,
+        "notes": "+ Dr. Doom"
+      }
+    ],
+    "underworld": [
+      {
+        "team": "liberty",
+        "confidence": 95
+      },
+      {
+        "team": "outoftime",
+        "confidence": 95
+      },
+      {
+        "team": "gamma",
+        "confidence": 95,
+        "notes": "hard counter"
+      },
+      {
+        "team": "knowhere",
+        "confidence": 95,
+        "notes": "hard counter"
+      },
+      {
+        "team": "underworld",
+        "confidence": 95
+      },
+      {
+        "team": "undying",
+        "confidence": 95,
+        "notes": "+ 1"
+      },
+      {
+        "team": "aforce",
+        "confidence": 80,
+        "notes": "+ Kestrel"
+      },
+      {
+        "team": "blackorder",
+        "confidence": 65
+      },
+      {
+        "team": "undying",
+        "confidence": 65,
+        "notes": "+ Eternals"
+      },
+      {
+        "team": "illuminati",
+        "confidence": 65
+      }
+    ],
+    "weaponx": [
+      {
+        "team": "liberty",
+        "confidence": 95
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "outoftime",
+        "confidence": 95
+      },
+      {
+        "team": "astral",
+        "confidence": 95
+      },
+      {
+        "team": "underworld",
+        "confidence": 95
+      },
+      {
+        "team": "knowhere",
+        "confidence": 95
+      },
+      {
+        "team": "gamma",
+        "confidence": 95
+      },
+      {
+        "team": "newavenger",
+        "confidence": 95
+      },
+      {
+        "team": "secretdefender",
+        "confidence": 95
+      },
+      {
+        "team": "aforce",
+        "confidence": 80
+      },
+      {
+        "team": "undying",
+        "confidence": 80,
+        "notes": "+ Tangled Web"
+      },
+      {
+        "team": "illuminati",
+        "confidence": 80
+      },
+      {
+        "team": "weaponx",
+        "confidence": 65
+      }
+    ],
+    "xtreme": [
+      {
+        "team": "liberty",
+        "confidence": 95
+      },
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "knowhere",
+        "confidence": 95
+      },
+      {
+        "team": "astral",
+        "confidence": 95
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 95
+      },
+      {
+        "team": "sinistersix",
+        "confidence": 95,
+        "notes": "+ Vulture + Mysterio, no Spider-Slayer and Kraven or Lizard"
+      },
+      {
+        "team": "hivemind",
+        "confidence": 80,
+        "notes": "+ Knull, no Venom"
+      },
+      {
+        "team": "outoftime",
+        "confidence": 80
+      },
+      {
+        "team": "gamma",
+        "confidence": 80
+      },
+      {
+        "team": "newavenger",
+        "confidence": 80
+      },
+      {
+        "team": "secretdefender",
+        "confidence": 80
+      },
+      {
+        "team": "undying",
+        "confidence": 80
+      },
+      {
+        "team": "underworld",
+        "confidence": 80
+      },
+      {
+        "team": "spidersociety",
+        "confidence": 80
+      },
+      {
+        "team": "hellfireclub",
+        "confidence": 80
+      },
+      {
+        "team": "illuminati",
+        "confidence": 80
+      },
+      {
+        "team": "secretdefender",
+        "confidence": 65,
+        "notes": "without Photon"
+      },
+      {
+        "team": "aforce",
+        "confidence": 65
+      },
+      {
+        "team": "weaponx",
+        "confidence": 65
+      },
+      {
+        "team": "accursed",
+        "confidence": 65
+      },
+      {
+        "team": "greengoblin",
+        "confidence": 80,
+        "notes": "Classic + Doc Oc + Vulture + Mysterio + 1"
+      },
+      {
+        "team": "annihilator",
+        "confidence": 65
+      }
     ]
   }
 }
