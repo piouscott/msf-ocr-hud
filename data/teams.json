@@ -828,7 +828,6 @@
       "members": [
         "Gladiator",
         "Gorr",
-        "Gladiator (Saga)",
         "Silver Surfer",
         "Thanos (Endgame)",
         "Ultimus"
@@ -836,16 +835,13 @@
       "memberIds": [
         "Gladiator",
         "Gorr",
-        "PVE_SagaBoss_Gladiator",
         "SilverSurfer",
         "ThanosEndgame",
         "Ultimus"
       ],
       "tags": [
         "annihilator"
-      ],
-      "isVariant": true,
-      "memberCount": 6
+      ]
     },
     {
       "id": "cabal",
@@ -854,20 +850,17 @@
       "members": [
         "Iron Patriot",
         "Namor",
-        "Iron Patriot",
         "The Leader"
       ],
       "memberIds": [
         "IronPatriot",
         "Namor",
-        "PVE_IronPatriot_SentryBoss",
         "TheLeader"
       ],
       "tags": [
         "cabal"
       ],
-      "isVariant": true,
-      "memberCount": 4
+      "isVariant": true
     },
     {
       "id": "darkhold",
@@ -876,7 +869,6 @@
       "members": [
         "Agatha Harkness",
         "Morgan Le Fay",
-        "Doctor Strange (Aphelion)",
         "Scarlet Witch",
         "Strange (Heartless)",
         "Wong"
@@ -884,7 +876,6 @@
       "memberIds": [
         "AgathaHarkness",
         "MorganLeFay",
-        "PVE_StrangeSupreme_Incursion",
         "ScarletWitch",
         "StrangeSupreme",
         "Wong"
@@ -892,8 +883,7 @@
       "tags": [
         "darkhold"
       ],
-      "isVariant": true,
-      "memberCount": 6
+      "isVariant": true
     },
     {
       "id": "deathseed",
@@ -904,22 +894,18 @@
         "Dark Beast",
         "Magneto",
         "Nemesis",
-        "Psylocke",
-        "Psylocke (Chaos)"
+        "Psylocke"
       ],
       "memberIds": [
         "Archangel",
         "DarkBeast",
         "Magneto",
         "Nemesis",
-        "Psylocke",
-        "PVE_ChaosRaid_Psylocke"
+        "Psylocke"
       ],
       "tags": [
         "deathseed"
-      ],
-      "isVariant": true,
-      "memberCount": 6
+      ]
     },
     {
       "id": "horseman",
@@ -951,7 +937,6 @@
         "Madelyne Pryor",
         "Mister Sinister",
         "Mystique",
-        "Madelyne Pryor (Chaos)",
         "Sabretooth",
         "Stryfe"
       ],
@@ -959,15 +944,12 @@
         "MadelynePryor",
         "MrSinister",
         "Mystique",
-        "PVE_ChaosRaid_MadelynePryor",
         "Sabretooth",
         "Stryfe"
       ],
       "tags": [
         "marauders"
-      ],
-      "isVariant": true,
-      "memberCount": 6
+      ]
     },
     {
       "id": "mercsformoney",
@@ -978,22 +960,18 @@
         "Deadpool",
         "Deathpool",
         "Old Man Logan",
-        "Pandapool",
-        "Daken"
+        "Pandapool"
       ],
       "memberIds": [
         "Daken",
         "Deadpool",
         "Deathpool",
         "OldManLogan",
-        "PandaPool",
-        "PVE_Daken_SentryBoss"
+        "PandaPool"
       ],
       "tags": [
         "mercsformoney"
-      ],
-      "isVariant": true,
-      "memberCount": 6
+      ]
     },
     {
       "id": "mightyavenger",
@@ -1030,7 +1008,6 @@
         "Captain America",
         "Captain Carter",
         "Cosmic Ghost Rider",
-        "Captain America",
         "Starbrand"
       ],
       "memberIds": [
@@ -1038,14 +1015,11 @@
         "CaptainAmerica",
         "CaptainCarter",
         "CosmicGhostRider",
-        "PVE_CaptainAmerica_SentryBoss",
         "StarBrand"
       ],
       "tags": [
         "outoftime"
-      ],
-      "isVariant": true,
-      "memberCount": 6
+      ]
     },
     {
       "id": "powerarmor",
@@ -1055,7 +1029,6 @@
         "Falcon",
         "Ironheart",
         "Iron Man",
-        "Iron Man",
         "Rescue",
         "War Machine"
       ],
@@ -1063,43 +1036,14 @@
         "Falcon",
         "Ironheart",
         "IronMan",
-        "PVE_IronMan_SentryBoss",
         "Rescue",
         "WarMachine"
       ],
       "tags": [
         "powerarmor"
-      ],
-      "isVariant": true,
-      "memberCount": 6
+      ]
     },
-    {
-      "id": "pvedddoom",
-      "name": "PvEDDDoom",
-      "nameFr": "PvEDDDoom",
-      "members": [
-        "Doctor Doom",
-        "Doom Bomb",
-        "Torch-Bot",
-        "Invisi-Bot",
-        "Fantastic-Bot",
-        "Thing-Bot"
-      ],
-      "memberIds": [
-        "PvE_DDDoctorDoom",
-        "PvE_DDDoomBomb",
-        "PvE_DDHumanTorch",
-        "PvE_DDInvisibleWoman",
-        "PvE_DDMrFantastic",
-        "PvE_DDThing"
-      ],
-      "tags": [
-        "pvedddoom"
-      ],
-      "isVariant": true,
-      "memberCount": 6
-    },
-    {
+        {
       "id": "pymtech",
       "name": "PYM TECH",
       "nameFr": "PYM TECH",
@@ -1186,7 +1130,6 @@
         "Falcon",
         "Hercules",
         "Jean Grey",
-        "Jean Grey (Chaos)",
         "Storm"
       ],
       "memberIds": [
@@ -1194,14 +1137,11 @@
         "Falcon",
         "Hercules",
         "JeanGrey",
-        "PVE_ChaosRaid_JeanGrey",
         "Storm"
       ],
       "tags": [
         "uncannyavenger"
-      ],
-      "isVariant": true,
-      "memberCount": 6
+      ]
     },
     {
       "id": "undying",
@@ -1294,7 +1234,7 @@
       ],
       "memberIds": [
         "Abomination",
-        "Brawn",
+        "AmadeusCho",
         "Hulk",
         "RedHulk",
         "SheHulk"
@@ -1310,6 +1250,7 @@
         "Ancient One",
         "Clea",
         "Doctor Strange",
+        "Shadow King",
         "Wong"
       ],
       "memberIds": [
@@ -1317,9 +1258,11 @@
         "AncientOne",
         "Clea",
         "DoctorStrange",
+        "ShadowKing",
         "Wong"
       ],
-      "tags": ["astral"]
+      "tags": ["astral"],
+      "memberCount": 6
     },
     {
       "id": "orchis",
@@ -1347,23 +1290,21 @@
       "nameFr": "ILLUMINATI",
       "members": [
         "Black Bolt",
+        "Black Panther (Shuri)",
         "Captain Britain",
+        "Hank Pym",
         "Iron Man",
-        "Mister Fantastic",
-        "Namor",
-        "Professor X"
+        "Mister Fantastic"
       ],
       "memberIds": [
         "BlackBolt",
+        "BlackPantherShuri",
         "CaptainBritain",
+        "HankPym",
         "IronMan",
-        "MrFantastic",
-        "Namor",
-        "ProfessorX"
+        "MrFantastic"
       ],
-      "tags": ["illuminati"],
-      "isVariant": true,
-      "memberCount": 6
+      "tags": ["illuminati"]
     },
     {
       "id": "eternals",
@@ -1417,7 +1358,7 @@
         "Taskmaster"
       ],
       "memberIds": [
-        "GreenGoblin",
+        "UltGreenGoblin",
         "Kingpin",
         "MrNegative",
         "Nobu",
@@ -1439,7 +1380,7 @@
       ],
       "memberIds": [
         "Electro",
-        "GreenGoblin",
+        "UltGreenGoblin",
         "Mysterio",
         "Rhino",
         "Shocker",
@@ -1478,7 +1419,7 @@
       ],
       "memberIds": [
         "AntiVenom",
-        "BigTime",
+        "SpiderManBigTime",
         "Scream",
         "WebOfPain",
         "WebOfSuffering"
@@ -1553,8 +1494,8 @@
       "id": "accursed_cosmicghostrider",
       "name": "ACCURSED + Cosmic Ghost Rider",
       "nameFr": "MAUDITS + Cosmic Ghost Rider",
-      "members": [],
-      "memberIds": [],
+      "members": ["Azazel", "Mordo", "Hellverine", "Juggernaut", "Satana", "The Hood", "Cosmic Ghost Rider"],
+      "memberIds": ["Azazel", "BaronMordo", "Hellverine", "Juggernaut", "Satana", "TheHood", "CosmicGhostRider"],
       "tags": ["accursed"],
       "isVariant": true
     },
@@ -1562,8 +1503,8 @@
       "id": "accursed_mephisto",
       "name": "ACCURSED + Mephisto",
       "nameFr": "MAUDITS + Mephisto",
-      "members": [],
-      "memberIds": [],
+      "members": ["Azazel", "Mordo", "Hellverine", "Juggernaut", "Satana", "The Hood", "Mephisto"],
+      "memberIds": ["Azazel", "BaronMordo", "Hellverine", "Juggernaut", "Satana", "TheHood", "Mephisto"],
       "tags": ["accursed"],
       "isVariant": true
     },
@@ -1571,8 +1512,8 @@
       "id": "fantasticfourmcu_tigra",
       "name": "FANTASTIC FOUR (MCU) + Tigra",
       "nameFr": "QUATRE FANTASTIQUES (MCU) + Tigra",
-      "members": [],
-      "memberIds": [],
+      "members": ["Franklin Richards", "Human Torch", "Invisible Woman (MCU)", "Mister Fantastic (MCU)", "The Thing", "Tigra"],
+      "memberIds": ["FranklinRichards", "HumanTorch", "InvisibleWomanMCU", "MrFantasticMCU", "Thing", "Tigra"],
       "tags": ["fantasticfourmcu"],
       "isVariant": true
     },
@@ -1580,8 +1521,8 @@
       "id": "absoluteaforce_superskrull_dormammu",
       "name": "ABSOLUTE A-FORCE + Super Skrull + Dormammu",
       "nameFr": "ABSOLUTE A-FORCE + Super Skrull + Dormammu",
-      "members": [],
-      "memberIds": [],
+      "members": ["Ironheart", "Kahhori", "Medusa", "Ms. Marvel (Classic)", "Wasp", "Super Skrull", "Dormammu"],
+      "memberIds": ["Ironheart", "Kahhori", "Medusa", "MsMarvelClassic", "Wasp", "SuperSkrull", "Dormammu"],
       "tags": ["absoluteaforce"],
       "isVariant": true
     },
@@ -1589,8 +1530,8 @@
       "id": "absoluteaforce_superskrull",
       "name": "ABSOLUTE A-FORCE + Super Skrull",
       "nameFr": "ABSOLUTE A-FORCE + Super Skrull",
-      "members": [],
-      "memberIds": [],
+      "members": ["Ironheart", "Kahhori", "Medusa", "Ms. Marvel (Classic)", "Wasp", "Super Skrull"],
+      "memberIds": ["Ironheart", "Kahhori", "Medusa", "MsMarvelClassic", "Wasp", "SuperSkrull"],
       "tags": ["absoluteaforce"],
       "isVariant": true
     },
@@ -1598,8 +1539,8 @@
       "id": "absoluteaforce_odin",
       "name": "ABSOLUTE A-FORCE + Odin",
       "nameFr": "ABSOLUTE A-FORCE + Odin",
-      "members": [],
-      "memberIds": [],
+      "members": ["Ironheart", "Kahhori", "Medusa", "Ms. Marvel (Classic)", "Wasp", "Odin"],
+      "memberIds": ["Ironheart", "Kahhori", "Medusa", "MsMarvelClassic", "Wasp", "Odin"],
       "tags": ["absoluteaforce"],
       "isVariant": true
     },
@@ -1607,8 +1548,8 @@
       "id": "absoluteaforce_mephisto_superskrull",
       "name": "ABSOLUTE A-FORCE + Mephisto + Super Skrull",
       "nameFr": "ABSOLUTE A-FORCE + Mephisto + Super Skrull",
-      "members": [],
-      "memberIds": [],
+      "members": ["Ironheart", "Kahhori", "Medusa", "Ms. Marvel (Classic)", "Wasp", "Mephisto", "Super Skrull"],
+      "memberIds": ["Ironheart", "Kahhori", "Medusa", "MsMarvelClassic", "Wasp", "Mephisto", "SuperSkrull"],
       "tags": ["absoluteaforce"],
       "isVariant": true
     },
@@ -1616,8 +1557,8 @@
       "id": "cabal_kang",
       "name": "CABAL + Kang",
       "nameFr": "CABALE + Kang",
-      "members": [],
-      "memberIds": [],
+      "members": ["Iron Patriot", "Namor", "The Leader", "Kang"],
+      "memberIds": ["IronPatriot", "Namor", "TheLeader", "KangTheConqueror"],
       "tags": ["cabal"],
       "isVariant": true
     },
@@ -1625,8 +1566,8 @@
       "id": "cabal_blackknight_doom",
       "name": "CABAL + Black Knight + Doom",
       "nameFr": "CABALE + Black Knight + Doom",
-      "members": [],
-      "memberIds": [],
+      "members": ["Iron Patriot", "Namor", "The Leader", "Black Knight", "Doctor Doom"],
+      "memberIds": ["IronPatriot", "Namor", "TheLeader", "BlackKnight", "DoctorDoom"],
       "tags": ["cabal"],
       "isVariant": true
     },
@@ -1634,8 +1575,8 @@
       "id": "hivemind_mephisto",
       "name": "HIVE-MIND + Mephisto",
       "nameFr": "HIVE-MIND + Mephisto",
-      "members": [],
-      "memberIds": [],
+      "members": ["Carnage", "Gwenom", "Red Goblin", "Void Knight", "Venom", "Mephisto"],
+      "memberIds": ["Carnage", "Gwenom", "RedGoblin", "SymbioteSilverSurfer", "Venom", "Mephisto"],
       "tags": ["hivemind"],
       "isVariant": true
     },
@@ -1643,8 +1584,8 @@
       "id": "hivemind_superskrull",
       "name": "HIVE-MIND + Super Skrull",
       "nameFr": "HIVE-MIND + Super Skrull",
-      "members": [],
-      "memberIds": [],
+      "members": ["Carnage", "Gwenom", "Red Goblin", "Void Knight", "Venom", "Super Skrull"],
+      "memberIds": ["Carnage", "Gwenom", "RedGoblin", "SymbioteSilverSurfer", "Venom", "SuperSkrull"],
       "tags": ["hivemind"],
       "isVariant": true
     },
@@ -1652,8 +1593,8 @@
       "id": "hivemind_knull",
       "name": "HIVE-MIND + Knull",
       "nameFr": "HIVE-MIND + Knull",
-      "members": [],
-      "memberIds": [],
+      "members": ["Carnage", "Gwenom", "Red Goblin", "Void Knight", "Venom", "Knull"],
+      "memberIds": ["Carnage", "Gwenom", "RedGoblin", "SymbioteSilverSurfer", "Venom", "Knull"],
       "tags": ["hivemind"],
       "isVariant": true
     },
@@ -1661,8 +1602,8 @@
       "id": "hivemind_knull_mephisto",
       "name": "HIVE-MIND + Knull + Mephisto",
       "nameFr": "HIVE-MIND + Knull + Mephisto",
-      "members": [],
-      "memberIds": [],
+      "members": ["Carnage", "Gwenom", "Red Goblin", "Void Knight", "Venom", "Knull", "Mephisto"],
+      "memberIds": ["Carnage", "Gwenom", "RedGoblin", "SymbioteSilverSurfer", "Venom", "Knull", "Mephisto"],
       "tags": ["hivemind"],
       "isVariant": true
     },
@@ -1670,26 +1611,17 @@
       "id": "hivemind_ares",
       "name": "HIVE-MIND + Ares",
       "nameFr": "HIVE-MIND + Ares",
-      "members": [],
-      "memberIds": [],
+      "members": ["Carnage", "Gwenom", "Red Goblin", "Void Knight", "Venom", "Ares"],
+      "memberIds": ["Carnage", "Gwenom", "RedGoblin", "SymbioteSilverSurfer", "Venom", "Ares"],
       "tags": ["hivemind"],
-      "isVariant": true
-    },
-    {
-      "id": "illuminati_captainbritain",
-      "name": "ILLUMINATI + Captain Britain",
-      "nameFr": "ILLUMINATI + Captain Britain",
-      "members": [],
-      "memberIds": [],
-      "tags": ["illuminati"],
       "isVariant": true
     },
     {
       "id": "newavenger_apocalypse",
       "name": "NEW AVENGERS + Apocalypse",
       "nameFr": "NOUVEAUX VENGEURS + Apocalypse",
-      "members": [],
-      "memberIds": [],
+      "members": ["Agent Coulson", "Mockingbird", "Ronin", "The Thing", "Tigra", "Apocalypse"],
+      "memberIds": ["Coulson", "Mockingbird", "Ronin", "Thing", "Tigra", "Apocalypse"],
       "tags": ["newavenger"],
       "isVariant": true
     },
@@ -1697,8 +1629,8 @@
       "id": "nightstalker_mephisto",
       "name": "NIGHTSTALKER + Mephisto",
       "nameFr": "NIGHTSTALKER + Mephisto",
-      "members": [],
-      "memberIds": [],
+      "members": ["Agatha Harkness", "Blade", "Man-Thing", "Moon Knight", "Oath", "Mephisto"],
+      "memberIds": ["AgathaHarkness", "Blade", "ManThing", "MoonKnight", "Oath", "Mephisto"],
       "tags": ["nightstalker"],
       "isVariant": true
     },
@@ -1706,8 +1638,8 @@
       "id": "orchis_odin",
       "name": "ORCHIS + Odin",
       "nameFr": "ORCHIS + Odin",
-      "members": [],
-      "memberIds": [],
+      "members": ["Bastion", "Lady Deathstrike", "Nimrod", "Omega Sentinel", "Sentinel", "Odin"],
+      "memberIds": ["Bastion", "LadyDeathstrike", "Nimrod", "OmegaSentinel", "Sentinel", "Odin"],
       "tags": ["orchis"],
       "isVariant": true
     },
@@ -1715,8 +1647,8 @@
       "id": "orchis_mephisto",
       "name": "ORCHIS + Mephisto",
       "nameFr": "ORCHIS + Mephisto",
-      "members": [],
-      "memberIds": [],
+      "members": ["Bastion", "Lady Deathstrike", "Nimrod", "Omega Sentinel", "Sentinel", "Mephisto"],
+      "memberIds": ["Bastion", "LadyDeathstrike", "Nimrod", "OmegaSentinel", "Sentinel", "Mephisto"],
       "tags": ["orchis"],
       "isVariant": true
     },
@@ -1724,8 +1656,8 @@
       "id": "orchis_ares_mephisto",
       "name": "ORCHIS + Ares + Mephisto",
       "nameFr": "ORCHIS + Ares + Mephisto",
-      "members": [],
-      "memberIds": [],
+      "members": ["Bastion", "Lady Deathstrike", "Nimrod", "Omega Sentinel", "Sentinel", "Ares", "Mephisto"],
+      "memberIds": ["Bastion", "LadyDeathstrike", "Nimrod", "OmegaSentinel", "Sentinel", "Ares", "Mephisto"],
       "tags": ["orchis"],
       "isVariant": true
     },
@@ -1733,8 +1665,8 @@
       "id": "outoftime_mephisto",
       "name": "OUT OF TIME + Mephisto",
       "nameFr": "HORS DU TEMPS + Mephisto",
-      "members": [],
-      "memberIds": [],
+      "members": ["Black Knight", "Captain America", "Captain Carter", "Cosmic Ghost Rider", "Starbrand", "Mephisto"],
+      "memberIds": ["BlackKnight", "CaptainAmerica", "CaptainCarter", "CosmicGhostRider", "StarBrand", "Mephisto"],
       "tags": ["outoftime"],
       "isVariant": true
     },
@@ -1742,8 +1674,8 @@
       "id": "blackknight_odin_mephisto_doom_superskrull",
       "name": "Black Knight + Odin + Mephisto + Doom + Super Skrull",
       "nameFr": "Black Knight + Odin + Mephisto + Doom + Super Skrull",
-      "members": [],
-      "memberIds": [],
+      "members": ["Black Knight", "Odin", "Mephisto", "Doctor Doom", "Super Skrull"],
+      "memberIds": ["BlackKnight", "Odin", "Mephisto", "DoctorDoom", "SuperSkrull"],
       "tags": ["horseman"],
       "isVariant": true
     },
@@ -1751,8 +1683,8 @@
       "id": "blackknight_cosmicghostrider_odin",
       "name": "Black Knight + Cosmic Ghost Rider + Odin",
       "nameFr": "Black Knight + Cosmic Ghost Rider + Odin",
-      "members": [],
-      "memberIds": [],
+      "members": ["Black Knight", "Cosmic Ghost Rider", "Odin"],
+      "memberIds": ["BlackKnight", "CosmicGhostRider", "Odin"],
       "tags": ["horseman"],
       "isVariant": true
     },
@@ -1760,8 +1692,8 @@
       "id": "spidersociety_mephisto",
       "name": "SPIDER-SOCIETY + Mephisto",
       "nameFr": "SPIDER-SOCIETY + Mephisto",
-      "members": [],
-      "memberIds": [],
+      "members": ["Ghost-Spider", "Peni Parker", "Peter B. Parker", "Spider-Man (Noir)", "Spider-Man (Pavitr)", "Mephisto"],
+      "memberIds": ["GhostSpider", "PeniParker", "PeterBParker", "SpiderManNoir", "SpiderManPavitr", "Mephisto"],
       "tags": ["spidersociety"],
       "isVariant": true
     },
@@ -1769,8 +1701,8 @@
       "id": "xtreme_phoenixforce",
       "name": "X-TREME X-MEN + Phoenix Force",
       "nameFr": "X-TREME X-MEN + Phoenix Force",
-      "members": [],
-      "memberIds": [],
+      "members": ["Cyclops", "Forge", "Gambit", "Nightcrawler", "Sunspot", "Phoenix Force"],
+      "memberIds": ["Cyclops", "Forge", "Gambit", "Nightcrawler", "Sunspot", "PhoenixForce"],
       "tags": ["xtreme"],
       "isVariant": true
     }
