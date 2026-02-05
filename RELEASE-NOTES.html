@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>MSF Counter - Notes de Version</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 24px;
+      line-height: 1.6;
+    }
+    h1 {
+      color: #00d4ff;
+      border-bottom: 2px solid #00d4ff;
+      padding-bottom: 12px;
+    }
+    h2 {
+      color: #00d4ff;
+      margin-top: 32px;
+    }
+    h3 {
+      color: #51cf66;
+      margin-top: 24px;
+    }
+    h4 {
+      color: #fcc419;
+      margin-top: 16px;
+    }
+    ul, ol {
+      padding-left: 24px;
+    }
+    li {
+      margin: 8px 0;
+    }
+    strong {
+      color: #fff;
+    }
+    code {
+      background: #2d2d44;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+    .section {
+      background: #2d2d44;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 16px 0;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #444;
+      margin: 32px 0;
+    }
+    .version-tag {
+      background: #00d4ff;
+      color: #1a1a2e;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-weight: 600;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>MSF Counter - Notes de Version</h1>
+
+  <h2>Version Actuelle</h2>
+
+  <h3>Fonctionnalites Principales</h3>
+
+  <div class="section">
+    <h4>Analyse d'ecran</h4>
+    <ul>
+      <li><strong>OCR automatique</strong> pour detecter les equipes ennemies</li>
+      <li><strong>Reconnaissance de portraits</strong> par comparaison de hash perceptuel</li>
+      <li><strong>Detection de puissance</strong> avec correction OCR</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h4>War Mode</h4>
+    <ul>
+      <li><strong>Scan Portrait</strong>: Capture et identification des 5 portraits d'une equipe</li>
+      <li><strong>Scan Barracks</strong>: Capture automatique depuis la vue casernes</li>
+      <li><strong>Saisie manuelle</strong>: Entrer les noms des personnages manuellement</li>
+      <li><strong>Calibration</strong>: Ajuster les zones de capture pour votre ecran</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h4>Gestion des Counters</h4>
+    <ul>
+      <li><strong>Liste complete des equipes</strong> avec leurs counters</li>
+      <li><strong>Recherche/filtrage</strong> par nom d'equipe ou personnage</li>
+      <li><strong>Portraits des personnages</strong> pour chaque equipe</li>
+      <li><strong>Ajout/modification/suppression</strong> de counters</li>
+      <li><strong>Notes personnalisees</strong> et niveau de confiance</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h4>Synchronisation</h4>
+    <ul>
+      <li><strong>Import/Export</strong> de configuration</li>
+      <li><strong>Sync distante</strong> depuis une URL externe</li>
+      <li><strong>Sources multiples</strong>: Default, Remote, Custom</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h4>Interface</h4>
+    <ul>
+      <li><strong>Mode fenetre</strong> detachable pour garder l'extension visible</li>
+      <li><strong>Multi-langue</strong> (FR/EN)</li>
+      <li>Theme sombre adapte au jeu</li>
+    </ul>
+  </div>
+
+  <hr>
+
+  <h2>Changelog</h2>
+
+  <div class="section">
+    <span class="version-tag">v1.0.0</span>
+    <ul>
+      <li>Version complete avec toutes les fonctionnalites</li>
+      <li>OCR et reconnaissance de portraits</li>
+      <li>War mode avec scan barracks</li>
+      <li>Gestion complete des counters</li>
+      <li>Mode fenetre detachee</li>
+    </ul>
+  </div>
+
+  <hr>
+
+  <h2>Installation</h2>
+
+  <div class="section">
+    <ol>
+      <li>Telecharger l'extension</li>
+      <li>Ouvrir Chrome &gt; Extensions (<code>chrome://extensions/</code>)</li>
+      <li>Activer le "Mode developpeur"</li>
+      <li>Cliquer "Charger l'extension non empaquetee"</li>
+      <li>Selectionner le dossier de l'extension</li>
+    </ol>
+  </div>
+
+  <h2>Configuration API (optionnel)</h2>
+
+  <div class="section">
+    <p>Pour utiliser l'API MSF:</p>
+    <ol>
+      <li>Ouvrir le jeu dans le navigateur</li>
+      <li>Ouvrir DevTools &gt; Network</li>
+      <li>Copier le Bearer Token d'une requete</li>
+      <li>Coller dans l'extension &gt; API</li>
+    </ol>
+  </div>
+
+  <hr>
+
+  <p style="text-align: center; color: #888; font-size: 14px;">
+    Pour signaler un bug ou suggerer une amelioration, contactez le developpeur.
+  </p>
+</body>
+</html>

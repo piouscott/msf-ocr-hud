@@ -2,3 +2,5 @@ cache/
 node_modules/
 debug/
 .claude/
+releases/
+scripts/deploy-tester.ps1

@@ -52,9 +52,10 @@
 
     .counter-row {
       display: flex;
-      gap: 8px;
+      flex-wrap: wrap;
+      gap: 6px 8px;
       align-items: center;
-      padding: 6px 0;
+      padding: 8px 0;
       border-bottom: 1px solid #444;
     }
 
@@ -70,9 +71,11 @@
       font-size: 12px;
     }
 
-    .counter-row select { flex: 2; }
+    .counter-row select { flex: 1; min-width: 150px; }
     .counter-row input[type="number"] { width: 50px; }
-    .counter-row input[type="text"] { flex: 1; }
+    .counter-row .counter-notes {
+      flex-basis: 100%;
+    }
 
     .confidence-symbol {
       font-size: 12px;
@@ -85,9 +88,12 @@
       color: #fff;
       border: none;
       border-radius: 4px;
-      padding: 4px 8px;
+      width: 22px;
+      height: 22px;
+      padding: 0;
       cursor: pointer;
       font-size: 11px;
+      flex: 0 0 22px;
     }
 
     .btn-add-counter {
@@ -167,16 +173,139 @@
       background: #ff6b6b;
       color: #fff;
     }
+
+    /* Language selector */
+    .lang-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .lang-selector label {
+      font-size: 12px;
+      color: #888;
+    }
+    .lang-btn {
+      background: #2d2d44;
+      border: 1px solid #444;
+      color: #888;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .lang-btn.active {
+      background: #00d4ff;
+      color: #1a1a2e;
+      border-color: #00d4ff;
+    }
+
+    /* Team portraits thumbnails */
+    .team-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .team-portraits {
+      display: flex;
+      gap: 2px;
+      flex-wrap: wrap;
+    }
+
+    .team-portrait-thumb {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      object-fit: cover;
+      border: 1px solid #444;
+      background: #1a1a2e;
+    }
+
+    .team-portrait-placeholder {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      background: #444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #888;
+      border: 1px solid #555;
+    }
+
+    /* Search bar */
+    .search-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    #search-input {
+      flex: 1;
+      background: #1a1a2e;
+      border: 1px solid #444;
+      border-radius: 6px;
+      color: #fff;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+
+    #search-input:focus {
+      outline: none;
+      border-color: #00d4ff;
+    }
+
+    #search-input::placeholder {
+      color: #666;
+    }
+
+    .btn-clear {
+      background: transparent;
+      border: 1px solid #444;
+      color: #888;
+      border-radius: 6px;
+      padding: 0 12px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .btn-clear:hover {
+      background: #ff6b6b;
+      color: #fff;
+      border-color: #ff6b6b;
+    }
+
+    .team-section.hidden {
+      display: none;
+    }
+
+    .search-match {
+      background: rgba(0, 212, 255, 0.15);
+    }
   </style>
 </head>
 <body>
   <div id="app">
-    <span class="back-link" id="back">&larr; Retour</span>
+    <span class="back-link" id="back">&larr; <span data-i18n="back">Retour</span></span>
     <header>
-      <h1>Gestion Counters</h1>
+      <h1 data-i18n="title">Gestion Counters</h1>
     </header>
 
+    <div class="lang-selector">
+      <label data-i18n="language">Langue:</label>
+      <button class="lang-btn" data-lang="fr">FR</button>
+      <button class="lang-btn" data-lang="en">EN</button>
+    </div>
+
     <div id="source-legend" class="source-legend"></div>
+
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="Rechercher equipe ou personnage...">
+      <button id="search-clear" class="btn-clear" title="Effacer">&times;</button>
+    </div>
 
     <div id="teams-container">
       <!-- Genere par JS -->

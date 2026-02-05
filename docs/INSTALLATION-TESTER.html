@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>MSF Counter - Guide d'Installation</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      line-height: 1.6;
+      color: #333;
+    }
+    h1 {
+      color: #00d4ff;
+      border-bottom: 3px solid #00d4ff;
+      padding-bottom: 10px;
+    }
+    h2 {
+      color: #2d2d44;
+      margin-top: 40px;
+      border-left: 4px solid #00d4ff;
+      padding-left: 12px;
+    }
+    h3 {
+      color: #51cf66;
+      margin-top: 30px;
+    }
+    a {
+      color: #00d4ff;
+      word-break: break-all;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 14px;
+    }
+    .step-box {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .step-number {
+      display: inline-block;
+      background: #00d4ff;
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 28px;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+    .warning {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 12px 16px;
+      margin: 16px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .note {
+      background: #e7f5ff;
+      border-left: 4px solid #00d4ff;
+      padding: 12px 16px;
+      margin: 16px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+    }
+    th {
+      background: #2d2d44;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background: #f8f9fa;
+    }
+    hr {
+      border: none;
+      border-top: 1px dashed #ccc;
+      margin: 40px 0;
+    }
+    .browser-logo {
+      font-size: 24px;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @media print {
+      body { padding: 20px; }
+      h2 { page-break-before: auto; }
+      .step-box { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>MSF Counter - Guide d'Installation</h1>
+  <p style="color: #888; font-style: italic;">Version Tester</p>
+
+  <h2>Etape 1 : Telecharger l'extension</h2>
+
+  <div class="step-box">
+    <p><span class="step-number">1</span> Ouvrez ce lien dans votre navigateur :</p>
+    <p style="text-align: center; font-size: 14px; background: #2d2d44; color: #00d4ff; padding: 12px; border-radius: 6px;">
+      <a href="https://asperatus.lsjsb.xyz/public.php/dav/files/Sg7q3LyR7tQZSpN/?accept=zip" style="color: #00d4ff;">
+        https://asperatus.lsjsb.xyz/public.php/dav/files/Sg7q3LyR7tQZSpN/?accept=zip
+      </a>
+    </p>
+
+    <p><span class="step-number">2</span> Le fichier ZIP se telecharge automatiquement</p>
+
+    <p><span class="step-number">3</span> <strong>Extrayez le ZIP</strong> dans un dossier de votre choix</p>
+    <ul>
+      <li>Clic droit sur le fichier > "Extraire tout..."</li>
+      <li>Choisissez un emplacement (ex: <code>Documents/MSF-Counter</code>)</li>
+    </ul>
+  </div>
+
+  <div class="warning">
+    <strong>Important :</strong> Gardez ce dossier apres extraction, ne le supprimez pas ! L'extension en a besoin pour fonctionner.
+  </div>
+
+  <hr>
+
+  <h2>Etape 2 : Installation selon votre navigateur</h2>
+
+  <h3><span class="browser-logo">🌐</span> Google Chrome</h3>
+
+  <div class="step-box">
+    <p><span class="step-number">1</span> Ouvrez Chrome et tapez dans la barre d'adresse :</p>
+    <p style="text-align: center;"><code>chrome://extensions</code></p>
+
+    <p><span class="step-number">2</span> Activez le <strong>"Mode developpeur"</strong> (interrupteur en haut a droite)</p>
+
+    <p><span class="step-number">3</span> Cliquez sur <strong>"Charger l'extension non empaquetee"</strong></p>
+
+    <p><span class="step-number">4</span> Selectionnez le dossier extrait (celui contenant <code>manifest.json</code>)</p>
+
+    <p><span class="step-number">5</span> L'extension apparait ! Cliquez sur l'icone puzzle puis epinglez "MSF Counter"</p>
+  </div>
+
+  <h3><span class="browser-logo">🦊</span> Mozilla Firefox</h3>
+
+  <div class="step-box">
+    <p><span class="step-number">1</span> Ouvrez Firefox et tapez dans la barre d'adresse :</p>
+    <p style="text-align: center;"><code>about:debugging#/runtime/this-firefox</code></p>
+
+    <p><span class="step-number">2</span> Cliquez sur <strong>"Charger un module temporaire..."</strong></p>
+
+    <p><span class="step-number">3</span> Naviguez jusqu'au dossier extrait et selectionnez le fichier <code>manifest.json</code></p>
+
+    <p><span class="step-number">4</span> L'extension apparait dans la barre d'outils</p>
+  </div>
+
+  <div class="note">
+    <strong>Note Firefox :</strong> L'extension doit etre rechargee a chaque redemarrage du navigateur.
+    Pour une installation permanente, utilisez Firefox Developer Edition.
+  </div>
+
+  <h3><span class="browser-logo">🎵</span> Vivaldi</h3>
+
+  <div class="step-box">
+    <p><span class="step-number">1</span> Ouvrez Vivaldi et tapez dans la barre d'adresse :</p>
+    <p style="text-align: center;"><code>vivaldi://extensions</code></p>
+
+    <p><span class="step-number">2</span> Activez le <strong>"Mode developpeur"</strong> (interrupteur en haut a droite)</p>
+
+    <p><span class="step-number">3</span> Cliquez sur <strong>"Charger l'extension non empaquetee"</strong></p>
+
+    <p><span class="step-number">4</span> Selectionnez le dossier extrait (celui contenant <code>manifest.json</code>)</p>
+
+    <p><span class="step-number">5</span> L'extension est installee !</p>
+  </div>
+
+  <hr>
+
+  <h2>Etape 3 : Utilisation</h2>
+
+  <div class="step-box">
+    <p><span class="step-number">1</span> Cliquez sur l'icone de l'extension dans la barre d'outils</p>
+
+    <p><span class="step-number">2</span> Cliquez sur le bouton <strong>"Counters"</strong></p>
+
+    <p><span class="step-number">3</span> Parcourez les equipes et leurs counters recommandes</p>
+
+    <p><span class="step-number">4</span> Utilisez <strong>FR / EN</strong> pour changer la langue</p>
+  </div>
+
+  <hr>
+
+  <h2>Depannage</h2>
+
+  <table>
+    <tr>
+      <th>Probleme</th>
+      <th>Solution</th>
+    </tr>
+    <tr>
+      <td>"Manifest non compatible"</td>
+      <td>Assurez-vous d'avoir extrait le ZIP correctement</td>
+    </tr>
+    <tr>
+      <td>Extension disparue (Firefox)</td>
+      <td>Rechargez via <code>about:debugging</code></td>
+    </tr>
+    <tr>
+      <td>Pas d'icone dans la barre</td>
+      <td>Cliquez sur l'icone puzzle (Chrome) et epinglez</td>
+    </tr>
+    <tr>
+      <td>Portraits non affiches</td>
+      <td>Verifiez votre connexion internet</td>
+    </tr>
+  </table>
+
+  <hr>
+
+  <p style="text-align: center; color: #888; margin-top: 40px;">
+    <em>MSF Counter - Version Tester</em><br>
+    Des questions ? Contactez-nous sur Discord
+  </p>
+
+</body>
+</html>

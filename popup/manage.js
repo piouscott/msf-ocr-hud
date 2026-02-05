@@ -1,10 +1,79 @@
 const ext = typeof browser !== "undefined" ? browser : chrome;
 
+// Wrapper pour storage.local.get compatible Chrome/Firefox
+function storageGet(keys) {
+  return new Promise((resolve) => {
+    ext.storage.local.get(keys, (result) => resolve(result || {}));
+  });
+}
+
+// Wrapper pour storage.local.set compatible Chrome/Firefox
+function storageSet(data) {
+  return new Promise((resolve) => {
+    ext.storage.local.set(data, () => resolve());
+  });
+}
+
+// ============================================
+// Internationalisation (i18n)
+// ============================================
+
+let currentLang = "fr";
+
+const i18n = {
+  fr: {
+    title: "Gestion Contres",
+    back: "Retour",
+    language: "Langue:",
+    counters: "contres",
+    addCounter: "+ Ajouter contre",
+    reset: "Réinitialiser",
+    save: "Sauvegarder",
+    saved: "Sauvegardé!",
+    resetDone: "Réinitialisé!",
+    error: "Erreur!",
+    confirmReset: "Réinitialiser les contres de cette équipe aux valeurs par défaut ?",
+    default: "Défaut",
+    sync: "Sync",
+    custom: "Perso",
+    notes: "Notes"
+  },
+  en: {
+    title: "Manage Counters",
+    back: "Back",
+    language: "Language:",
+    counters: "counters",
+    addCounter: "+ Add counter",
+    reset: "Reset",
+    save: "Save",
+    saved: "Saved!",
+    resetDone: "Reset!",
+    error: "Error!",
+    confirmReset: "Reset this team's counters to default values?",
+    default: "Default",
+    sync: "Sync",
+    custom: "Custom",
+    notes: "Notes"
+  }
+};
+
+function t(key) {
+  return i18n[currentLang][key] || i18n.en[key] || key;
+}
+
+function getTeamName(team) {
+  if (currentLang === "fr" && team.nameFr) {
+    return team.nameFr;
+  }
+  return team.name;
+}
+
 let teamsData = [];
 let defaultCounters = {};
 let remoteCounters = {};
 let customCounters = {};
 let mergedCounters = {};
+let charactersData = {}; // Pour les portraits
 
 // Source des counters pour chaque equipe
 let counterSources = {};
@@ -25,28 +94,32 @@ async function loadData() {
   try {
     const teamsUrl = ext.runtime.getURL("data/teams.json");
     const countersUrl = ext.runtime.getURL("data/counters.json");
+    const charactersUrl = ext.runtime.getURL("data/characters-full.json");
 
-    const [teamsRes, countersRes] = await Promise.all([
+    const [teamsRes, countersRes, charactersRes] = await Promise.all([
       fetch(teamsUrl),
-      fetch(countersUrl)
+      fetch(countersUrl),
+      fetch(charactersUrl)
     ]);
 
     const teamsJson = await teamsRes.json();
     const countersJson = await countersRes.json();
+    const charactersJson = await charactersRes.json();
 
     teamsData = teamsJson.teams || [];
     // Trier les equipes par ordre alphabetique
     teamsData.sort((a, b) => a.name.localeCompare(b.name));
     defaultCounters = countersJson.counters || {};
+    charactersData = charactersJson.characters || {};
 
     // Charger les counters remote depuis storage
-    const storedRemote = await ext.storage.local.get("msfRemoteCounters");
+    const storedRemote = await storageGet("msfRemoteCounters");
     if (storedRemote.msfRemoteCounters && storedRemote.msfRemoteCounters.counters) {
       remoteCounters = storedRemote.msfRemoteCounters.counters;
     }
 
     // Charger les counters custom depuis storage
-    const storedCustom = await ext.storage.local.get("msfCustomCounters");
+    const storedCustom = await storageGet("msfCustomCounters");
     if (storedCustom.msfCustomCounters) {
       customCounters = storedCustom.msfCustomCounters;
     }
@@ -90,6 +163,24 @@ function mergeCounters() {
   }
 }
 
+/**
+ * Génère le HTML pour afficher les portraits miniatures d'une équipe
+ */
+function renderTeamPortraits(team) {
+  const memberIds = team.memberIds || [];
+  if (memberIds.length === 0) return '';
+
+  const portraits = memberIds.map(memberId => {
+    const char = charactersData[memberId];
+    if (char && char.portrait) {
+      return `<img src="${char.portrait}" alt="${char.name}" title="${char.name}" class="team-portrait-thumb" loading="lazy">`;
+    }
+    return `<span class="team-portrait-placeholder" title="${memberId}">?</span>`;
+  });
+
+  return `<div class="team-portraits">${portraits.join('')}</div>`;
+}
+
 function renderSourceLegend() {
   const legend = document.getElementById("source-legend");
   if (!legend) return;
@@ -98,9 +189,9 @@ function renderSourceLegend() {
   const hasCustom = Object.keys(customCounters).length > 0;
 
   legend.innerHTML = `
-    <span class="legend-item"><span class="source-badge default"></span> Defaut</span>
-    ${hasRemote ? '<span class="legend-item"><span class="source-badge remote"></span> Sync</span>' : ''}
-    ${hasCustom ? '<span class="legend-item"><span class="source-badge custom"></span> Perso</span>' : ''}
+    <span class="legend-item"><span class="source-badge default"></span> ${t("default")}</span>
+    ${hasRemote ? `<span class="legend-item"><span class="source-badge remote"></span> ${t("sync")}</span>` : ''}
+    ${hasCustom ? `<span class="legend-item"><span class="source-badge custom"></span> ${t("custom")}</span>` : ''}
   `;
 }
 
@@ -108,7 +199,12 @@ function renderTeams() {
   const container = document.getElementById("teams-container");
   container.innerHTML = "";
 
-  teamsData.forEach(team => {
+  // Trier selon la langue actuelle
+  const sortedTeams = [...teamsData].sort((a, b) =>
+    getTeamName(a).localeCompare(getTeamName(b))
+  );
+
+  sortedTeams.forEach(team => {
     const section = document.createElement("div");
     section.className = "team-section";
     section.dataset.teamId = team.id;
@@ -119,16 +215,19 @@ function renderTeams() {
 
     section.innerHTML = `
       <div class="team-header">
-        <span class="team-name-title">${team.name}</span>
+        <div class="team-info">
+          <span class="team-name-title">${getTeamName(team)}</span>
+          ${renderTeamPortraits(team)}
+        </div>
         <span class="team-meta">
           <span class="source-badge ${source}" title="Source: ${source}"></span>
-          <span class="team-toggle">${counters.length} counters</span>
+          <span class="team-toggle">${counters.length} ${t("counters")}</span>
         </span>
       </div>
       <div class="counter-list">
         ${counters.map((c, i) => renderCounterRow(c, i)).join("")}
-        <button class="btn-add-counter" data-team="${team.id}">+ Ajouter counter</button>
-        ${source !== "default" ? `<button class="btn-reset" data-team="${team.id}">Reinitialiser</button>` : ""}
+        <button class="btn-add-counter" data-team="${team.id}">${t("addCounter")}</button>
+        ${source !== "default" ? `<button class="btn-reset" data-team="${team.id}">${t("reset")}</button>` : ""}
       </div>
     `;
 
@@ -170,18 +269,23 @@ function renderTeams() {
 }
 
 function renderCounterRow(counter, index) {
-  const teamOptions = teamsData.map(t =>
-    `<option value="${t.id}" ${t.id === counter.team ? "selected" : ""}>${t.name}</option>`
+  // Trier les options selon la langue
+  const sortedTeams = [...teamsData].sort((a, b) =>
+    getTeamName(a).localeCompare(getTeamName(b))
+  );
+
+  const teamOptions = sortedTeams.map(team =>
+    `<option value="${team.id}" ${team.id === counter.team ? "selected" : ""}>${getTeamName(team)}</option>`
   ).join("");
 
   return `
     <div class="counter-row" data-index="${index}">
       <select class="counter-team">${teamOptions}</select>
       <span class="confidence-symbol">${confidenceToSymbols(counter.confidence)}</span>
-      <input type="number" class="counter-confidence" value="${counter.confidence}" min="0" max="100" title="Confiance %">
-      <input type="number" class="counter-ratio" value="${counter.minPowerRatio}" min="0.5" max="2" step="0.1" title="Ratio puissance">
-      <input type="text" class="counter-notes" value="${counter.notes || ""}" placeholder="Notes">
+      <input type="number" class="counter-confidence" value="${counter.confidence}" min="0" max="100" title="Confiance %" style="display:none">
+      <input type="number" class="counter-ratio" value="${counter.minPowerRatio}" min="0.5" max="2" step="0.1" title="Ratio puissance" style="display:none">
       <button class="btn-remove">X</button>
+      <input type="text" class="counter-notes" value="${counter.notes || ""}" placeholder="${t("notes")}">
     </div>
   `;
 }
@@ -213,19 +317,19 @@ function addCounter(teamId) {
  * Reinitialise les counters d'une equipe aux valeurs par defaut
  */
 async function resetTeamCounters(teamId) {
-  if (!confirm(`Reinitialiser les counters de cette equipe aux valeurs par defaut ?`)) {
+  if (!confirm(t("confirmReset"))) {
     return;
   }
 
   // Supprimer du custom
   delete customCounters[teamId];
-  await ext.storage.local.set({ msfCustomCounters: customCounters });
+  await storageSet({ msfCustomCounters: customCounters });
 
   // Recalculer la fusion
   mergeCounters();
   renderTeams();
 
-  document.getElementById("save-status").textContent = "Reinitialise!";
+  document.getElementById("save-status").textContent = t("resetDone");
   document.getElementById("save-status").style.color = "#51cf66";
   setTimeout(() => {
     document.getElementById("save-status").textContent = "";
@@ -269,19 +373,19 @@ document.getElementById("btn-save").addEventListener("click", async () => {
 
   try {
     customCounters = newCustomCounters;
-    await ext.storage.local.set({ msfCustomCounters: customCounters });
+    await storageSet({ msfCustomCounters: customCounters });
 
     // Recalculer la fusion et re-render
     mergeCounters();
     renderTeams();
 
-    document.getElementById("save-status").textContent = "Sauvegarde!";
+    document.getElementById("save-status").textContent = t("saved");
     document.getElementById("save-status").style.color = "#51cf66";
     setTimeout(() => {
       document.getElementById("save-status").textContent = "";
     }, 2000);
   } catch (e) {
-    document.getElementById("save-status").textContent = "Erreur!";
+    document.getElementById("save-status").textContent = t("error");
     document.getElementById("save-status").style.color = "#ff6b6b";
   }
 });
@@ -291,5 +395,133 @@ document.getElementById("back").addEventListener("click", () => {
   window.location.href = "popup.html";
 });
 
+// ============================================
+// Language selector
+// ============================================
+
+function updateUILanguage() {
+  // Update static elements with data-i18n
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.dataset.i18n;
+    if (i18n[currentLang][key]) {
+      el.textContent = i18n[currentLang][key];
+    }
+  });
+
+  // Update save button
+  const saveBtn = document.getElementById("btn-save");
+  if (saveBtn) saveBtn.textContent = t("save");
+
+  // Update language buttons
+  document.querySelectorAll(".lang-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.lang === currentLang);
+  });
+}
+
+async function setLanguage(lang) {
+  currentLang = lang;
+  await storageSet({ msfLanguage: lang });
+  updateUILanguage();
+  renderSourceLegend();
+  renderTeams();
+}
+
+// Language button event listeners
+document.querySelectorAll(".lang-btn").forEach(btn => {
+  btn.addEventListener("click", () => setLanguage(btn.dataset.lang));
+});
+
+// ============================================
+// Search / Filter
+// ============================================
+
+const searchInput = document.getElementById("search-input");
+const searchClear = document.getElementById("search-clear");
+
+/**
+ * Filtre les équipes selon la recherche
+ * Cherche dans: nom équipe, nom FR, noms des membres, IDs des membres
+ */
+function filterTeams(query) {
+  const normalizedQuery = query.toLowerCase().trim();
+
+  document.querySelectorAll(".team-section").forEach(section => {
+    const teamId = section.dataset.teamId;
+    const team = teamsData.find(t => t.id === teamId);
+
+    if (!team) {
+      section.classList.add("hidden");
+      return;
+    }
+
+    if (!normalizedQuery) {
+      section.classList.remove("hidden");
+      section.classList.remove("search-match");
+      return;
+    }
+
+    // Chercher dans le nom de l'équipe
+    const teamName = (team.name || "").toLowerCase();
+    const teamNameFr = (team.nameFr || "").toLowerCase();
+
+    // Chercher dans les membres
+    const members = (team.members || []).map(m => m.toLowerCase());
+    const memberIds = (team.memberIds || []).map(m => m.toLowerCase());
+
+    // Chercher aussi dans les noms des personnages depuis charactersData
+    const memberNames = (team.memberIds || []).map(id => {
+      const char = charactersData[id];
+      return char ? char.name.toLowerCase() : "";
+    });
+
+    const allSearchable = [
+      teamName,
+      teamNameFr,
+      ...members,
+      ...memberIds,
+      ...memberNames
+    ];
+
+    const matches = allSearchable.some(text => text.includes(normalizedQuery));
+
+    if (matches) {
+      section.classList.remove("hidden");
+      section.classList.add("search-match");
+    } else {
+      section.classList.add("hidden");
+      section.classList.remove("search-match");
+    }
+  });
+}
+
+// Event listeners pour la recherche
+searchInput.addEventListener("input", (e) => {
+  filterTeams(e.target.value);
+});
+
+searchClear.addEventListener("click", () => {
+  searchInput.value = "";
+  filterTeams("");
+  searchInput.focus();
+});
+
+// Raccourci clavier: Escape pour effacer
+searchInput.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    searchInput.value = "";
+    filterTeams("");
+  }
+});
+
 // Init
-loadData();
+(async function init() {
+  // Load saved language preference
+  const stored = await storageGet("msfLanguage");
+  if (stored.msfLanguage) {
+    currentLang = stored.msfLanguage;
+  }
+  updateUILanguage();
+
+  // Load data
+  await loadData();
+})();
