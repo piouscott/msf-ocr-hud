@@ -19,6 +19,8 @@
 
     <section id="tools">
       <button id="btn-detach" class="btn-small" title="Ouvrir dans une fenêtre permanente">🪟 Fenêtre</button>
+      <button id="btn-notes" class="btn-small" title="Voir les notes de version">📋 Notes</button>
+      <button id="btn-events" class="btn-small" title="Événements en cours">📅 Events</button>
       <button id="btn-export" class="btn-small">Exporter</button>
       <button id="btn-import" class="btn-small">Importer</button>
       <button id="btn-manage" class="btn-small">Counters</button>
@@ -42,6 +44,21 @@
         <button id="btn-test-api" class="btn-test">Tester</button>
       </div>
       <div id="api-status" class="sync-status"></div>
+      <div id="api-auto-capture" class="api-auto-capture hidden">
+        <span class="auto-capture-icon">🔄</span>
+        <span class="auto-capture-text">Token capturé automatiquement</span>
+        <span id="api-capture-time" class="auto-capture-time"></span>
+      </div>
+    </section>
+
+    <section id="events-panel" class="hidden">
+      <div class="sync-header">
+        <span>Événements en cours</span>
+        <button id="btn-close-events" class="btn-close">X</button>
+      </div>
+      <div id="events-loading" class="events-loading">Chargement des événements...</div>
+      <div id="events-error" class="events-error hidden"></div>
+      <div id="events-list" class="events-list hidden"></div>
     </section>
 
     <section id="war-panel" class="hidden">

@@ -1,13 +1,14 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "MSF Counter",
   "version": "1.1",
 
   "background": {
-    "scripts": ["bg.js"]
+    "scripts": ["bg.js"],
+    "service_worker": "bg.js"
   },
 
-  "browser_action": {
+  "action": {
     "default_title": "MSF Counter",
     "default_popup": "popup/popup.html"
   },
@@ -23,14 +24,21 @@
     "activeTab",
     "tabs",
     "webNavigation",
-    "storage",
+    "webRequest",
+    "storage"
+  ],
+
+  "host_permissions": [
     "<all_urls>"
   ],
 
-  "web_accessible_resources": [
-    "msf-zones-config.json",
-    "lib/tesseract/*",
-    "modules/*",
-    "data/*"
-  ]
+  "web_accessible_resources": [{
+    "resources": [
+      "msf-zones-config.json",
+      "lib/tesseract/*",
+      "modules/*",
+      "data/*"
+    ],
+    "matches": ["<all_urls>"]
+  }]
 }

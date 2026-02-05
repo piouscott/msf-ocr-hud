@@ -1,5 +1,37 @@
 const ext = typeof browser !== "undefined" ? browser : chrome;
 
+// ============================================
+// AUTO-CAPTURE DU TOKEN MSF
+// ============================================
+
+// Intercepter les requêtes vers l'API MSF pour capturer le token Bearer
+ext.webRequest.onBeforeSendHeaders.addListener(
+  async (details) => {
+    const authHeader = details.requestHeaders.find(
+      h => h.name.toLowerCase() === "authorization"
+    );
+
+    if (authHeader && authHeader.value.startsWith("Bearer ")) {
+      const token = authHeader.value;
+
+      // Récupérer le token actuel pour comparer
+      const stored = await ext.storage.local.get(["msfApiToken", "msfTokenCapturedAt"]);
+
+      // Ne sauvegarder que si c'est un nouveau token
+      if (stored.msfApiToken !== token) {
+        await ext.storage.local.set({
+          msfApiToken: token,
+          msfTokenCapturedAt: new Date().toISOString(),
+          msfTokenAutoCapture: true
+        });
+        console.log("[BG] Token MSF auto-capturé!");
+      }
+    }
+  },
+  { urls: ["*://api.marvelstrikeforce.com/*"] },
+  ["requestHeaders", "extraHeaders"]
+);
+
 async function sendToAllFrames(tabId, message) {
   // Recupere la liste des frames
   const frames = await ext.webNavigation.getAllFrames({ tabId });

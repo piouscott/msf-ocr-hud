@@ -1,8 +1,24 @@
 const ext = typeof browser !== "undefined" ? browser : chrome;
 
+// Wrapper pour storage.local.get compatible Chrome/Firefox
+function storageGet(keys) {
+  return new Promise((resolve) => {
+    ext.storage.local.get(keys, (result) => resolve(result || {}));
+  });
+}
+
+// Wrapper pour storage.local.set compatible Chrome/Firefox
+function storageSet(data) {
+  return new Promise((resolve) => {
+    ext.storage.local.set(data, () => resolve());
+  });
+}
+
 // Elements DOM
 const btnAnalyze = document.getElementById("btn-analyze");
 const btnDetach = document.getElementById("btn-detach");
+const btnNotes = document.getElementById("btn-notes");
+const btnEvents = document.getElementById("btn-events");
 const btnExport = document.getElementById("btn-export");
 const btnImport = document.getElementById("btn-import");
 const btnManage = document.getElementById("btn-manage");
@@ -11,6 +27,13 @@ const importFile = document.getElementById("import-file");
 const spinner = document.getElementById("spinner");
 const statusText = document.getElementById("status-text");
 const resultsSection = document.getElementById("results");
+
+// Events panel elements
+const eventsPanel = document.getElementById("events-panel");
+const btnCloseEvents = document.getElementById("btn-close-events");
+const eventsLoading = document.getElementById("events-loading");
+const eventsError = document.getElementById("events-error");
+const eventsList = document.getElementById("events-list");
 
 // Sync panel elements
 const syncPanel = document.getElementById("sync-panel");
@@ -28,6 +51,8 @@ const apiToken = document.getElementById("api-token");
 const btnSaveApi = document.getElementById("btn-save-api");
 const btnTestApi = document.getElementById("btn-test-api");
 const apiStatus = document.getElementById("api-status");
+const apiAutoCapture = document.getElementById("api-auto-capture");
+const apiCaptureTime = document.getElementById("api-capture-time");
 
 // War panel elements
 const warPanel = document.getElementById("war-panel");
@@ -56,7 +81,7 @@ let capturedWarPortraits = [null, null, null, null, null];
 // Recuperer les portraits depuis le content script au demarrage
 (async function loadSavedPortraits() {
   try {
-    const result = await ext.storage.local.get("msf_war_portraits");
+    const result = await storageGet("msf_war_portraits");
     if (result.msf_war_portraits && result.msf_war_portraits.length > 0) {
       capturedWarPortraits = result.msf_war_portraits;
       console.log("[Popup] Portraits recuperes depuis storage:", capturedWarPortraits.length);
@@ -114,7 +139,7 @@ async function loadTeamsAndCounters() {
     countersData = countersJson.counters || {};
 
     // Charger les counters remote/custom depuis storage
-    const stored = await ext.storage.local.get(["msfRemoteCounters", "msfCustomCounters"]);
+    const stored = await storageGet(["msfRemoteCounters", "msfCustomCounters"]);
 
     if (stored.msfRemoteCounters && stored.msfRemoteCounters.counters) {
       Object.assign(countersData, stored.msfRemoteCounters.counters);
@@ -190,12 +215,164 @@ btnDetach.addEventListener("click", async () => {
 });
 
 // ============================================
+// Bouton Notes de Version
+// ============================================
+
+btnNotes.addEventListener("click", () => {
+  const notesUrl = ext.runtime.getURL("RELEASE-NOTES.html");
+  ext.tabs.create({ url: notesUrl });
+});
+
+// ============================================
+// Bouton Events - Événements en cours
+// ============================================
+
+btnEvents.addEventListener("click", async () => {
+  eventsPanel.classList.toggle("hidden");
+  if (!eventsPanel.classList.contains("hidden")) {
+    await loadEvents();
+  }
+});
+
+btnCloseEvents.addEventListener("click", () => {
+  eventsPanel.classList.add("hidden");
+});
+
+async function loadEvents() {
+  eventsLoading.classList.remove("hidden");
+  eventsError.classList.add("hidden");
+  eventsList.classList.add("hidden");
+
+  try {
+    const stored = await storageGet(["msfApiToken"]);
+    if (!stored.msfApiToken) {
+      throw new Error("Token API non configuré. Allez dans API pour le configurer.");
+    }
+
+    const response = await fetch("https://api.marvelstrikeforce.com/player/v1/events", {
+      headers: {
+        "x-api-key": MSF_API_KEY,
+        "Authorization": stored.msfApiToken.startsWith("Bearer ") ? stored.msfApiToken : `Bearer ${stored.msfApiToken}`,
+        "Accept": "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erreur API: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const now = Date.now() / 1000;
+
+    // Filtrer les événements actifs avec scoring
+    const activeEvents = data.data
+      .filter(e => e.endTime > now && e.startTime < now)
+      .filter(e => e.type === "milestone" && e.milestone?.scoring)
+      .filter(e => e.milestone.scoring.methods?.length || e.milestone.scoring.cappedScorings?.length);
+
+    renderEvents(activeEvents);
+    eventsLoading.classList.add("hidden");
+    eventsList.classList.remove("hidden");
+
+  } catch (err) {
+    eventsLoading.classList.add("hidden");
+    eventsError.textContent = err.message;
+    eventsError.classList.remove("hidden");
+  }
+}
+
+function renderEvents(events) {
+  if (events.length === 0) {
+    eventsList.innerHTML = '<div class="no-counters">Aucun événement avec scoring actif</div>';
+    return;
+  }
+
+  eventsList.innerHTML = events.map((event, idx) => {
+    const scoring = event.milestone.scoring;
+    const rows = [];
+
+    // Méthodes illimitées
+    if (scoring.methods) {
+      scoring.methods.forEach(m => {
+        rows.push({ desc: m.description, points: m.points, cap: null });
+      });
+    }
+
+    // Méthodes avec cap
+    if (scoring.cappedScorings) {
+      scoring.cappedScorings.forEach(cs => {
+        cs.methods.forEach(m => {
+          rows.push({ desc: m.description, points: m.points, cap: cs.cap });
+        });
+      });
+    }
+
+    const tableHtml = rows.length > 0 ? `
+      <div class="event-details" id="event-details-${idx}">
+        <table class="scoring-table">
+          <thead>
+            <tr>
+              <th>Action</th>
+              <th>Pts</th>
+              <th>Limite</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(r => `
+              <tr>
+                <td class="scoring-action">${r.desc}</td>
+                <td class="scoring-points">${formatNumber(r.points)}</td>
+                <td class="scoring-cap ${r.cap === null ? 'unlimited' : ''}">${r.cap === null ? '∞' : formatNumber(r.cap)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    ` : '';
+
+    return `
+      <div class="event-card milestone">
+        <div class="event-header">
+          <span class="event-name">${event.name}</span>
+          <span class="event-type">${event.milestone.typeName || 'Milestone'}</span>
+        </div>
+        ${event.subName ? `<div class="event-subname">${event.subName}</div>` : ''}
+        ${rows.length > 0 ? `
+          <button class="event-toggle" onclick="toggleEventDetails(${idx})">
+            Voir ${rows.length} conditions ▼
+          </button>
+          ${tableHtml}
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleEventDetails(idx) {
+  const details = document.getElementById(`event-details-${idx}`);
+  if (details) {
+    details.classList.toggle("show");
+    const btn = details.previousElementSibling;
+    if (btn && btn.classList.contains("event-toggle")) {
+      const isOpen = details.classList.contains("show");
+      btn.innerHTML = isOpen ? `Masquer ▲` : `Voir conditions ▼`;
+    }
+  }
+}
+
+function formatNumber(n) {
+  if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(0) + 'K';
+  return n.toString();
+}
+
+// ============================================
 // Bouton Exporter
 // ============================================
 
 btnExport.addEventListener("click", async () => {
   try {
-    const stored = await ext.storage.local.get(["msfZonesConfig", "msfPortraits"]);
+    const stored = await storageGet(["msfZonesConfig", "msfPortraits"]);
 
     const exportData = {
       version: 1,
@@ -236,14 +413,14 @@ importFile.addEventListener("change", async (e) => {
     const data = JSON.parse(text);
 
     if (data.zones) {
-      await ext.storage.local.set({ msfZonesConfig: data.zones });
+      await storageSet({ msfZonesConfig: data.zones });
     }
 
     if (data.portraits) {
       // Fusionner avec les portraits existants
-      const stored = await ext.storage.local.get("msfPortraits");
+      const stored = await storageGet("msfPortraits");
       const merged = { ...(stored.msfPortraits || {}), ...data.portraits };
-      await ext.storage.local.set({ msfPortraits: merged });
+      await storageSet({ msfPortraits: merged });
     }
 
     const zoneCount = data.zones ? data.zones.slots.length : 0;
@@ -275,7 +452,7 @@ btnSettings.addEventListener("click", async () => {
 
   if (!syncPanel.classList.contains("hidden")) {
     // Charger l'URL sauvegardee et les infos de sync
-    const stored = await ext.storage.local.get(["msfSyncUrl", "msfRemoteCounters"]);
+    const stored = await storageGet(["msfSyncUrl", "msfRemoteCounters"]);
 
     if (stored.msfSyncUrl) {
       syncUrl.value = stored.msfSyncUrl;
@@ -313,7 +490,7 @@ btnSync.addEventListener("click", async () => {
   }
 
   // Sauvegarder l'URL
-  await ext.storage.local.set({ msfSyncUrl: url });
+  await storageSet({ msfSyncUrl: url });
 
   btnSync.disabled = true;
   setSyncStatus("Synchronisation...", "");
@@ -529,10 +706,10 @@ function updateSlotCounters(slotIndex, teamId) {
  */
 async function savePortraitHash(hash, name) {
   try {
-    const stored = await ext.storage.local.get("msfPortraits");
+    const stored = await storageGet("msfPortraits");
     const portraits = stored.msfPortraits || {};
     portraits[hash] = name;
-    await ext.storage.local.set({ msfPortraits: portraits });
+    await storageSet({ msfPortraits: portraits });
     console.log(`[Popup] Portrait enregistre: ${name} = ${hash}`);
   } catch (e) {
     console.error("[Popup] Erreur sauvegarde portrait:", e);
@@ -559,6 +736,18 @@ function formatPower(num) {
   return num.toLocaleString("fr-FR");
 }
 
+function getTimeAgo(date) {
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+
+  if (diffMins < 1) return "à l'instant";
+  if (diffMins < 60) return `il y a ${diffMins} min`;
+  if (diffHours < 24) return `il y a ${diffHours}h`;
+  return date.toLocaleDateString("fr-FR");
+}
+
 function setLoading(loading) {
   if (loading) {
     spinner.classList.remove("hidden");
@@ -583,11 +772,23 @@ btnApi.addEventListener("click", async () => {
   syncPanel.classList.add("hidden"); // Fermer l'autre panneau
 
   if (!apiPanel.classList.contains("hidden")) {
-    // Charger le token sauvegarde
-    const stored = await ext.storage.local.get(["msfApiToken"]);
+    // Charger le token sauvegarde et les infos de capture
+    const stored = await storageGet(["msfApiToken", "msfTokenCapturedAt", "msfTokenAutoCapture"]);
     if (stored.msfApiToken) {
       apiToken.value = stored.msfApiToken;
     }
+
+    // Afficher l'indicateur de capture automatique si applicable
+    if (stored.msfTokenAutoCapture && stored.msfTokenCapturedAt) {
+      apiAutoCapture.classList.remove("hidden");
+      apiAutoCapture.classList.add("captured");
+      const captureDate = new Date(stored.msfTokenCapturedAt);
+      const timeAgo = getTimeAgo(captureDate);
+      apiCaptureTime.textContent = timeAgo;
+    } else {
+      apiAutoCapture.classList.add("hidden");
+    }
+
     setApiStatus("", "");
   }
 });
@@ -607,7 +808,7 @@ btnSaveApi.addEventListener("click", async () => {
   // S'assurer que le token commence par "Bearer "
   const finalToken = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
 
-  await ext.storage.local.set({ msfApiToken: finalToken });
+  await storageSet({ msfApiToken: finalToken });
   setApiStatus("Token sauvegarde", "success");
 });
 
@@ -637,7 +838,7 @@ btnTestApi.addEventListener("click", async () => {
       const playerName = data.data?.name || "Inconnu";
       setApiStatus(`Connecte: ${playerName}`, "success");
       // Sauvegarder automatiquement si le test reussit
-      await ext.storage.local.set({ msfApiToken: finalToken });
+      await storageSet({ msfApiToken: finalToken });
     } else if (response.status === 401) {
       setApiStatus("Token invalide ou expire", "error");
     } else {
@@ -963,13 +1164,13 @@ warPortraits.addEventListener("click", async (e) => {
 
       // Sauvegarder dans la base locale
       try {
-        const stored = await ext.storage.local.get("msfPortraits");
+        const stored = await storageGet("msfPortraits");
         const portraits = stored.msfPortraits || {};
         portraits[hash] = {
           name: portrait.name,
           charId: charId
         };
-        await ext.storage.local.set({ msfPortraits: portraits });
+        await storageSet({ msfPortraits: portraits });
         console.log(`[Popup] Portrait sauvegardé: ${portrait.name} = ${hash}`);
       } catch (e) {
         console.error("[Popup] Erreur sauvegarde portrait:", e);
@@ -979,7 +1180,7 @@ warPortraits.addEventListener("click", async (e) => {
       updateWarPortraitsDisplay();
 
       // Sauvegarder les portraits mis à jour
-      await ext.storage.local.set({ msf_war_portraits: capturedWarPortraits });
+      await storageSet({ msf_war_portraits: capturedWarPortraits });
     }
   } else {
     // Supprimer le portrait
@@ -1173,7 +1374,7 @@ btnWarBarracks.addEventListener("click", async () => {
 // Afficher le statut de calibration au chargement
 (async function checkCalibrationStatus() {
   try {
-    const result = await ext.storage.local.get("msf_barracks_calibration");
+    const result = await storageGet("msf_barracks_calibration");
     if (result.msf_barracks_calibration) {
       const cal = result.msf_barracks_calibration;
       calibrationStatus.textContent = `Taille carte: ${Math.round(cal.card1.width)}x${Math.round(cal.card1.height)}px`;
