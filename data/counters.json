@@ -2321,7 +2321,7 @@
         "confidence": 65
       }
     ],
-    "newmutants": [
+    "newmutant": [
       {
         "team": "orchis",
         "confidence": 95,

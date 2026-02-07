@@ -1,7 +1,14 @@
 {
   "manifest_version": 3,
   "name": "MSF Counter",
-  "version": "1.1",
+  "version": "1.2",
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "msf-counter@extension",
+      "strict_min_version": "109.0"
+    }
+  },
 
   "background": {
     "scripts": ["bg.js"],
@@ -14,7 +21,13 @@
   },
 
   "content_scripts": [{
-    "matches": ["<all_urls>"],
+    "matches": [
+      "*://*.marvelstrikeforce.com/*",
+      "*://*.scopelypv.com/*",
+      "*://*.scopely.io/*",
+      "https://*/*",
+      "http://*/*"
+    ],
     "js": ["lib/tesseract/tesseract.min.js", "content.js"],
     "run_at": "document_end",
     "all_frames": true
@@ -25,7 +38,8 @@
     "tabs",
     "webNavigation",
     "webRequest",
-    "storage"
+    "storage",
+    "scripting"
   ],
 
   "host_permissions": [

@@ -1451,24 +1451,21 @@
       "name": "INSIDIOUS SIX",
       "nameFr": "INSIDIEUX SIX",
       "members": [
-        "Doctor Octopus",
-        "Electro",
-        "Green Goblin (Classic)",
-        "Rhino",
+        "Hobgoblin",
+        "Scorpion",
         "Shocker",
+        "Superior Spider-Man",
         "Vulture"
       ],
       "memberIds": [
-        "DoctorOctopus",
-        "Electro",
-        "GreenGoblinGlider",
-        "Rhino",
+        "Hobgoblin",
+        "Scorpion",
         "Shocker",
+        "SuperiorSpiderMan",
         "Vulture"
       ],
       "tags": ["insidioussix"],
-      "isVariant": true,
-      "memberCount": 6
+      "memberCount": 5
     },
     {
       "id": "spiderweaver",
@@ -1520,7 +1517,7 @@
     {
       "id": "absoluteaforce_superskrull_dormammu",
       "name": "ABSOLUTE A-FORCE + Super Skrull + Dormammu",
-      "nameFr": "ABSOLUTE A-FORCE + Super Skrull + Dormammu",
+      "nameFr": "A-FORCE ABSOLUTE + Super Skrull + Dormammu",
       "members": ["Ironheart", "Kahhori", "Medusa", "Ms. Marvel (Classic)", "Wasp", "Super Skrull", "Dormammu"],
       "memberIds": ["Ironheart", "Kahhori", "Medusa", "MsMarvelClassic", "Wasp", "SuperSkrull", "Dormammu"],
       "tags": ["absoluteaforce"],
@@ -1529,7 +1526,7 @@
     {
       "id": "absoluteaforce_superskrull",
       "name": "ABSOLUTE A-FORCE + Super Skrull",
-      "nameFr": "ABSOLUTE A-FORCE + Super Skrull",
+      "nameFr": "A-FORCE ABSOLUTE + Super Skrull",
       "members": ["Ironheart", "Kahhori", "Medusa", "Ms. Marvel (Classic)", "Wasp", "Super Skrull"],
       "memberIds": ["Ironheart", "Kahhori", "Medusa", "MsMarvelClassic", "Wasp", "SuperSkrull"],
       "tags": ["absoluteaforce"],
@@ -1538,7 +1535,7 @@
     {
       "id": "absoluteaforce_odin",
       "name": "ABSOLUTE A-FORCE + Odin",
-      "nameFr": "ABSOLUTE A-FORCE + Odin",
+      "nameFr": "A-FORCE ABSOLUTE + Odin",
       "members": ["Ironheart", "Kahhori", "Medusa", "Ms. Marvel (Classic)", "Wasp", "Odin"],
       "memberIds": ["Ironheart", "Kahhori", "Medusa", "MsMarvelClassic", "Wasp", "Odin"],
       "tags": ["absoluteaforce"],
@@ -1547,7 +1544,7 @@
     {
       "id": "absoluteaforce_mephisto_superskrull",
       "name": "ABSOLUTE A-FORCE + Mephisto + Super Skrull",
-      "nameFr": "ABSOLUTE A-FORCE + Mephisto + Super Skrull",
+      "nameFr": "A-FORCE ABSOLUTE + Mephisto + Super Skrull",
       "members": ["Ironheart", "Kahhori", "Medusa", "Ms. Marvel (Classic)", "Wasp", "Mephisto", "Super Skrull"],
       "memberIds": ["Ironheart", "Kahhori", "Medusa", "MsMarvelClassic", "Wasp", "Mephisto", "SuperSkrull"],
       "tags": ["absoluteaforce"],
@@ -1567,14 +1564,14 @@
       "name": "CABAL + Black Knight + Doom",
       "nameFr": "CABALE + Black Knight + Doom",
       "members": ["Iron Patriot", "Namor", "The Leader", "Black Knight", "Doctor Doom"],
-      "memberIds": ["IronPatriot", "Namor", "TheLeader", "BlackKnight", "DoctorDoom"],
+      "memberIds": ["IronPatriot", "Namor", "TheLeader", "BlackKnight", "Doom"],
       "tags": ["cabal"],
       "isVariant": true
     },
     {
       "id": "hivemind_mephisto",
       "name": "HIVE-MIND + Mephisto",
-      "nameFr": "HIVE-MIND + Mephisto",
+      "nameFr": "CONSCIENCE COLLECTIVE + Mephisto",
       "members": ["Carnage", "Gwenom", "Red Goblin", "Void Knight", "Venom", "Mephisto"],
       "memberIds": ["Carnage", "Gwenom", "RedGoblin", "SymbioteSilverSurfer", "Venom", "Mephisto"],
       "tags": ["hivemind"],
@@ -1583,7 +1580,7 @@
     {
       "id": "hivemind_superskrull",
       "name": "HIVE-MIND + Super Skrull",
-      "nameFr": "HIVE-MIND + Super Skrull",
+      "nameFr": "CONSCIENCE COLLECTIVE + Super Skrull",
       "members": ["Carnage", "Gwenom", "Red Goblin", "Void Knight", "Venom", "Super Skrull"],
       "memberIds": ["Carnage", "Gwenom", "RedGoblin", "SymbioteSilverSurfer", "Venom", "SuperSkrull"],
       "tags": ["hivemind"],
@@ -1592,7 +1589,7 @@
     {
       "id": "hivemind_knull",
       "name": "HIVE-MIND + Knull",
-      "nameFr": "HIVE-MIND + Knull",
+      "nameFr": "CONSCIENCE COLLECTIVE + Knull",
       "members": ["Carnage", "Gwenom", "Red Goblin", "Void Knight", "Venom", "Knull"],
       "memberIds": ["Carnage", "Gwenom", "RedGoblin", "SymbioteSilverSurfer", "Venom", "Knull"],
       "tags": ["hivemind"],
@@ -1601,7 +1598,7 @@
     {
       "id": "hivemind_knull_mephisto",
       "name": "HIVE-MIND + Knull + Mephisto",
-      "nameFr": "HIVE-MIND + Knull + Mephisto",
+      "nameFr": "CONSCIENCE COLLECTIVE + Knull + Mephisto",
       "members": ["Carnage", "Gwenom", "Red Goblin", "Void Knight", "Venom", "Knull", "Mephisto"],
       "memberIds": ["Carnage", "Gwenom", "RedGoblin", "SymbioteSilverSurfer", "Venom", "Knull", "Mephisto"],
       "tags": ["hivemind"],
@@ -1610,7 +1607,7 @@
     {
       "id": "hivemind_ares",
       "name": "HIVE-MIND + Ares",
-      "nameFr": "HIVE-MIND + Ares",
+      "nameFr": "CONSCIENCE COLLECTIVE + Ares",
       "members": ["Carnage", "Gwenom", "Red Goblin", "Void Knight", "Venom", "Ares"],
       "memberIds": ["Carnage", "Gwenom", "RedGoblin", "SymbioteSilverSurfer", "Venom", "Ares"],
       "tags": ["hivemind"],
@@ -1675,7 +1672,7 @@
       "name": "Black Knight + Odin + Mephisto + Doom + Super Skrull",
       "nameFr": "Black Knight + Odin + Mephisto + Doom + Super Skrull",
       "members": ["Black Knight", "Odin", "Mephisto", "Doctor Doom", "Super Skrull"],
-      "memberIds": ["BlackKnight", "Odin", "Mephisto", "DoctorDoom", "SuperSkrull"],
+      "memberIds": ["BlackKnight", "Odin", "Mephisto", "Doom", "SuperSkrull"],
       "tags": ["horseman"],
       "isVariant": true
     },
@@ -1691,7 +1688,7 @@
     {
       "id": "spidersociety_mephisto",
       "name": "SPIDER-SOCIETY + Mephisto",
-      "nameFr": "SPIDER-SOCIETY + Mephisto",
+      "nameFr": "SOCIÉTÉ DES ARAIGNÉES + Mephisto",
       "members": ["Ghost-Spider", "Peni Parker", "Peter B. Parker", "Spider-Man (Noir)", "Spider-Man (Pavitr)", "Mephisto"],
       "memberIds": ["GhostSpider", "PeniParker", "PeterBParker", "SpiderManNoir", "SpiderManPavitr", "Mephisto"],
       "tags": ["spidersociety"],
@@ -1702,7 +1699,7 @@
       "name": "X-TREME X-MEN + Phoenix Force",
       "nameFr": "X-TREME X-MEN + Phoenix Force",
       "members": ["Cyclops", "Forge", "Gambit", "Nightcrawler", "Sunspot", "Phoenix Force"],
-      "memberIds": ["Cyclops", "Forge", "Gambit", "Nightcrawler", "Sunspot", "PhoenixForce"],
+      "memberIds": ["Cyclops", "Forge", "Gambit", "Nightcrawler", "Sunspot", "Phoenix"],
       "tags": ["xtreme"],
       "isVariant": true
     }

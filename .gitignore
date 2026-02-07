@@ -4,3 +4,4 @@ debug/
 .claude/
 releases/
 scripts/deploy-tester.ps1
+*.har
