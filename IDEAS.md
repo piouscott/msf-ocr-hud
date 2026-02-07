@@ -7,10 +7,27 @@
 - `squads` - equipes sauvegardees du joueur
 - `getCharacterList` - liste de tous les personnages du jeu
 
-### /game/event
+### /game/v1/events (x-api-key seul, pas besoin de Bearer token)
 - Evenements en cours avec conditions de scoring
 - Teams requises pour certains events
 - Points par action (raids, war, blitz, etc.)
+
+Structure EventInfo:
+- `id`, `name`, `startTime`, `endTime`
+- `type`: blitz, milestone, episodic, warSeason, raidSeason, tower, etc.
+
+Pour blitz/tower events:
+- `requirements.anyCharacterFilters.allTraits` - Traits requis (ex: "Mutant", "X-Men")
+- `requirements.anyCharacterFilters.anyTraits` - Au moins un de ces traits
+- `requirements.anyCharacterFilters.anyCharacters` - Personnages specifiques
+
+Pour milestone events:
+- `scoring.methods[].description` - "Win War battles", "Complete Raid nodes"
+- `scoring.methods[].points` - Points par action
+
+### /player/v1/events (x-api-key + Bearer token)
+- Events avec progression du joueur
+- Necessite le token capture
 
 ### Donnees locales
 - `teams.json` - definitions des equipes
@@ -61,9 +78,11 @@ Event dit "Utilisez X-Men en guerre" -> Bouton "Voir cibles" -> Liste les equipe
 ## Implementation suggeree
 
 ### Phase 1 - Counters inverses
-1. Creer `data/reverse-counters.json` ou calculer dynamiquement
-2. Pour chaque equipe, lister "cette equipe counter: X, Y, Z"
-3. Dans panel Events, ajouter bouton "Voir cibles" par team
+1. Appeler `/game/v1/events` avec x-api-key (deja disponible dans popup.js)
+2. Extraire les requirements (traits) des events blitz/tower
+3. Mapper traits -> equipes via teams.json
+4. Inverser counters.json: "Cette equipe counter quoi ?"
+5. Dans panel Events, ajouter bouton "Voir cibles" par team
 
 ### Phase 2 - Farming advisor
 1. Analyser tous les counters
@@ -81,7 +100,9 @@ Event dit "Utilisez X-Men en guerre" -> Bouton "Voir cibles" -> Liste les equipe
 
 - Les invocations (summons) ne comptent pas pour la possession d'equipe
 - Le roster est stocke dans `msfPlayerRoster` (storage local)
-- Les events viennent de `/game/event` via l'API
+- `/game/v1/events` utilise seulement x-api-key (pas besoin du Bearer token joueur)
+- `/player/v1/events` necessite x-api-key + Bearer token (pour progression joueur)
+- x-api-key deja disponible: `MSF_API_KEY` dans popup.js
 
 ---
 
