@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MSF Counter - Connexion</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .container {
+      text-align: center;
+      padding: 40px;
+      background: #16213e;
+      border-radius: 12px;
+      max-width: 500px;
+    }
+    h1 { color: #f39c12; margin-bottom: 20px; }
+    .success { color: #51cf66; }
+    .error { color: #ff6b6b; }
+    .token-box {
+      background: #0f0f23;
+      padding: 15px;
+      border-radius: 8px;
+      word-break: break-all;
+      font-family: monospace;
+      font-size: 12px;
+      margin: 20px 0;
+      max-height: 100px;
+      overflow-y: auto;
+    }
+    button {
+      background: #f39c12;
+      color: #1a1a2e;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover { background: #e67e22; }
+    .instructions { margin-top: 20px; font-size: 14px; color: #aaa; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>MSF Counter</h1>
+    <div id="status">Traitement en cours...</div>
+    <div id="token-container" style="display:none;">
+      <div class="token-box" id="token-display"></div>
+      <button onclick="copyToken()">Copier le token</button>
+      <p class="instructions">Collez ce token dans l'extension MSF Counter (onglet API)</p>
+    </div>
+  </div>
+
+  <script>
+    // Extraire le token depuis l'URL (fragment ou query)
+    const hash = window.location.hash.substring(1);
+    const params = new URLSearchParams(hash || window.location.search);
+
+    const accessToken = params.get('access_token');
+    const code = params.get('code');
+    const error = params.get('error');
+    const errorDesc = params.get('error_description');
+
+    const statusEl = document.getElementById('status');
+    const tokenContainer = document.getElementById('token-container');
+    const tokenDisplay = document.getElementById('token-display');
+
+    if (error) {
+      statusEl.innerHTML = `<p class="error">Erreur: ${error}</p><p>${errorDesc || ''}</p>`;
+    } else if (accessToken) {
+      statusEl.innerHTML = '<p class="success">Connexion reussie !</p>';
+      tokenDisplay.textContent = accessToken;
+      tokenContainer.style.display = 'block';
+
+      // Essayer d'envoyer le token a l'extension
+      try {
+        localStorage.setItem('msf_oauth_token', accessToken);
+      } catch(e) {}
+    } else if (code) {
+      statusEl.innerHTML = '<p>Code recu, echange en cours...</p><p class="instructions">Le code doit etre echange contre un token. Cette fonctionnalite sera ajoutee prochainement.</p>';
+      tokenDisplay.textContent = code;
+      tokenContainer.style.display = 'block';
+    } else {
+      statusEl.innerHTML = '<p class="error">Aucun token recu</p><p class="instructions">Verifiez que vous avez bien autorise l\'application.</p>';
+    }
+
+    function copyToken() {
+      const token = tokenDisplay.textContent;
+      navigator.clipboard.writeText(token).then(() => {
+        alert('Token copie !');
+      });
+    }
+  </script>
+</body>
+</html>
