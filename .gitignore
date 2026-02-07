@@ -5,3 +5,5 @@ debug/
 releases/
 scripts/deploy-tester.ps1
 *.har
+DEPLOY.md
+RELEASE-READY.md
