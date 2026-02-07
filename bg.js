@@ -1,35 +1,65 @@
 const ext = typeof browser !== "undefined" ? browser : chrome;
+const isFirefox = typeof browser !== "undefined";
 
 // ============================================
 // AUTO-CAPTURE DU TOKEN MSF
 // ============================================
 
-// Intercepter les requêtes vers l'API MSF pour capturer le token Bearer
+// Intercepter les requêtes vers l'API MSF pour capturer le token
+// Note: extraHeaders est Chrome-only, Firefox n'en a pas besoin
+const webRequestOptions = isFirefox
+  ? ["requestHeaders"]
+  : ["requestHeaders", "extraHeaders"];
+
+// URLs de l'API MSF (version web utilise api-prod)
+const msfApiUrls = [
+  "*://api.marvelstrikeforce.com/*",
+  "*://api-prod.marvelstrikeforce.com/*"
+];
+
 ext.webRequest.onBeforeSendHeaders.addListener(
-  async (details) => {
+  (details) => {
+    // Chercher x-titan-token (utilisé par la version web)
+    const titanToken = details.requestHeaders.find(
+      h => h.name.toLowerCase() === "x-titan-token"
+    );
+
+    // Ou chercher Authorization Bearer (utilisé par l'API publique)
     const authHeader = details.requestHeaders.find(
       h => h.name.toLowerCase() === "authorization"
     );
 
-    if (authHeader && authHeader.value.startsWith("Bearer ")) {
-      const token = authHeader.value;
+    let tokenToSave = null;
+    let tokenType = null;
 
-      // Récupérer le token actuel pour comparer
-      const stored = await ext.storage.local.get(["msfApiToken", "msfTokenCapturedAt"]);
+    if (titanToken && titanToken.value) {
+      tokenToSave = titanToken.value;
+      tokenType = "titan";
+      console.log("[BG] x-titan-token détecté sur:", details.url);
+    } else if (authHeader && authHeader.value.startsWith("Bearer ")) {
+      tokenToSave = authHeader.value;
+      tokenType = "bearer";
+      console.log("[BG] Bearer token détecté sur:", details.url);
+    }
 
-      // Ne sauvegarder que si c'est un nouveau token
-      if (stored.msfApiToken !== token) {
-        await ext.storage.local.set({
-          msfApiToken: token,
-          msfTokenCapturedAt: new Date().toISOString(),
-          msfTokenAutoCapture: true
-        });
-        console.log("[BG] Token MSF auto-capturé!");
-      }
+    if (tokenToSave) {
+      // Sauvegarder le token (async dans un IIFE pour ne pas bloquer)
+      (async () => {
+        const stored = await ext.storage.local.get(["msfApiToken", "msfTokenType"]);
+        if (stored.msfApiToken !== tokenToSave) {
+          await ext.storage.local.set({
+            msfApiToken: tokenToSave,
+            msfTokenType: tokenType,
+            msfTokenCapturedAt: new Date().toISOString(),
+            msfTokenAutoCapture: true
+          });
+          console.log("[BG] Token MSF auto-capturé! Type:", tokenType);
+        }
+      })();
     }
   },
-  { urls: ["*://api.marvelstrikeforce.com/*"] },
-  ["requestHeaders", "extraHeaders"]
+  { urls: msfApiUrls },
+  webRequestOptions
 );
 
 async function sendToAllFrames(tabId, message) {
@@ -109,6 +139,36 @@ ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     });
     return true;
   }
+
+  // Récupérer les squads du joueur
+  if (msg.type === "MSF_GET_SQUADS") {
+    handleGetSquads().then(sendResponse).catch(e => {
+      sendResponse({ error: e.message });
+    });
+    return true;
+  }
+
+  // Récupérer le roster complet du joueur
+  if (msg.type === "MSF_GET_ROSTER") {
+    handleGetRoster().then(sendResponse).catch(e => {
+      sendResponse({ error: e.message });
+    });
+    return true;
+  }
+
+  // Debug: vérifier le token capturé
+  if (msg.type === "MSF_CHECK_TOKEN") {
+    ext.storage.local.get(["msfApiToken", "msfTokenCapturedAt", "msfTokenAutoCapture", "msfTokenType"]).then(stored => {
+      sendResponse({
+        hasToken: !!stored.msfApiToken,
+        tokenPreview: stored.msfApiToken ? stored.msfApiToken.substring(0, 30) + "..." : null,
+        tokenType: stored.msfTokenType || "unknown",
+        capturedAt: stored.msfTokenCapturedAt,
+        autoCapture: stored.msfTokenAutoCapture
+      });
+    });
+    return true;
+  }
 });
 
 async function handleAnalyzeRequest() {
@@ -134,11 +194,46 @@ async function handleAnalyzeRequest() {
     console.log("[BG] Resultat recu:", result);
     return result;
   } catch (e) {
+    console.log("[BG] Erreur premier essai:", e.message);
+
+    // Essayer d'injecter le content script dynamiquement
+    try {
+      console.log("[BG] Tentative injection dynamique...");
+      await ext.scripting.executeScript({
+        target: { tabId: tab.id, allFrames: true },
+        files: ["lib/tesseract/tesseract.min.js", "content.js"]
+      });
+
+      // Attendre un peu que le script s'initialise
+      await new Promise(r => setTimeout(r, 500));
+
+      // Réessayer
+      const result = await ext.tabs.sendMessage(tab.id, {
+        type: "MSF_EXTRACT",
+        dataUrl
+      });
+      console.log("[BG] Resultat apres injection:", result);
+      return result;
+    } catch (e2) {
+      console.log("[BG] Erreur injection:", e2.message);
+    }
+
     // Si erreur, essayer les frames MSF
     const frames = await ext.webNavigation.getAllFrames({ tabId: tab.id });
     const targets = frames.filter(f => (f.url || "").includes("webplayable.m3.scopelypv.com"));
 
     if (targets.length > 0) {
+      try {
+        // Injecter dans l'iframe specifique
+        await ext.scripting.executeScript({
+          target: { tabId: tab.id, frameIds: [targets[0].frameId] },
+          files: ["lib/tesseract/tesseract.min.js", "content.js"]
+        });
+        await new Promise(r => setTimeout(r, 500));
+      } catch (e3) {
+        console.log("[BG] Injection iframe echouee:", e3.message);
+      }
+
       const result = await ext.tabs.sendMessage(tab.id, {
         type: "MSF_EXTRACT",
         dataUrl
@@ -146,7 +241,7 @@ async function handleAnalyzeRequest() {
       return result;
     }
 
-    throw new Error("Content script non accessible: " + e.message);
+    throw new Error("Content script non accessible. Rechargez la page (F5) et reessayez.");
   }
 }
 
@@ -248,4 +343,118 @@ async function handleBarracksCommand(type) {
 
   await ext.tabs.sendMessage(tab.id, { type });
   return { success: true };
+}
+
+/**
+ * Récupère les squads du joueur via l'API MSF
+ */
+async function handleGetSquads() {
+  const stored = await ext.storage.local.get(["msfApiToken", "msfTokenType"]);
+
+  if (!stored.msfApiToken) {
+    throw new Error("Token non disponible. Jouez sur la version web pour capturer le token.");
+  }
+
+  // Utiliser l'API appropriée selon le type de token
+  let url, headers;
+
+  if (stored.msfTokenType === "titan") {
+    // API web (api-prod) avec x-titan-token
+    url = "https://api-prod.marvelstrikeforce.com/services/api/squads";
+    headers = {
+      "x-titan-token": stored.msfApiToken,
+      "x-app-version": "9.6.0-hp2",
+      "Accept": "application/json"
+    };
+  } else {
+    // API publique avec Bearer token
+    const MSF_API_KEY = "17wMKJLRxy3pYDCKG5ciP7VSU45OVumB2biCzzgw";
+    url = "https://api.marvelstrikeforce.com/player/v1/squads";
+    headers = {
+      "x-api-key": MSF_API_KEY,
+      "Authorization": stored.msfApiToken.startsWith("Bearer ") ? stored.msfApiToken : `Bearer ${stored.msfApiToken}`,
+      "Accept": "application/json"
+    };
+  }
+
+  console.log("[BG] Appel API squads:", url, "Type:", stored.msfTokenType);
+
+  const response = await fetch(url, { headers });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      throw new Error("Token expiré. Rejouez sur la version web.");
+    }
+    throw new Error(`Erreur API: ${response.status}`);
+  }
+
+  const data = await response.json();
+  console.log("[BG] Squads récupérés:", data);
+
+  // Format différent selon l'API
+  if (stored.msfTokenType === "titan") {
+    // L'API web retourne directement les squads
+    return {
+      success: true,
+      squads: data.squads || data,
+      raw: data
+    };
+  } else {
+    // L'API publique retourne { tabs: {...}, maxSquads: N }
+    // ou parfois { data: { tabs: {...} } }
+    const tabs = data.tabs || data.data?.tabs || {};
+    const maxSquads = data.maxSquads || data.data?.maxSquads || 0;
+    return {
+      success: true,
+      squads: tabs,
+      maxSquads: maxSquads
+    };
+  }
+}
+
+/**
+ * Récupère le roster complet du joueur (tous les personnages possédés)
+ */
+async function handleGetRoster() {
+  const stored = await ext.storage.local.get(["msfApiToken", "msfTokenType"]);
+
+  if (!stored.msfApiToken) {
+    throw new Error("Token non disponible. Jouez sur la version web pour capturer le token.");
+  }
+
+  // Seule l'API web (titan) supporte getPlayerRoster
+  if (stored.msfTokenType !== "titan") {
+    throw new Error("getPlayerRoster nécessite le x-titan-token (version web)");
+  }
+
+  const url = "https://api-prod.marvelstrikeforce.com/services/api/getPlayerRoster";
+  const headers = {
+    "x-titan-token": stored.msfApiToken,
+    "x-app-version": "9.6.0-hp2",
+    "Accept": "application/json"
+  };
+
+  console.log("[BG] Appel API getPlayerRoster");
+
+  const response = await fetch(url, { headers });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      throw new Error("Token expiré. Rejouez sur la version web.");
+    }
+    throw new Error(`Erreur API: ${response.status}`);
+  }
+
+  const data = await response.json();
+  console.log("[BG] Roster récupéré:", data.data?.length, "personnages");
+
+  // Extraire les IDs des personnages possédés
+  const characterIds = (data.data || []).map(c => c.id);
+
+  return {
+    success: true,
+    roster: characterIds,
+    rosterFull: data.data, // Avec power, stars, etc.
+    count: characterIds.length
+  };
 }

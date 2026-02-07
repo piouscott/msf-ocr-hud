@@ -77,13 +77,16 @@ button:active {
 
 #tools {
   display: flex;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
   margin-bottom: 12px;
 }
 
 .btn-small {
-  flex: 1;
-  padding: 6px 10px;
+  flex: 1 1 calc(25% - 6px);
+  min-width: 70px;
+  max-width: calc(50% - 4px);
+  padding: 6px 8px;
   font-size: 11px;
   background: #1a1a2e;
   border: 1px solid #444;
@@ -432,6 +435,22 @@ button:active {
   border-color: #555;
   color: #888;
   cursor: not-allowed;
+}
+
+.btn-danger {
+  background: #2d2d44;
+  color: #ff6b6b;
+  border: 1px solid #ff6b6b;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.btn-danger:hover {
+  background: #ff6b6b;
+  color: #fff;
 }
 
 /* War Button */

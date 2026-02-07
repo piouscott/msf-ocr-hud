@@ -813,39 +813,56 @@ btnSaveApi.addEventListener("click", async () => {
 });
 
 btnTestApi.addEventListener("click", async () => {
-  const token = apiToken.value.trim();
-
-  if (!token) {
-    setApiStatus("Token requis", "error");
-    return;
-  }
-
-  const finalToken = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
-
   btnTestApi.disabled = true;
   setApiStatus("Test en cours...", "");
 
   try {
-    const response = await fetch("https://api.marvelstrikeforce.com/player/v1/card", {
-      headers: {
+    // Récupérer le token stocké et son type
+    const stored = await storageGet(["msfApiToken", "msfTokenType"]);
+
+    if (!stored.msfApiToken) {
+      setApiStatus("Aucun token capturé", "error");
+      return;
+    }
+
+    let url, headers;
+
+    if (stored.msfTokenType === "titan") {
+      // API web (api-prod) avec x-titan-token
+      url = "https://api-prod.marvelstrikeforce.com/services/api/player";
+      headers = {
+        "x-titan-token": stored.msfApiToken,
+        "x-app-version": "9.6.0-hp2",
+        "Accept": "application/json"
+      };
+    } else {
+      // API publique avec Bearer token
+      const finalToken = stored.msfApiToken.startsWith("Bearer ")
+        ? stored.msfApiToken
+        : `Bearer ${stored.msfApiToken}`;
+      url = "https://api.marvelstrikeforce.com/player/v1/card";
+      headers = {
         "x-api-key": MSF_API_KEY,
         "Authorization": finalToken
-      }
-    });
+      };
+    }
+
+    const response = await fetch(url, { headers });
 
     if (response.ok) {
       const data = await response.json();
-      const playerName = data.data?.name || "Inconnu";
-      setApiStatus(`Connecte: ${playerName}`, "success");
-      // Sauvegarder automatiquement si le test reussit
-      await storageSet({ msfApiToken: finalToken });
-    } else if (response.status === 401) {
-      setApiStatus("Token invalide ou expire", "error");
+      // Format différent selon l'API
+      const playerName = stored.msfTokenType === "titan"
+        ? (data.name || data.player?.name || "Joueur")
+        : (data.data?.name || "Inconnu");
+      setApiStatus(`Connecté: ${playerName}`, "success");
+    } else if (response.status === 401 || response.status === 403) {
+      setApiStatus("Token invalide ou expiré", "error");
     } else {
       setApiStatus(`Erreur ${response.status}`, "error");
     }
   } catch (e) {
-    setApiStatus("Erreur reseau: " + e.message, "error");
+    setApiStatus("Erreur réseau: " + e.message, "error");
   } finally {
     btnTestApi.disabled = false;
   }
@@ -854,6 +871,157 @@ btnTestApi.addEventListener("click", async () => {
 function setApiStatus(text, type) {
   apiStatus.textContent = text;
   apiStatus.className = "sync-status " + (type || "");
+}
+
+// Bouton Debug Token
+const btnCheckToken = document.getElementById("btn-check-token");
+if (btnCheckToken) {
+  btnCheckToken.addEventListener("click", async () => {
+    setApiStatus("Vérification...", "");
+    try {
+      const result = await ext.runtime.sendMessage({ type: "MSF_CHECK_TOKEN" });
+      if (result.hasToken) {
+        const typeLabel = result.tokenType === "titan" ? "x-titan-token" : "Bearer";
+        setApiStatus(`Token ${typeLabel} présent`, "success");
+        console.log("[Debug] Token type:", result.tokenType);
+        console.log("[Debug] Token preview:", result.tokenPreview);
+        console.log("[Debug] Capturé:", result.capturedAt);
+      } else {
+        setApiStatus("Aucun token capturé. Jouez sur la version web.", "error");
+      }
+    } catch (e) {
+      setApiStatus("Erreur: " + e.message, "error");
+    }
+  });
+}
+
+// Bouton Effacer Token
+const btnClearToken = document.getElementById("btn-clear-token");
+if (btnClearToken) {
+  btnClearToken.addEventListener("click", async () => {
+    if (!confirm("Effacer le token stocké ? Vous devrez rejouer sur la version web pour le recapturer.")) {
+      return;
+    }
+    try {
+      await storageSet({
+        msfApiToken: null,
+        msfTokenType: null,
+        msfTokenCapturedAt: null,
+        msfTokenAutoCapture: false
+      });
+      apiToken.value = "";
+      apiAutoCapture.classList.add("hidden");
+      setApiStatus("Token effacé. Jouez sur la version web pour recapturer.", "success");
+    } catch (e) {
+      setApiStatus("Erreur: " + e.message, "error");
+    }
+  });
+}
+
+// Bouton Get Squads (+ Roster complet)
+const btnGetSquads = document.getElementById("btn-get-squads");
+const squadsResult = document.getElementById("squads-result");
+if (btnGetSquads) {
+  btnGetSquads.addEventListener("click", async () => {
+    setApiStatus("Récupération des données...", "");
+    squadsResult.textContent = "";
+    btnGetSquads.disabled = true;
+
+    try {
+      // Appeler les deux APIs en parallèle
+      const [squadsResult2, rosterResult] = await Promise.all([
+        ext.runtime.sendMessage({ type: "MSF_GET_SQUADS" }),
+        ext.runtime.sendMessage({ type: "MSF_GET_ROSTER" }).catch(e => ({ error: e.message }))
+      ]);
+
+      console.log("[Debug] Squads result:", squadsResult2);
+      console.log("[Debug] Roster result:", rosterResult);
+
+      if (squadsResult2.error) {
+        throw new Error(squadsResult2.error);
+      }
+
+      const squads = squadsResult2.squads || {};
+
+      // L'API retourne tabs: { roster, blitz, tower, arena, raids, war, crucible }
+      const actualTabs = squads.tabs || squads;
+
+      const tabs = {
+        raids: actualTabs.raids || [],
+        arena: actualTabs.arena || [],
+        war: actualTabs.war || [],
+        blitz: actualTabs.blitz || [],
+        tower: actualTabs.tower || [],
+        crucible: actualTabs.crucible || [],
+        roster: actualTabs.roster || []
+      };
+
+      // Afficher les squads par catégorie
+      let output = [];
+
+      // RAIDS (priorité)
+      if (tabs.raids.length > 0) {
+        output.push("=== RAIDS ===");
+        tabs.raids.forEach((squad, i) => {
+          const names = squad.filter(n => n).join(", ");
+          output.push(`${i + 1}. ${names}`);
+        });
+      }
+
+      // ARENA
+      if (tabs.arena.length > 0) {
+        output.push("\n=== ARENA ===");
+        tabs.arena.forEach((squad, i) => {
+          const names = squad.filter(n => n).join(", ");
+          output.push(`${i + 1}. ${names}`);
+        });
+      }
+
+      // WAR
+      if (tabs.war.length > 0) {
+        output.push(`\n=== WAR (${tabs.war.length}) ===`);
+        output.push("(voir console pour détails)");
+      }
+
+      // Utiliser le roster complet si disponible, sinon fallback sur les squads
+      let playerRosterIds;
+      if (rosterResult.roster && rosterResult.roster.length > 0) {
+        playerRosterIds = rosterResult.roster;
+        output.push(`\n=== ROSTER COMPLET ===`);
+        output.push(`${rosterResult.count} personnages possédés`);
+      } else {
+        // Fallback: extraire des squads
+        const allRosterChars = new Set();
+        const allTabs = [tabs.roster, tabs.blitz, tabs.war, tabs.arena, tabs.raids, tabs.tower, tabs.crucible];
+        allTabs.forEach(tabSquads => {
+          (tabSquads || []).forEach(squad => {
+            (squad || []).forEach(charId => {
+              if (charId) allRosterChars.add(charId);
+            });
+          });
+        });
+        playerRosterIds = Array.from(allRosterChars);
+        output.push(`\n=== ROSTER (depuis squads) ===`);
+        output.push(`${playerRosterIds.length} personnages (partiel)`);
+      }
+
+      // Sauvegarder les données pour manage.js
+      await storageSet({
+        msfPlayerRoster: playerRosterIds,
+        msfWarSquads: tabs.war,
+        msfSquadsUpdatedAt: new Date().toISOString()
+      });
+
+      setApiStatus(`${tabs.raids.length} RAID, ${tabs.arena.length} Arena, ${playerRosterIds.length} personnages`, "success");
+      console.log("[Debug] Roster sauvegardé:", playerRosterIds.length, "personnages");
+
+      squadsResult.textContent = output.join("\n");
+    } catch (e) {
+      setApiStatus("Erreur: " + e.message, "error");
+    } finally {
+      btnGetSquads.disabled = false;
+    }
+  });
 }
 
 // ============================================

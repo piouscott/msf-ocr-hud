@@ -74,6 +74,8 @@ let remoteCounters = {};
 let customCounters = {};
 let mergedCounters = {};
 let charactersData = {}; // Pour les portraits
+let playerRoster = new Set(); // Personnages possédés par le joueur (via API)
+let hasRosterData = false; // Indique si on a des données de roster
 
 // Source des counters pour chaque equipe
 let counterSources = {};
@@ -87,6 +89,62 @@ function confidenceToSymbols(confidence) {
   if (confidence >= 65) return '<span style="color:#51cf66">▲</span>';
   if (confidence >= 50) return '<span style="color:#fcc419">⊜</span>';
   return '<span style="color:#ff6b6b">▼</span>';
+}
+
+/**
+ * Vérifie si un personnage est une invocation (summon)
+ * Les invocations ne comptent pas pour la possession d'équipe
+ */
+function isSummon(memberId) {
+  const char = charactersData[memberId];
+  if (!char) return false;
+  return char.status === 'summon' || (char.traits && char.traits.includes('Summon'));
+}
+
+/**
+ * Vérifie si le joueur possède tous les personnages d'une équipe
+ * @param {string} teamId - ID de l'équipe counter
+ * @returns {boolean} true si tous les membres (non-invocations) sont dans le roster
+ */
+function isTeamOwned(teamId) {
+  if (!hasRosterData || playerRoster.size === 0) return false;
+
+  const team = teamsData.find(t => t.id === teamId);
+  if (!team || !team.memberIds) return false;
+
+  // Filtrer les invocations - elles ne comptent pas pour la possession
+  const playableMembers = team.memberIds.filter(id => !isSummon(id));
+  if (playableMembers.length === 0) return false;
+
+  return playableMembers.every(memberId => playerRoster.has(memberId));
+}
+
+/**
+ * Compte combien de personnages d'une équipe le joueur possède
+ * @returns {number} nombre de membres possédés sur le total (hors invocations)
+ */
+function countOwnedMembers(teamId) {
+  if (!hasRosterData || playerRoster.size === 0) return { owned: 0, total: 0 };
+
+  const team = teamsData.find(t => t.id === teamId);
+  if (!team || !team.memberIds) return { owned: 0, total: 0 };
+
+  // Filtrer les invocations
+  const playableMembers = team.memberIds.filter(id => !isSummon(id));
+  const owned = playableMembers.filter(id => playerRoster.has(id)).length;
+  return { owned, total: playableMembers.length };
+}
+
+/**
+ * Vérifie si le joueur possède au moins un counter complet pour cette équipe ennemie
+ * @param {string} teamId - ID de l'équipe ennemie
+ * @returns {boolean} true si au moins un counter est possédé
+ */
+function hasOwnedCounter(teamId) {
+  if (!hasRosterData || playerRoster.size === 0) return false;
+
+  const counters = mergedCounters[teamId] || [];
+  return counters.some(counter => isTeamOwned(counter.team));
 }
 
 // Charger les donnees avec les 3 niveaux
@@ -122,6 +180,14 @@ async function loadData() {
     const storedCustom = await storageGet("msfCustomCounters");
     if (storedCustom.msfCustomCounters) {
       customCounters = storedCustom.msfCustomCounters;
+    }
+
+    // Charger le roster du joueur (si disponible via API)
+    const storedRoster = await storageGet(["msfPlayerRoster", "msfSquadsUpdatedAt"]);
+    if (storedRoster.msfPlayerRoster && storedRoster.msfPlayerRoster.length > 0) {
+      playerRoster = new Set(storedRoster.msfPlayerRoster);
+      hasRosterData = true;
+      console.log("[Manage] Roster chargé:", playerRoster.size, "personnages");
     }
 
     // Fusionner les counters et determiner les sources
@@ -192,6 +258,7 @@ function renderSourceLegend() {
     <span class="legend-item"><span class="source-badge default"></span> ${t("default")}</span>
     ${hasRemote ? `<span class="legend-item"><span class="source-badge remote"></span> ${t("sync")}</span>` : ''}
     ${hasCustom ? `<span class="legend-item"><span class="source-badge custom"></span> ${t("custom")}</span>` : ''}
+    ${hasRosterData ? `<span class="legend-item"><span class="owned-badge" style="width:14px;height:14px;font-size:9px">✓</span> Possédé</span>` : ''}
   `;
 }
 
@@ -209,14 +276,27 @@ function renderTeams() {
     section.className = "team-section";
     section.dataset.teamId = team.id;
 
-    // Trier les counters par confiance (du plus haut au plus bas)
-    const counters = (mergedCounters[team.id] || []).slice().sort((a, b) => b.confidence - a.confidence);
+    // Trier les counters: possédés d'abord, puis par confiance (du plus haut au plus bas)
+    const counters = (mergedCounters[team.id] || []).slice().sort((a, b) => {
+      const aOwned = isTeamOwned(a.team) ? 1 : 0;
+      const bOwned = isTeamOwned(b.team) ? 1 : 0;
+      // Si un est possédé et pas l'autre, le possédé en premier
+      if (aOwned !== bOwned) return bOwned - aOwned;
+      // Sinon, trier par confiance
+      return b.confidence - a.confidence;
+    });
     const source = counterSources[team.id] || "default";
+
+    // Vérifier si on a au moins un counter possédé pour cette équipe
+    const hasCounter = hasOwnedCounter(team.id);
+    const counterBadge = hasCounter
+      ? '<span class="has-counter-badge" title="Vous avez un contre complet">✓</span>'
+      : '';
 
     section.innerHTML = `
       <div class="team-header">
         <div class="team-info">
-          <span class="team-name-title">${getTeamName(team)}</span>
+          <span class="team-name-title">${getTeamName(team)} ${counterBadge}</span>
           ${renderTeamPortraits(team)}
         </div>
         <span class="team-meta">
@@ -266,6 +346,44 @@ function renderTeams() {
       }
     });
   });
+
+  // Mettre a jour les portraits quand on change l'equipe counter
+  document.querySelectorAll(".counter-team").forEach(select => {
+    select.addEventListener("change", () => {
+      const wrapper = select.closest(".counter-team-wrapper");
+      if (wrapper) {
+        const existingPortraits = wrapper.querySelector(".counter-portraits");
+        if (existingPortraits) {
+          existingPortraits.remove();
+        }
+        const newPortraitsHtml = renderCounterPortraits(select.value);
+        if (newPortraitsHtml) {
+          select.insertAdjacentHTML("afterend", newPortraitsHtml);
+        }
+      }
+    });
+  });
+}
+
+/**
+ * Génère le HTML pour afficher les portraits miniatures d'une équipe counter
+ */
+function renderCounterPortraits(teamId) {
+  const team = teamsData.find(t => t.id === teamId);
+  if (!team) return '';
+
+  const memberIds = team.memberIds || [];
+  if (memberIds.length === 0) return '';
+
+  const portraits = memberIds.map(memberId => {
+    const char = charactersData[memberId];
+    if (char && char.portrait) {
+      return `<img src="${char.portrait}" alt="${char.name}" title="${char.name}" class="counter-portrait-thumb" loading="lazy">`;
+    }
+    return `<span class="counter-portrait-placeholder" title="${memberId}">?</span>`;
+  });
+
+  return `<div class="counter-portraits">${portraits.join('')}</div>`;
 }
 
 function renderCounterRow(counter, index) {
@@ -278,12 +396,23 @@ function renderCounterRow(counter, index) {
     `<option value="${team.id}" ${team.id === counter.team ? "selected" : ""}>${getTeamName(team)}</option>`
   ).join("");
 
+  // Vérifier si le joueur possède cette équipe
+  const owned = isTeamOwned(counter.team);
+  const ownedBadge = owned
+    ? '<span class="owned-badge" title="Vous possédez cette équipe">✓</span>'
+    : '';
+  const ownedClass = owned ? 'counter-owned' : '';
+
   return `
-    <div class="counter-row" data-index="${index}">
-      <select class="counter-team">${teamOptions}</select>
-      <span class="confidence-symbol">${confidenceToSymbols(counter.confidence)}</span>
-      <input type="number" class="counter-confidence" value="${counter.confidence}" min="0" max="100" title="Confiance %" style="display:none">
-      <input type="number" class="counter-ratio" value="${counter.minPowerRatio}" min="0.5" max="2" step="0.1" title="Ratio puissance" style="display:none">
+    <div class="counter-row ${ownedClass}" data-index="${index}" data-owned="${owned}">
+      <div class="counter-team-wrapper">
+        <select class="counter-team">${teamOptions}</select>
+        ${renderCounterPortraits(counter.team)}
+      </div>
+      ${ownedBadge}
+      <span class="confidence-symbol">${confidenceToSymbols(counter.confidence || 0)}</span>
+      <input type="number" class="counter-confidence" value="${counter.confidence || 0}" min="0" max="100" title="Confiance %" style="display:none">
+      <input type="number" class="counter-ratio" value="${counter.minPowerRatio || 1}" min="0.5" max="2" step="0.1" title="Ratio puissance" style="display:none">
       <button class="btn-remove">X</button>
       <input type="text" class="counter-notes" value="${counter.notes || ""}" placeholder="${t("notes")}">
     </div>
@@ -307,6 +436,22 @@ function addCounter(teamId) {
     const symbol = confidenceInput.previousElementSibling;
     if (symbol && symbol.classList.contains("confidence-symbol")) {
       symbol.innerHTML = confidenceToSymbols(parseInt(confidenceInput.value) || 0);
+    }
+  });
+
+  // Mettre a jour les portraits quand on change l'equipe counter
+  const selectTeam = row.querySelector(".counter-team");
+  selectTeam.addEventListener("change", () => {
+    const wrapper = selectTeam.closest(".counter-team-wrapper");
+    if (wrapper) {
+      const existingPortraits = wrapper.querySelector(".counter-portraits");
+      if (existingPortraits) {
+        existingPortraits.remove();
+      }
+      const newPortraitsHtml = renderCounterPortraits(selectTeam.value);
+      if (newPortraitsHtml) {
+        selectTeam.insertAdjacentHTML("afterend", newPortraitsHtml);
+      }
     }
   });
 
