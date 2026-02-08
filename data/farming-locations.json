@@ -36,11 +36,6 @@
         { "type": "milestone", "orb": "Milestone III" }
       ]
     },
-    "AgentVenom": {
-      "locations": [
-        { "type": "event", "note": "Nouveau personnage" }
-      ]
-    },
     "Apocalypse": {
       "locations": [
         { "type": "legendary", "event": "Saga", "requires": ["Horsemen Teams"] }
