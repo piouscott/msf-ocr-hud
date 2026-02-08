@@ -512,18 +512,6 @@ function renderFarmByCampaign(results, searchTerm) {
   }
 
   farmResults.innerHTML = html;
-
-  // Ajouter les event listeners pour plier/déplier
-  farmResults.querySelectorAll(".farm-campaign-header").forEach(header => {
-    header.addEventListener("click", () => {
-      const chars = header.nextElementSibling;
-      const toggle = header.querySelector(".farm-campaign-toggle");
-      if (chars) {
-        chars.classList.toggle("show");
-        toggle.textContent = chars.classList.contains("show") ? "▼" : "▶";
-      }
-    });
-  });
 }
 
 function renderFarmLocation(loc) {
@@ -587,6 +575,19 @@ document.querySelectorAll(".farm-filter").forEach(btn => {
     currentFarmFilter = btn.dataset.filter;
     renderFarmResults();
   });
+});
+
+// Event delegation pour les headers de campagne (plier/déplier)
+farmResults.addEventListener("click", (e) => {
+  const header = e.target.closest(".farm-campaign-header");
+  if (header) {
+    const chars = header.nextElementSibling;
+    const toggle = header.querySelector(".farm-campaign-toggle");
+    if (chars && chars.classList.contains("farm-campaign-chars")) {
+      chars.classList.toggle("show");
+      toggle.textContent = chars.classList.contains("show") ? "▼" : "▶";
+    }
+  }
 });
 
 async function loadEvents() {
