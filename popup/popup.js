@@ -350,23 +350,8 @@ async function loadEvents() {
     eventsLoading.classList.add("hidden");
     eventsList.classList.remove("hidden");
 
-    // Vérifier si "Battle in War" est actif dans les milestones
-    const hasWarEvent = milestoneEvents.some(e => {
-      const scoring = e.milestone?.scoring;
-      if (!scoring) return false;
-      const allMethods = [
-        ...(scoring.methods || []),
-        ...(scoring.cappedScorings || []).flatMap(cs => cs.methods || [])
-      ];
-      return allMethods.some(m =>
-        m.description?.toLowerCase().includes("war") ||
-        m.description?.toLowerCase().includes("guerre")
-      );
-    });
-
-    if (hasWarEvent) {
-      await loadWarTeamsForEvent();
-    }
+    // Toujours afficher les équipes War offensives (utiles pour la guerre)
+    await loadWarTeamsForEvent();
 
   } catch (err) {
     eventsLoading.classList.add("hidden");
