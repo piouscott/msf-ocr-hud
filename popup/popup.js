@@ -244,33 +244,27 @@ async function loadEvents() {
   eventsList.classList.add("hidden");
 
   try {
-    const stored = await storageGet(["msfApiToken"]);
-    if (!stored.msfApiToken) {
-      throw new Error("Token API non configuré. Allez dans API pour le configurer.");
+    // Utiliser le background script pour l'appel API (gestion du refresh token)
+    const response = await ext.runtime.sendMessage({ type: "MSF_GET_EVENTS" });
+
+    if (response.error) {
+      throw new Error(response.error);
     }
 
-    const response = await fetch("https://api.marvelstrikeforce.com/player/v1/events", {
-      headers: {
-        "x-api-key": MSF_API_KEY,
-        "Authorization": stored.msfApiToken.startsWith("Bearer ") ? stored.msfApiToken : `Bearer ${stored.msfApiToken}`,
-        "Accept": "application/json"
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`Erreur API: ${response.status}`);
-    }
-
-    const data = await response.json();
+    const events = response.events || [];
     const now = Date.now() / 1000;
 
-    // Filtrer les événements actifs avec scoring
-    const activeEvents = data.data
-      .filter(e => e.endTime > now && e.startTime < now)
-      .filter(e => e.type === "milestone" && e.milestone?.scoring)
-      .filter(e => e.milestone.scoring.methods?.length || e.milestone.scoring.cappedScorings?.length);
+    // Filtrer les événements actifs
+    const activeEvents = events
+      .filter(e => e.endTime > now && e.startTime < now);
 
-    renderEvents(activeEvents);
+    // Séparer par type
+    const blitzEvents = activeEvents.filter(e => e.type === "blitz");
+    const milestoneEvents = activeEvents.filter(e => e.type === "milestone" && e.milestone?.scoring);
+    const raidEvents = activeEvents.filter(e => e.type === "raid");
+
+    // Afficher tous les types
+    renderAllEvents({ blitz: blitzEvents, milestone: milestoneEvents, raid: raidEvents });
     eventsLoading.classList.add("hidden");
     eventsList.classList.remove("hidden");
 
@@ -281,72 +275,110 @@ async function loadEvents() {
   }
 }
 
-function renderEvents(events) {
-  if (events.length === 0) {
-    eventsList.innerHTML = '<div class="no-counters">Aucun événement avec scoring actif</div>';
-    return;
+/**
+ * Affiche tous les types d'événements
+ */
+function renderAllEvents({ blitz, milestone, raid }) {
+  let html = "";
+
+  // Blitz avec requirements (pour les counters inverses!)
+  if (blitz.length > 0) {
+    html += `<div class="events-section"><div class="events-section-title">Blitz</div>`;
+    blitz.forEach(event => {
+      const requirements = event.blitz?.requirements;
+      const filters = requirements?.anyCharacterFilters || [];
+
+      html += `
+        <div class="event-card blitz">
+          <div class="event-header">
+            <span class="event-name">${event.name}</span>
+            <span class="event-type">Blitz</span>
+          </div>
+          ${filters.length > 0 ? `
+            <div class="event-filters">
+              ${filters.map(f => `<span class="filter-tag">${f.filterName || f.filterType}</span>`).join("")}
+            </div>
+          ` : ""}
+        </div>
+      `;
+    });
+    html += `</div>`;
   }
 
-  eventsList.innerHTML = events.map((event, idx) => {
-    const scoring = event.milestone.scoring;
-    const rows = [];
-
-    // Méthodes illimitées
-    if (scoring.methods) {
-      scoring.methods.forEach(m => {
-        rows.push({ desc: m.description, points: m.points, cap: null });
-      });
-    }
-
-    // Méthodes avec cap
-    if (scoring.cappedScorings) {
-      scoring.cappedScorings.forEach(cs => {
-        cs.methods.forEach(m => {
-          rows.push({ desc: m.description, points: m.points, cap: cs.cap });
-        });
-      });
-    }
-
-    const tableHtml = rows.length > 0 ? `
-      <div class="event-details" id="event-details-${idx}">
-        <table class="scoring-table">
-          <thead>
-            <tr>
-              <th>Action</th>
-              <th>Pts</th>
-              <th>Limite</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rows.map(r => `
-              <tr>
-                <td class="scoring-action">${r.desc}</td>
-                <td class="scoring-points">${formatNumber(r.points)}</td>
-                <td class="scoring-cap ${r.cap === null ? 'unlimited' : ''}">${r.cap === null ? '∞' : formatNumber(r.cap)}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-    ` : '';
-
-    return `
-      <div class="event-card milestone">
-        <div class="event-header">
-          <span class="event-name">${event.name}</span>
-          <span class="event-type">${event.milestone.typeName || 'Milestone'}</span>
+  // Raids
+  if (raid.length > 0) {
+    html += `<div class="events-section"><div class="events-section-title">Raids</div>`;
+    raid.forEach(event => {
+      html += `
+        <div class="event-card raid">
+          <div class="event-header">
+            <span class="event-name">${event.name}</span>
+            <span class="event-type">Raid</span>
+          </div>
         </div>
-        ${event.subName ? `<div class="event-subname">${event.subName}</div>` : ''}
-        ${rows.length > 0 ? `
-          <button class="event-toggle" onclick="toggleEventDetails(${idx})">
-            Voir ${rows.length} conditions ▼
-          </button>
-          ${tableHtml}
-        ` : ''}
-      </div>
-    `;
-  }).join('');
+      `;
+    });
+    html += `</div>`;
+  }
+
+  // Milestones avec scoring
+  if (milestone.length > 0) {
+    html += `<div class="events-section"><div class="events-section-title">Milestones</div>`;
+    milestone.forEach((event, idx) => {
+      const scoring = event.milestone.scoring;
+      const rows = [];
+
+      if (scoring.methods) {
+        scoring.methods.forEach(m => {
+          rows.push({ desc: m.description, points: m.points, cap: null });
+        });
+      }
+      if (scoring.cappedScorings) {
+        scoring.cappedScorings.forEach(cs => {
+          cs.methods.forEach(m => {
+            rows.push({ desc: m.description, points: m.points, cap: cs.cap });
+          });
+        });
+      }
+
+      html += `
+        <div class="event-card milestone">
+          <div class="event-header">
+            <span class="event-name">${event.name}</span>
+            <span class="event-type">${event.milestone.typeName || "Milestone"}</span>
+          </div>
+          ${rows.length > 0 ? `
+            <button class="event-toggle" onclick="toggleEventDetails(${idx})">
+              ${rows.length} conditions ▼
+            </button>
+            <div class="event-details" id="event-details-${idx}">
+              <table class="scoring-table">
+                <thead><tr><th>Action</th><th>Pts</th><th>Cap</th></tr></thead>
+                <tbody>
+                  ${rows.map(r => `
+                    <tr>
+                      <td class="scoring-action">${r.desc}</td>
+                      <td class="scoring-points">${formatNumber(r.points)}</td>
+                      <td class="scoring-cap ${r.cap === null ? "unlimited" : ""}">${r.cap === null ? "∞" : formatNumber(r.cap)}</td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+          ` : ""}
+        </div>
+      `;
+    });
+    html += `</div>`;
+  }
+
+  if (!html) {
+    html = '<div class="no-counters">Aucun événement actif</div>';
+  }
+
+  eventsList.innerHTML = html;
 }
+
 
 function toggleEventDetails(idx) {
   const details = document.getElementById(`event-details-${idx}`);

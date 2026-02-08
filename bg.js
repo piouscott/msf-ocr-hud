@@ -294,7 +294,52 @@ ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     });
     return true;
   }
+
+  // Récupérer les events en cours
+  if (msg.type === "MSF_GET_EVENTS") {
+    handleGetEvents().then(sendResponse).catch(e => {
+      sendResponse({ error: e.message });
+    });
+    return true;
+  }
 });
+
+/**
+ * Récupère les events en cours via l'API MSF publique
+ */
+async function handleGetEvents() {
+  const token = await getValidToken();
+
+  const url = "https://api.marvelstrikeforce.com/game/v1/events";
+  const headers = {
+    "x-api-key": MSF_OAUTH.apiKey,
+    "Authorization": token.startsWith("Bearer ") ? token : `Bearer ${token}`,
+    "Accept": "application/json"
+  };
+
+  console.log("[BG] Appel API events avec OAuth token");
+
+  const response = await fetch(url, { headers });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("[BG] Erreur events:", response.status, errorText);
+
+    if (response.status === 401 || response.status === 403) {
+      throw new Error(`Accès refusé (${response.status}). Token OAuth requis.`);
+    }
+    throw new Error(`Erreur API: ${response.status}`);
+  }
+
+  const data = await response.json();
+  console.log("[BG] Events récupérés:", data);
+
+  return {
+    success: true,
+    events: data.data || data,
+    raw: data
+  };
+}
 
 async function handleAnalyzeRequest() {
   // 1. Recuperer l'onglet actif
