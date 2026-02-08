@@ -319,6 +319,173 @@ defenseTeamSelect.addEventListener("change", () => {
   defenseCounters.classList.remove("hidden");
 });
 
+// ============================================
+// Bouton Farm - Où farmer les personnages
+// ============================================
+
+const farmPanel = document.getElementById("farm-panel");
+const btnFarm = document.getElementById("btn-farm");
+const btnCloseFarm = document.getElementById("btn-close-farm");
+const farmSearchInput = document.getElementById("farm-search-input");
+const farmResults = document.getElementById("farm-results");
+
+let farmingData = null;
+let charactersData = null;
+let currentFarmFilter = "all";
+
+btnFarm.addEventListener("click", async () => {
+  farmPanel.classList.toggle("hidden");
+
+  if (!farmPanel.classList.contains("hidden")) {
+    await loadFarmingData();
+  }
+});
+
+btnCloseFarm.addEventListener("click", () => {
+  farmPanel.classList.add("hidden");
+});
+
+async function loadFarmingData() {
+  try {
+    if (!farmingData) {
+      const response = await fetch(ext.runtime.getURL("data/farming-locations.json"));
+      farmingData = await response.json();
+    }
+    if (!charactersData) {
+      const response = await fetch(ext.runtime.getURL("data/characters-full.json"));
+      charactersData = await response.json();
+    }
+    renderFarmResults();
+  } catch (e) {
+    console.error("[Farm] Erreur chargement:", e);
+    farmResults.innerHTML = '<div class="farm-no-results">Erreur de chargement des données</div>';
+  }
+}
+
+function renderFarmResults() {
+  const searchTerm = farmSearchInput.value.toLowerCase().trim();
+  const filter = currentFarmFilter;
+
+  let results = [];
+
+  for (const [charId, charData] of Object.entries(farmingData.characters)) {
+    // Get character info from characters-full.json
+    const charInfo = charactersData.characters[charId] || { name: charId, portrait: null };
+
+    // Filter by search term
+    if (searchTerm && !charInfo.name.toLowerCase().includes(searchTerm)) {
+      continue;
+    }
+
+    // Filter by location type
+    let locations = charData.locations || [];
+    if (filter !== "all") {
+      locations = locations.filter(loc => loc.type === filter);
+    }
+
+    if (locations.length === 0 && filter !== "all") {
+      continue;
+    }
+
+    results.push({
+      id: charId,
+      name: charInfo.name,
+      portrait: charInfo.portrait,
+      locations: charData.locations || []
+    });
+  }
+
+  // Sort by name
+  results.sort((a, b) => a.name.localeCompare(b.name));
+
+  // Limit results
+  if (!searchTerm) {
+    results = results.slice(0, 50);
+  }
+
+  if (results.length === 0) {
+    farmResults.innerHTML = '<div class="farm-no-results">Aucun personnage trouvé</div>';
+    return;
+  }
+
+  const html = results.map(char => `
+    <div class="farm-char-item">
+      <div class="farm-char-header">
+        ${char.portrait ? `<img src="${char.portrait}" class="farm-char-portrait" alt="">` : '<div class="farm-char-portrait"></div>'}
+        <span class="farm-char-name">${char.name}</span>
+      </div>
+      <div class="farm-locations">
+        ${char.locations.map(loc => renderFarmLocation(loc)).join("")}
+      </div>
+    </div>
+  `).join("");
+
+  farmResults.innerHTML = html;
+}
+
+function renderFarmLocation(loc) {
+  const icons = {
+    campaign: "📍",
+    blitz: "⚔️",
+    arena: "🏟️",
+    raid: "💀",
+    war: "⚔️",
+    milestone: "🎯",
+    legendary: "⭐",
+    crucible: "🔥",
+    event: "📅",
+    orb: "🔮",
+    supplies: "🛒"
+  };
+
+  const typeNames = {
+    campaign: "Campagne",
+    blitz: "Blitz",
+    arena: "Arène",
+    raid: "Raid",
+    war: "War",
+    milestone: "Milestone",
+    legendary: "Légendaire",
+    crucible: "Crucible",
+    event: "Event",
+    orb: "Orbe",
+    supplies: "Fournitures"
+  };
+
+  let detail = "";
+  if (loc.node) detail = loc.node;
+  else if (loc.orb) detail = loc.orb;
+  else if (loc.event) detail = loc.event;
+  else if (loc.note) detail = loc.note;
+  else if (loc.requires) detail = `Requis: ${loc.requires.join(", ")}`;
+
+  const cost = loc.cost ? `${loc.cost} 🪙` : "";
+
+  return `
+    <div class="farm-location ${loc.type}">
+      <span class="farm-location-icon">${icons[loc.type] || "📦"}</span>
+      <span class="farm-location-type">${typeNames[loc.type] || loc.type}</span>
+      <span class="farm-location-detail">${detail}</span>
+      ${cost ? `<span class="farm-location-cost">${cost}</span>` : ""}
+    </div>
+  `;
+}
+
+// Search input handler
+farmSearchInput.addEventListener("input", () => {
+  renderFarmResults();
+});
+
+// Filter buttons handler
+document.querySelectorAll(".farm-filter").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".farm-filter").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentFarmFilter = btn.dataset.filter;
+    renderFarmResults();
+  });
+});
+
 async function loadEvents() {
   eventsLoading.classList.remove("hidden");
   eventsError.classList.add("hidden");

@@ -1,0 +1,635 @@
+{
+  "description": "MSF Character Farming Locations",
+  "version": 1,
+  "lastUpdate": "2026-02-08",
+  "sources": {
+    "campaign": "Campagne (nodes)",
+    "blitz": "Boutique Blitz",
+    "arena": "Boutique Arene",
+    "raid": "Boutique Raid",
+    "war": "Boutique Guerre",
+    "crucible": "Boutique Crucible",
+    "milestone": "Orbe Milestone",
+    "event": "Event limite",
+    "orb": "Orbes",
+    "legendary": "Event Legendaire",
+    "supplies": "Fournitures"
+  },
+  "characters": {
+    "Abomination": {
+      "locations": [
+        { "type": "campaign", "node": "Villains 7-9" }
+      ]
+    },
+    "AbsorbingMan": {
+      "locations": [
+        { "type": "blitz", "cost": 500 }
+      ]
+    },
+    "AdamWarlock": {
+      "locations": [
+        { "type": "legendary", "event": "Infinity Watch", "requires": ["Jubilee", "PhylaVell", "Moondragon", "Gamora", "Nebula"] }
+      ]
+    },
+    "AgathaHarkness": {
+      "locations": [
+        { "type": "milestone", "orb": "Milestone III" }
+      ]
+    },
+    "AgentVenom": {
+      "locations": [
+        { "type": "event", "note": "Nouveau personnage" }
+      ]
+    },
+    "Apocalypse": {
+      "locations": [
+        { "type": "legendary", "event": "Saga", "requires": ["Horsemen Teams"] }
+      ]
+    },
+    "BlackKnight": {
+      "locations": [
+        { "type": "campaign", "node": "Doom 3-9" }
+      ]
+    },
+    "BlackPanther": {
+      "locations": [
+        { "type": "campaign", "node": "Heroes 6-9" },
+        { "type": "raid", "cost": 1400 }
+      ]
+    },
+    "BlackPantherV": {
+      "locations": [
+        { "type": "milestone", "orb": "Milestone II" }
+      ]
+    },
+    "BlackWidow": {
+      "locations": [
+        { "type": "arena", "cost": 500 }
+      ]
+    },
+    "Blob": {
+      "locations": [
+        { "type": "blitz", "cost": 500 }
+      ]
+    },
+    "Cable": {
+      "locations": [
+        { "type": "war", "cost": 1400 }
+      ]
+    },
+    "CaptainAmerica": {
+      "locations": [
+        { "type": "campaign", "node": "Heroes 6-6" },
+        { "type": "arena", "cost": 500 }
+      ]
+    },
+    "CaptainAmericaSam": {
+      "locations": [
+        { "type": "campaign", "node": "Heroes 7-6" },
+        { "type": "blitz", "cost": 500 }
+      ]
+    },
+    "CaptainCarter": {
+      "locations": [
+        { "type": "campaign", "node": "Doom 2-9" }
+      ]
+    },
+    "CaptainMarvel": {
+      "locations": [
+        { "type": "milestone", "orb": "Milestone I" }
+      ]
+    },
+    "Carnage": {
+      "locations": [
+        { "type": "campaign", "node": "Cosmic 3-9" }
+      ]
+    },
+    "CosmicGhostRider": {
+      "locations": [
+        { "type": "campaign", "node": "Doom 1-9" }
+      ]
+    },
+    "Cyclops": {
+      "locations": [
+        { "type": "war", "cost": 1400 }
+      ]
+    },
+    "Dazzler": {
+      "locations": [
+        { "type": "blitz", "cost": 500 }
+      ]
+    },
+    "Deadpool": {
+      "locations": [
+        { "type": "campaign", "node": "Nexus 5-9" }
+      ]
+    },
+    "DeathpoolV": {
+      "locations": [
+        { "type": "crucible", "cost": 750 }
+      ]
+    },
+    "DoctorDoom": {
+      "locations": [
+        { "type": "legendary", "event": "Doom Event", "requires": ["Fantastic Four + Secret Defenders"] }
+      ]
+    },
+    "DoctorStrange": {
+      "locations": [
+        { "type": "campaign", "node": "Mystic 3-9" }
+      ]
+    },
+    "Dormammu": {
+      "locations": [
+        { "type": "legendary", "event": "Apocalypse Saga", "requires": ["Horsemen", "Pestilence Team"] }
+      ]
+    },
+    "Drax": {
+      "locations": [
+        { "type": "arena", "cost": 500 }
+      ]
+    },
+    "ElectraV": {
+      "locations": [
+        { "type": "campaign", "node": "Villains 7-6" }
+      ]
+    },
+    "EmmaFrost": {
+      "locations": [
+        { "type": "milestone", "orb": "Milestone II" }
+      ]
+    },
+    "Eternals_Ikaris": {
+      "locations": [
+        { "type": "raid", "cost": 1400 }
+      ]
+    },
+    "Eternals_Sersi": {
+      "locations": [
+        { "type": "blitz", "cost": 500 }
+      ]
+    },
+    "Fantomex": {
+      "locations": [
+        { "type": "blitz", "cost": 500 }
+      ]
+    },
+    "Gambit": {
+      "locations": [
+        { "type": "war", "cost": 1400 }
+      ]
+    },
+    "Gamora": {
+      "locations": [
+        { "type": "campaign", "node": "Cosmic 1-9" },
+        { "type": "blitz", "cost": 350 }
+      ]
+    },
+    "GhostRider": {
+      "locations": [
+        { "type": "campaign", "node": "Mystic 2-9" }
+      ]
+    },
+    "GhostSpider": {
+      "locations": [
+        { "type": "arena", "cost": 975 }
+      ]
+    },
+    "Gladiator": {
+      "locations": [
+        { "type": "war", "cost": 1400 }
+      ]
+    },
+    "Gorr": {
+      "locations": [
+        { "type": "raid", "cost": 1400 }
+      ]
+    },
+    "Groot": {
+      "locations": [
+        { "type": "campaign", "node": "Nexus 2-9" }
+      ]
+    },
+    "Gwenom": {
+      "locations": [
+        { "type": "blitz", "cost": 500 }
+      ]
+    },
+    "Hawkeye": {
+      "locations": [
+        { "type": "campaign", "node": "Heroes 1-9" }
+      ]
+    },
+    "HumanTorch": {
+      "locations": [
+        { "type": "blitz", "cost": 500 }
+      ]
+    },
+    "InvisibleWoman": {
+      "locations": [
+        { "type": "war", "cost": 1400 }
+      ]
+    },
+    "IronMan": {
+      "locations": [
+        { "type": "legendary", "event": "Iron Man Event", "requires": ["5 SHIELD characters"] }
+      ]
+    },
+    "Ironheart": {
+      "locations": [
+        { "type": "arena", "cost": 975 }
+      ]
+    },
+    "Jessica Jones": {
+      "locations": [
+        { "type": "campaign", "node": "Heroes 4-9" }
+      ]
+    },
+    "Jubilee": {
+      "locations": [
+        { "type": "legendary", "event": "Jubilee Event", "requires": ["5 X-Men Astonishing"] }
+      ]
+    },
+    "Kang": {
+      "locations": [
+        { "type": "crucible", "cost": 750 }
+      ]
+    },
+    "Kate Bishop": {
+      "locations": [
+        { "type": "campaign", "node": "Heroes 7-9" }
+      ]
+    },
+    "Kestrel": {
+      "locations": [
+        { "type": "raid", "cost": 1400 }
+      ]
+    },
+    "Kingpin": {
+      "locations": [
+        { "type": "campaign", "node": "Villains 6-9" },
+        { "type": "arena", "cost": 500 }
+      ]
+    },
+    "LadyDeathstrike": {
+      "locations": [
+        { "type": "raid", "cost": 1400 }
+      ]
+    },
+    "Loki": {
+      "locations": [
+        { "type": "campaign", "node": "Mystic 1-9" }
+      ]
+    },
+    "LukeCage": {
+      "locations": [
+        { "type": "campaign", "node": "Heroes 3-9" },
+        { "type": "blitz", "cost": 350 }
+      ]
+    },
+    "MaestroHulk": {
+      "locations": [
+        { "type": "crucible", "cost": 750 }
+      ]
+    },
+    "Magik": {
+      "locations": [
+        { "type": "blitz", "cost": 500 }
+      ]
+    },
+    "Magneto": {
+      "locations": [
+        { "type": "legendary", "event": "Magneto Event", "requires": ["5 Brotherhood/X-Men"] }
+      ]
+    },
+    "Mantis": {
+      "locations": [
+        { "type": "campaign", "node": "Cosmic 2-9" }
+      ]
+    },
+    "Maria Hill": {
+      "locations": [
+        { "type": "blitz", "cost": 500 }
+      ]
+    },
+    "Medusa": {
+      "locations": [
+        { "type": "war", "cost": 1400 }
+      ]
+    },
+    "MightyThor": {
+      "locations": [
+        { "type": "raid", "cost": 1400 }
+      ]
+    },
+    "MilesMorales": {
+      "locations": [
+        { "type": "campaign", "node": "Villains 7-3" }
+      ]
+    },
+    "Minn-Erva": {
+      "locations": [
+        { "type": "raid", "cost": 1400 }
+      ]
+    },
+    "MisterNegative": {
+      "locations": [
+        { "type": "war", "cost": 1400 }
+      ]
+    },
+    "MisterSinister": {
+      "locations": [
+        { "type": "war", "cost": 1400 }
+      ]
+    },
+    "MoonKnight": {
+      "locations": [
+        { "type": "blitz", "cost": 500 }
+      ]
+    },
+    "Moondragon": {
+      "locations": [
+        { "type": "raid", "cost": 1400 }
+      ]
+    },
+    "Morgan Le Fay": {
+      "locations": [
+        { "type": "milestone", "orb": "Milestone II" }
+      ]
+    },
+    "MsMarvel": {
+      "locations": [
+        { "type": "campaign", "node": "Heroes 5-9" }
+      ]
+    },
+    "Mysterio": {
+      "locations": [
+        { "type": "campaign", "node": "Villains 5-9" }
+      ]
+    },
+    "Mystique": {
+      "locations": [
+        { "type": "campaign", "node": "Villains 3-9" }
+      ]
+    },
+    "Namor": {
+      "locations": [
+        { "type": "war", "cost": 1400 }
+      ]
+    },
+    "Nebula": {
+      "locations": [
+        { "type": "campaign", "node": "Cosmic 1-6" }
+      ]
+    },
+    "NickFury": {
+      "locations": [
+        { "type": "legendary", "event": "Nick Fury Event", "requires": ["5 Kree Minions"] }
+      ]
+    },
+    "Nightcrawler": {
+      "locations": [
+        { "type": "arena", "cost": 975 }
+      ]
+    },
+    "Okoye": {
+      "locations": [
+        { "type": "raid", "cost": 1400 }
+      ]
+    },
+    "OmegaRed": {
+      "locations": [
+        { "type": "milestone", "orb": "Milestone III" }
+      ]
+    },
+    "Phoenix": {
+      "locations": [
+        { "type": "legendary", "event": "Phoenix Event", "requires": ["5 Villain Mystic Controller"] }
+      ]
+    },
+    "PhylaVell": {
+      "locations": [
+        { "type": "blitz", "cost": 500 }
+      ]
+    },
+    "Polaris": {
+      "locations": [
+        { "type": "blitz", "cost": 500 }
+      ]
+    },
+    "Psylocke": {
+      "locations": [
+        { "type": "war", "cost": 1400 }
+      ]
+    },
+    "Punisher": {
+      "locations": [
+        { "type": "campaign", "node": "Heroes 2-9" },
+        { "type": "blitz", "cost": 350 }
+      ]
+    },
+    "Quake": {
+      "locations": [
+        { "type": "arena", "cost": 500 }
+      ]
+    },
+    "RedGuardian": {
+      "locations": [
+        { "type": "war", "cost": 1400 }
+      ]
+    },
+    "RedHulk": {
+      "locations": [
+        { "type": "blitz", "cost": 500 }
+      ]
+    },
+    "RocketRaccoon": {
+      "locations": [
+        { "type": "campaign", "node": "Cosmic 2-6" }
+      ]
+    },
+    "Rogue": {
+      "locations": [
+        { "type": "milestone", "orb": "Milestone III" }
+      ]
+    },
+    "Sabretooth": {
+      "locations": [
+        { "type": "blitz", "cost": 500 }
+      ]
+    },
+    "ScarletSpider": {
+      "locations": [
+        { "type": "war", "cost": 1400 }
+      ]
+    },
+    "ScarletWitch": {
+      "locations": [
+        { "type": "milestone", "orb": "Milestone I" }
+      ]
+    },
+    "Shang-Chi": {
+      "locations": [
+        { "type": "raid", "cost": 1400 }
+      ]
+    },
+    "She-Hulk": {
+      "locations": [
+        { "type": "blitz", "cost": 500 }
+      ]
+    },
+    "Shuri": {
+      "locations": [
+        { "type": "legendary", "event": "Shuri Event", "requires": ["5 Spider-Verse"] }
+      ]
+    },
+    "SilverSamurai": {
+      "locations": [
+        { "type": "raid", "cost": 1400 }
+      ]
+    },
+    "SilverSurfer": {
+      "locations": [
+        { "type": "milestone", "orb": "Milestone II" }
+      ]
+    },
+    "SpiderMan": {
+      "locations": [
+        { "type": "campaign", "node": "Heroes 1-6" },
+        { "type": "blitz", "cost": 350 }
+      ]
+    },
+    "SpiderMan2099": {
+      "locations": [
+        { "type": "blitz", "cost": 500 }
+      ]
+    },
+    "SpiderPunk": {
+      "locations": [
+        { "type": "campaign", "node": "Heroes 7-3" }
+      ]
+    },
+    "Starbrand": {
+      "locations": [
+        { "type": "campaign", "node": "Doom 2-6" }
+      ]
+    },
+    "StarLord": {
+      "locations": [
+        { "type": "legendary", "event": "Star-Lord Event", "requires": ["5 Guardians/Ravagers"] }
+      ]
+    },
+    "Storm": {
+      "locations": [
+        { "type": "arena", "cost": 500 }
+      ]
+    },
+    "Sunfire": {
+      "locations": [
+        { "type": "blitz", "cost": 500 }
+      ]
+    },
+    "Sunspot": {
+      "locations": [
+        { "type": "blitz", "cost": 500 }
+      ]
+    },
+    "Surtur": {
+      "locations": [
+        { "type": "crucible", "cost": 750 }
+      ]
+    },
+    "ThanosEndgame": {
+      "locations": [
+        { "type": "milestone", "orb": "Milestone I" }
+      ]
+    },
+    "Thor": {
+      "locations": [
+        { "type": "campaign", "node": "Nexus 3-9" }
+      ]
+    },
+    "Ultimus": {
+      "locations": [
+        { "type": "orb", "note": "Ultimus Orb" }
+      ]
+    },
+    "Ultron": {
+      "locations": [
+        { "type": "legendary", "event": "Dark Dimension 2", "requires": ["Complete DD2"] }
+      ]
+    },
+    "Valkyrie": {
+      "locations": [
+        { "type": "raid", "cost": 1400 }
+      ]
+    },
+    "Venom": {
+      "locations": [
+        { "type": "campaign", "node": "Villains 6-6" }
+      ]
+    },
+    "Vision": {
+      "locations": [
+        { "type": "arena", "cost": 500 }
+      ]
+    },
+    "Vulture": {
+      "locations": [
+        { "type": "blitz", "cost": 500 }
+      ]
+    },
+    "WarMachine": {
+      "locations": [
+        { "type": "campaign", "node": "Villains 4-9" }
+      ]
+    },
+    "WinterSoldier": {
+      "locations": [
+        { "type": "campaign", "node": "Villains 2-9" },
+        { "type": "arena", "cost": 500 }
+      ]
+    },
+    "Wolverine": {
+      "locations": [
+        { "type": "orb", "note": "Daily Rewards" }
+      ]
+    },
+    "Wong": {
+      "locations": [
+        { "type": "blitz", "cost": 500 }
+      ]
+    },
+    "X-23": {
+      "locations": [
+        { "type": "blitz", "cost": 500 }
+      ]
+    },
+    "Yellowjacket": {
+      "locations": [
+        { "type": "campaign", "node": "Villains 4-6" }
+      ]
+    },
+    "YellowJacketV": {
+      "locations": [
+        { "type": "arena", "cost": 975 }
+      ]
+    },
+    "Yo-Yo": {
+      "locations": [
+        { "type": "war", "cost": 1400 }
+      ]
+    },
+    "Yondu": {
+      "locations": [
+        { "type": "campaign", "node": "Nexus 1-9" },
+        { "type": "raid", "cost": 1400 }
+      ]
+    },
+    "Zemo": {
+      "locations": [
+        { "type": "raid", "cost": 1400 }
+      ]
+    }
+  }
+}

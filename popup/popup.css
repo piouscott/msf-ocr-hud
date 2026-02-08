@@ -1194,3 +1194,137 @@ button:active {
 .war-team-toggle:hover {
   text-decoration: underline;
 }
+
+/* Farm Panel */
+#farm-panel {
+  background: #2d2d44;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.farm-search {
+  margin-bottom: 10px;
+}
+
+.farm-search input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.farm-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.farm-filter {
+  padding: 4px 8px;
+  font-size: 10px;
+  background: #1a1a2e;
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #aaa;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.farm-filter:hover {
+  background: #333;
+  color: #fff;
+}
+
+.farm-filter.active {
+  background: #00d4ff;
+  color: #1a1a2e;
+  border-color: #00d4ff;
+}
+
+.farm-results {
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.farm-char-item {
+  background: #1a1a2e;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 8px;
+  border-left: 3px solid #00d4ff;
+}
+
+.farm-char-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.farm-char-portrait {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  object-fit: cover;
+  background: #333;
+}
+
+.farm-char-name {
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  flex: 1;
+}
+
+.farm-locations {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.farm-location {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  padding: 4px 8px;
+  background: #2d2d44;
+  border-radius: 4px;
+}
+
+.farm-location-icon {
+  font-size: 14px;
+}
+
+.farm-location-type {
+  color: #888;
+  min-width: 70px;
+}
+
+.farm-location-detail {
+  color: #51cf66;
+  flex: 1;
+}
+
+.farm-location-cost {
+  color: #ffd43b;
+  font-weight: 500;
+}
+
+/* Farm location type colors */
+.farm-location.campaign .farm-location-type { color: #4dabf7; }
+.farm-location.blitz .farm-location-type { color: #ff922b; }
+.farm-location.arena .farm-location-type { color: #845ef7; }
+.farm-location.raid .farm-location-type { color: #f06595; }
+.farm-location.war .farm-location-type { color: #ff6b6b; }
+.farm-location.milestone .farm-location-type { color: #ffd43b; }
+.farm-location.legendary .farm-location-type { color: #e599f7; }
+.farm-location.crucible .farm-location-type { color: #20c997; }
+.farm-location.event .farm-location-type { color: #fab005; }
+
+.farm-no-results {
+  text-align: center;
+  color: #888;
+  padding: 20px;
+  font-size: 12px;
+}

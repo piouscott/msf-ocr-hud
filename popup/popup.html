@@ -22,6 +22,7 @@
       <button id="btn-notes" class="btn-small" title="Voir les notes de version">📋 Notes</button>
       <button id="btn-events" class="btn-small" title="Événements en cours">📅 Events</button>
       <button id="btn-defense" class="btn-small" title="Tester ma défense War">🛡️ Défense</button>
+      <button id="btn-farm" class="btn-small" title="Où farmer les personnages">🎯 Farm</button>
       <button id="btn-export" class="btn-small">Exporter</button>
       <button id="btn-import" class="btn-small">Importer</button>
       <button id="btn-manage" class="btn-small">Counters</button>
@@ -97,6 +98,25 @@
         <div class="api-help">Voir quelles équipes peuvent battre ma défense</div>
       </div>
       <div id="defense-counters" class="defense-counters hidden"></div>
+    </section>
+
+    <section id="farm-panel" class="hidden">
+      <div class="sync-header">
+        <span>Où farmer les personnages</span>
+        <button id="btn-close-farm" class="btn-close">X</button>
+      </div>
+      <div class="farm-search">
+        <input type="text" id="farm-search-input" class="sync-input" placeholder="Rechercher un personnage...">
+      </div>
+      <div class="farm-filters">
+        <button class="farm-filter active" data-filter="all">Tous</button>
+        <button class="farm-filter" data-filter="campaign">Campagne</button>
+        <button class="farm-filter" data-filter="blitz">Blitz</button>
+        <button class="farm-filter" data-filter="arena">Arene</button>
+        <button class="farm-filter" data-filter="raid">Raid</button>
+        <button class="farm-filter" data-filter="war">War</button>
+      </div>
+      <div id="farm-results" class="farm-results"></div>
     </section>
 
     <section id="war-panel" class="hidden">
