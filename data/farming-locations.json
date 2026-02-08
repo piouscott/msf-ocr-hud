@@ -78,7 +78,7 @@
         { "type": "arena", "cost": 500 }
       ]
     },
-    "CaptainAmericaSam": {
+    "SamWilson": {
       "locations": [
         { "type": "campaign", "node": "Heroes 7-6" },
         { "type": "blitz", "cost": 500 }
@@ -235,7 +235,7 @@
         { "type": "arena", "cost": 975 }
       ]
     },
-    "Jessica Jones": {
+    "JessicaJones": {
       "locations": [
         { "type": "campaign", "node": "Heroes 4-9" }
       ]
@@ -250,7 +250,7 @@
         { "type": "crucible", "cost": 750 }
       ]
     },
-    "Kate Bishop": {
+    "KateBishop": {
       "locations": [
         { "type": "campaign", "node": "Heroes 7-9" }
       ]
@@ -302,7 +302,7 @@
         { "type": "campaign", "node": "Cosmic 2-9" }
       ]
     },
-    "Maria Hill": {
+    "MariaHill": {
       "locations": [
         { "type": "blitz", "cost": 500 }
       ]
@@ -347,7 +347,7 @@
         { "type": "raid", "cost": 1400 }
       ]
     },
-    "Morgan Le Fay": {
+    "MorganLeFay": {
       "locations": [
         { "type": "milestone", "orb": "Milestone II" }
       ]
