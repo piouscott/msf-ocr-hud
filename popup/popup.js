@@ -75,6 +75,20 @@ const btnWarAnalyzePortraits = document.getElementById("btn-war-analyze-portrait
 // War Analyzer instance
 let warAnalyzer = null;
 
+// Inverse Counters instance
+let inverseCounters = null;
+
+// Defense panel elements
+const defensePanel = document.getElementById("defense-panel");
+const btnDefense = document.getElementById("btn-defense");
+const btnCloseDefense = document.getElementById("btn-close-defense");
+const defenseTeamSelect = document.getElementById("defense-team-select");
+const defenseCounters = document.getElementById("defense-counters");
+
+// War event section elements
+const warEventSection = document.getElementById("war-event-section");
+const warTeamsList = document.getElementById("war-teams-list");
+
 // Portraits captures pour le mode War
 let capturedWarPortraits = [null, null, null, null, null];
 
@@ -238,10 +252,78 @@ btnCloseEvents.addEventListener("click", () => {
   eventsPanel.classList.add("hidden");
 });
 
+// ============================================
+// Bouton Défense - Tester ma défense
+// ============================================
+
+btnDefense.addEventListener("click", async () => {
+  defensePanel.classList.toggle("hidden");
+
+  if (!defensePanel.classList.contains("hidden")) {
+    await loadDefensePanel();
+  }
+});
+
+btnCloseDefense.addEventListener("click", () => {
+  defensePanel.classList.add("hidden");
+});
+
+async function loadDefensePanel() {
+  try {
+    if (!inverseCounters) {
+      inverseCounters = new InverseCounters();
+      await inverseCounters.init();
+    }
+
+    // Remplir le select avec les équipes de défense
+    const defenseTeams = inverseCounters.getAllDefenseTeams();
+
+    defenseTeamSelect.innerHTML = '<option value="">-- Sélectionner une équipe --</option>';
+    defenseTeams.forEach(team => {
+      const option = document.createElement("option");
+      option.value = team.teamId;
+      option.textContent = `${team.teamName} (${team.counterCount} counters)`;
+      defenseTeamSelect.appendChild(option);
+    });
+
+    defenseCounters.classList.add("hidden");
+    defenseCounters.innerHTML = "";
+
+  } catch (e) {
+    console.error("[Defense] Erreur chargement:", e);
+  }
+}
+
+defenseTeamSelect.addEventListener("change", () => {
+  const teamId = defenseTeamSelect.value;
+
+  if (!teamId) {
+    defenseCounters.classList.add("hidden");
+    return;
+  }
+
+  const counters = inverseCounters.getCountersFor(teamId);
+
+  if (counters.length === 0) {
+    defenseCounters.innerHTML = '<div class="no-counters">Aucun counter connu pour cette équipe</div>';
+  } else {
+    defenseCounters.innerHTML = counters.map(c => `
+      <div class="defense-counter-item">
+        <span class="defense-counter-name">${c.teamName}</span>
+        <span class="defense-counter-confidence">${confidenceToSymbols(c.confidence)}</span>
+      </div>
+      ${c.notes ? `<div style="font-size:10px;color:#888;padding:0 8px 8px;margin-top:-4px;">${c.notes}</div>` : ""}
+    `).join("");
+  }
+
+  defenseCounters.classList.remove("hidden");
+});
+
 async function loadEvents() {
   eventsLoading.classList.remove("hidden");
   eventsError.classList.add("hidden");
   eventsList.classList.add("hidden");
+  warEventSection.classList.add("hidden");
 
   try {
     // Utiliser le background script pour l'appel API (gestion du refresh token)
@@ -268,10 +350,86 @@ async function loadEvents() {
     eventsLoading.classList.add("hidden");
     eventsList.classList.remove("hidden");
 
+    // Vérifier si "Battle in War" est actif dans les milestones
+    const hasWarEvent = milestoneEvents.some(e => {
+      const scoring = e.milestone?.scoring;
+      if (!scoring) return false;
+      const allMethods = [
+        ...(scoring.methods || []),
+        ...(scoring.cappedScorings || []).flatMap(cs => cs.methods || [])
+      ];
+      return allMethods.some(m =>
+        m.description?.toLowerCase().includes("war") ||
+        m.description?.toLowerCase().includes("guerre")
+      );
+    });
+
+    if (hasWarEvent) {
+      await loadWarTeamsForEvent();
+    }
+
   } catch (err) {
     eventsLoading.classList.add("hidden");
     eventsError.textContent = err.message;
     eventsError.classList.remove("hidden");
+  }
+}
+
+/**
+ * Charge et affiche les équipes offensives pour les events War
+ */
+async function loadWarTeamsForEvent() {
+  try {
+    if (!inverseCounters) {
+      inverseCounters = new InverseCounters();
+      await inverseCounters.init();
+    }
+
+    const offensiveTeams = inverseCounters.getAllOffensiveTeams().slice(0, 15); // Top 15
+
+    if (offensiveTeams.length === 0) {
+      return;
+    }
+
+    let html = "";
+    offensiveTeams.forEach((team, idx) => {
+      html += `
+        <div class="war-team-card">
+          <div class="war-team-header">
+            <span class="war-team-name">${team.teamName}</span>
+            <span class="war-team-count">Bat ${team.targetCount} équipes</span>
+          </div>
+          <button class="war-team-toggle" data-team-idx="${idx}">Voir cibles ▼</button>
+          <div class="war-team-targets" id="war-targets-${idx}">
+            ${team.targets.slice(0, 10).map(t => `
+              <div class="war-target-item">
+                <span class="war-target-name">${t.defenseName}</span>
+                <span class="war-target-confidence">${confidenceToSymbols(t.confidence)}</span>
+              </div>
+            `).join("")}
+            ${team.targets.length > 10 ? `<div class="war-target-item" style="color:#888">... et ${team.targets.length - 10} autres</div>` : ""}
+          </div>
+        </div>
+      `;
+    });
+
+    warTeamsList.innerHTML = html;
+    warEventSection.classList.remove("hidden");
+
+    // Event listeners pour les toggles
+    warTeamsList.querySelectorAll(".war-team-toggle").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = btn.dataset.teamIdx;
+        const targets = document.getElementById(`war-targets-${idx}`);
+        if (targets) {
+          targets.classList.toggle("show");
+          btn.textContent = targets.classList.contains("show") ? "Masquer ▲" : "Voir cibles ▼";
+        }
+      });
+    });
+
+  } catch (e) {
+    console.error("[Events] Erreur chargement équipes War:", e);
   }
 }
 

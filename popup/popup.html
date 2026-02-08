@@ -21,6 +21,7 @@
       <button id="btn-detach" class="btn-small" title="Ouvrir dans une fenêtre permanente">🪟 Fenêtre</button>
       <button id="btn-notes" class="btn-small" title="Voir les notes de version">📋 Notes</button>
       <button id="btn-events" class="btn-small" title="Événements en cours">📅 Events</button>
+      <button id="btn-defense" class="btn-small" title="Tester ma défense War">🛡️ Défense</button>
       <button id="btn-export" class="btn-small">Exporter</button>
       <button id="btn-import" class="btn-small">Importer</button>
       <button id="btn-manage" class="btn-small">Counters</button>
@@ -75,6 +76,27 @@
       <div id="events-loading" class="events-loading">Chargement des événements...</div>
       <div id="events-error" class="events-error hidden"></div>
       <div id="events-list" class="events-list hidden"></div>
+
+      <!-- Section War Teams quand event Battle in War est actif -->
+      <div id="war-event-section" class="hidden">
+        <div class="events-section-title">Équipes offensives pour War</div>
+        <div id="war-teams-list" class="war-teams-list"></div>
+      </div>
+    </section>
+
+    <section id="defense-panel" class="hidden">
+      <div class="sync-header">
+        <span>Tester ma défense</span>
+        <button id="btn-close-defense" class="btn-close">X</button>
+      </div>
+      <div class="defense-form">
+        <label class="api-label">Équipe de défense</label>
+        <select id="defense-team-select" class="team-selector defense-select">
+          <option value="">-- Sélectionner une équipe --</option>
+        </select>
+        <div class="api-help">Voir quelles équipes peuvent battre ma défense</div>
+      </div>
+      <div id="defense-counters" class="defense-counters hidden"></div>
     </section>
 
     <section id="war-panel" class="hidden">
@@ -172,6 +194,7 @@
   <script src="../modules/ocr-engine.js"></script>
   <script src="../modules/phash.js"></script>
   <script src="../modules/war-analyzer.js"></script>
+  <script src="../modules/inverse-counters.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

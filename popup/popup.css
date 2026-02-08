@@ -1077,3 +1077,120 @@ button:active {
 .api-divider span {
   padding: 0 10px;
 }
+
+/* Defense Panel */
+#defense-panel {
+  background: #2d2d44;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.defense-form {
+  margin-bottom: 10px;
+}
+
+.defense-select {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.defense-counters {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.defense-counter-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background: #1a1a2e;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+.defense-counter-name {
+  color: #ff6b6b;
+  font-weight: 500;
+}
+
+.defense-counter-confidence {
+  color: #ffd43b;
+  font-size: 12px;
+}
+
+/* War Teams List for Events */
+.war-teams-list {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.war-team-card {
+  background: #1a1a2e;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 8px;
+  border-left: 3px solid #51cf66;
+}
+
+.war-team-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.war-team-name {
+  color: #51cf66;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.war-team-count {
+  font-size: 10px;
+  color: #888;
+  background: #2d2d44;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.war-team-targets {
+  display: none;
+}
+
+.war-team-targets.show {
+  display: block;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #333;
+}
+
+.war-target-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 12px;
+}
+
+.war-target-name {
+  color: #ccc;
+}
+
+.war-target-confidence {
+  color: #ffd43b;
+}
+
+.war-team-toggle {
+  background: none;
+  border: none;
+  color: #00d4ff;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.war-team-toggle:hover {
+  text-decoration: underline;
+}
