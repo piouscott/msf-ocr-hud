@@ -38,10 +38,10 @@ Pour milestone events:
 
 ## Idees de fonctionnalites
 
-### 1. Event -> Counters inverses (PRIORITAIRE)
-Event dit "Utilisez X-Men en guerre" -> Bouton "Voir cibles" -> Liste les equipes que X-Men peuvent counter efficacement.
-- Inverser la logique des counters: "Cette equipe counter quoi ?"
-- Afficher avec niveau de confiance
+### ~~1. Event -> Counters inverses (PRIORITAIRE)~~ ✅ FAIT
+~~Event dit "Utilisez X-Men en guerre" -> Bouton "Voir cibles" -> Liste les equipes que X-Men peuvent counter efficacement.~~
+- ~~Inverser la logique des counters: "Cette equipe counter quoi ?"~~ → `modules/inverse-counters.js`
+- ~~Afficher avec niveau de confiance~~ → Panel Events + section "Équipes offensives pour War"
 
 ### 2. Equipes a farmer en priorite
 - Analyser les counters ou il manque 1-2 persos
@@ -53,8 +53,8 @@ Event dit "Utilisez X-Men en guerre" -> Bouton "Voir cibles" -> Liste les equipe
 - Calculer le score max possible avec le roster du joueur
 - "Teams eligibles que vous avez: 12/15 -> potentiel ~2.5M points"
 
-### 4. War Defense Advisor
-- Inverser les counters: "Cette equipe est difficile a counter"
+### ~~4. War Defense Advisor~~ ✅ FAIT (partiel)
+- ~~Inverser les counters: "Cette equipe est difficile a counter"~~ → Bouton "🛡️ Défense" dans popup
 - Suggerer les defenses ou peu de joueurs ont le counter complet
 - Base sur la rarete des persos requis dans les counters
 
@@ -77,12 +77,12 @@ Event dit "Utilisez X-Men en guerre" -> Bouton "Voir cibles" -> Liste les equipe
 
 ## Implementation suggeree
 
-### Phase 1 - Counters inverses
-1. Appeler `/game/v1/events` avec x-api-key (deja disponible dans popup.js)
-2. Extraire les requirements (traits) des events blitz/tower
-3. Mapper traits -> equipes via teams.json
-4. Inverser counters.json: "Cette equipe counter quoi ?"
-5. Dans panel Events, ajouter bouton "Voir cibles" par team
+### ~~Phase 1 - Counters inverses~~ ✅ TERMINÉE
+1. ~~Appeler `/game/v1/events` avec x-api-key~~ → OAuth implementé avec refresh token
+2. ~~Extraire les requirements (traits) des events blitz/tower~~ → Affichage Blitz/Milestone/Raid
+3. ~~Mapper traits -> equipes via teams.json~~
+4. ~~Inverser counters.json: "Cette equipe counter quoi ?"~~ → `InverseCounters` class
+5. ~~Dans panel Events, ajouter bouton "Voir cibles" par team~~ → Section "Équipes offensives pour War"
 
 ### Phase 2 - Farming advisor
 1. Analyser tous les counters
@@ -102,8 +102,14 @@ Event dit "Utilisez X-Men en guerre" -> Bouton "Voir cibles" -> Liste les equipe
 - Le roster est stocke dans `msfPlayerRoster` (storage local)
 - `/game/v1/events` utilise seulement x-api-key (pas besoin du Bearer token joueur)
 - `/player/v1/events` necessite x-api-key + Bearer token (pour progression joueur)
-- x-api-key deja disponible: `MSF_API_KEY` dans popup.js
+- ~~x-api-key deja disponible: `MSF_API_KEY` dans popup.js~~ → OAuth implementé avec auto-refresh
+
+### OAuth implementé ✅
+- Connexion OAuth avec client_id/secret
+- Refresh token pour acces permanent
+- Auto-detection callback page → stockage automatique des tokens
+- Protection: token OAuth pas ecrase par auto-capture x-titan-token
 
 ---
 
-Derniere mise a jour: 2026-02-07
+Derniere mise a jour: 2026-02-08
