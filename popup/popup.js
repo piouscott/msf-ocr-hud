@@ -805,7 +805,7 @@ btnApi.addEventListener("click", async () => {
 
   if (!apiPanel.classList.contains("hidden")) {
     // Charger le token sauvegarde et les infos de capture
-    const stored = await storageGet(["msfApiToken", "msfTokenCapturedAt", "msfTokenAutoCapture"]);
+    const stored = await storageGet(["msfApiToken", "msfTokenCapturedAt", "msfTokenAutoCapture", "msfTokenType", "msfRefreshToken"]);
     if (stored.msfApiToken) {
       apiToken.value = stored.msfApiToken;
     }
@@ -821,7 +821,61 @@ btnApi.addEventListener("click", async () => {
       apiAutoCapture.classList.add("hidden");
     }
 
+    // Afficher le statut OAuth
+    updateOAuthStatus(stored);
     setApiStatus("", "");
+  }
+});
+
+// OAuth Login Button
+const btnOAuthLogin = document.getElementById("btn-oauth-login");
+const oauthStatus = document.getElementById("oauth-status");
+
+function updateOAuthStatus(stored) {
+  if (stored.msfTokenType === "oauth" && stored.msfRefreshToken) {
+    oauthStatus.textContent = "✓ Connecté via OAuth";
+    oauthStatus.className = "oauth-status success";
+    btnOAuthLogin.textContent = "🔄 Reconnecter OAuth";
+  } else {
+    oauthStatus.textContent = "";
+    oauthStatus.className = "oauth-status";
+    btnOAuthLogin.textContent = "🔐 Connexion OAuth MSF";
+  }
+}
+
+btnOAuthLogin.addEventListener("click", async () => {
+  btnOAuthLogin.disabled = true;
+  oauthStatus.textContent = "Ouverture de la page de connexion...";
+  oauthStatus.className = "oauth-status info";
+
+  try {
+    // Récupérer la config OAuth depuis le background
+    const config = await ext.runtime.sendMessage({ type: "MSF_GET_OAUTH_CONFIG" });
+
+    // Générer un state aléatoire
+    const state = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+      .map(b => b.toString(16).padStart(2, "0"))
+      .join("");
+
+    // Construire l'URL d'autorisation
+    const authUrl = new URL(config.authUrl);
+    authUrl.searchParams.set("client_id", config.clientId);
+    authUrl.searchParams.set("redirect_uri", config.redirectUri);
+    authUrl.searchParams.set("response_type", "code");
+    authUrl.searchParams.set("scope", config.scopes);
+    authUrl.searchParams.set("state", state);
+
+    // Ouvrir dans un nouvel onglet
+    ext.tabs.create({ url: authUrl.toString() });
+
+    oauthStatus.textContent = "Autorisez l'application puis collez le refresh token";
+    oauthStatus.className = "oauth-status info";
+
+  } catch (e) {
+    oauthStatus.textContent = "Erreur: " + e.message;
+    oauthStatus.className = "oauth-status error";
+  } finally {
+    btnOAuthLogin.disabled = false;
   }
 });
 

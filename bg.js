@@ -164,6 +164,66 @@ async function sendToAllFrames(tabId, message) {
   );
 }
 
+// ============================================
+// AUTO-DETECTION DES TOKENS OAUTH (callback)
+// ============================================
+
+// Écouter quand la page callback est chargée
+ext.webNavigation.onCompleted.addListener(async (details) => {
+  if (details.url.includes("piouscott.github.io/msf-ocr-hud/callback.html")) {
+    console.log("[BG] Page callback détectée, tentative de récupération des tokens...");
+
+    // Attendre un peu que la page traite les tokens
+    await new Promise(r => setTimeout(r, 2000));
+
+    try {
+      // Injecter un script pour lire localStorage
+      const results = await ext.scripting.executeScript({
+        target: { tabId: details.tabId },
+        func: () => {
+          const data = localStorage.getItem("msf_oauth_tokens");
+          if (data) {
+            localStorage.removeItem("msf_oauth_tokens"); // Nettoyer après lecture
+            return JSON.parse(data);
+          }
+          return null;
+        }
+      });
+
+      if (results && results[0] && results[0].result) {
+        const tokenData = results[0].result;
+        console.log("[BG] Tokens OAuth récupérés depuis callback!");
+
+        // Sauvegarder les tokens
+        await ext.storage.local.set({
+          msfApiToken: tokenData.accessToken,
+          msfRefreshToken: tokenData.refreshToken,
+          msfTokenType: "oauth",
+          msfTokenExpiresAt: Date.now() + (tokenData.expiresIn * 1000),
+          msfTokenSavedAt: new Date().toISOString()
+        });
+
+        console.log("[BG] Tokens OAuth sauvegardés avec succès!");
+
+        // Notifier l'utilisateur (optionnel: injecter un message dans la page)
+        await ext.scripting.executeScript({
+          target: { tabId: details.tabId },
+          func: () => {
+            const resultEl = document.getElementById("result");
+            if (resultEl) {
+              const successDiv = document.createElement("div");
+              successDiv.innerHTML = '<p style="color:#51cf66;font-weight:bold;margin-top:20px;">✓ Extension mise à jour automatiquement !</p><p style="color:#aaa;">Vous pouvez fermer cette page.</p>';
+              resultEl.appendChild(successDiv);
+            }
+          }
+        });
+      }
+    } catch (e) {
+      console.error("[BG] Erreur récupération tokens callback:", e);
+    }
+  }
+}, { url: [{ hostContains: "piouscott.github.io" }] });
+
 // Handler pour les messages du popup
 ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === "MSF_ANALYZE_REQUEST") {
