@@ -132,7 +132,14 @@ ext.webRequest.onBeforeSendHeaders.addListener(
     if (tokenToSave) {
       // Sauvegarder le token (async dans un IIFE pour ne pas bloquer)
       (async () => {
-        const stored = await ext.storage.local.get(["msfApiToken", "msfTokenType"]);
+        const stored = await ext.storage.local.get(["msfApiToken", "msfTokenType", "msfRefreshToken"]);
+
+        // NE PAS écraser un token OAuth valide avec un token auto-capturé
+        if (stored.msfTokenType === "oauth" && stored.msfRefreshToken) {
+          console.log("[BG] Token OAuth présent, skip auto-capture");
+          return;
+        }
+
         if (stored.msfApiToken !== tokenToSave) {
           await ext.storage.local.set({
             msfApiToken: tokenToSave,
