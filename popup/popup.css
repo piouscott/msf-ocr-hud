@@ -1328,3 +1328,87 @@ button:active {
   padding: 20px;
   font-size: 12px;
 }
+
+/* Farm Campaign Groups */
+.farm-campaign-group {
+  margin-bottom: 8px;
+}
+
+.farm-campaign-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, #2d2d44 0%, #1a1a2e 100%);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.farm-campaign-header:hover {
+  background: linear-gradient(135deg, #3d3d54 0%, #2a2a3e 100%);
+}
+
+.farm-campaign-toggle {
+  color: #00d4ff;
+  font-size: 10px;
+  width: 12px;
+}
+
+.farm-campaign-name {
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  flex: 1;
+}
+
+.farm-campaign-count {
+  font-size: 10px;
+  color: #888;
+  background: #1a1a2e;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.farm-campaign-chars {
+  display: none;
+  padding: 8px 0 0 20px;
+}
+
+.farm-campaign-chars.show {
+  display: block;
+}
+
+.farm-char-compact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: #1a1a2e;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  border-left: 2px solid #4dabf7;
+}
+
+.farm-char-portrait-sm {
+  width: 28px;
+  height: 28px;
+  border-radius: 3px;
+  object-fit: cover;
+  background: #333;
+}
+
+.farm-char-name-sm {
+  color: #ccc;
+  font-size: 11px;
+  flex: 1;
+}
+
+.farm-char-node {
+  color: #4dabf7;
+  font-size: 11px;
+  font-weight: 500;
+  background: #2d2d44;
+  padding: 2px 6px;
+  border-radius: 3px;
+}

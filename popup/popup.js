@@ -398,14 +398,20 @@ function renderFarmResults() {
   // Sort by name
   results.sort((a, b) => a.name.localeCompare(b.name));
 
-  // Limit results
-  if (!searchTerm) {
-    results = results.slice(0, 50);
-  }
-
   if (results.length === 0) {
     farmResults.innerHTML = '<div class="farm-no-results">Aucun personnage trouvé</div>';
     return;
+  }
+
+  // Si filtre campagne, regrouper par type de campagne
+  if (filter === "campaign") {
+    renderFarmByCampaign(results, searchTerm);
+    return;
+  }
+
+  // Limit results pour les autres filtres
+  if (!searchTerm) {
+    results = results.slice(0, 50);
   }
 
   const html = results.map(char => `
@@ -421,6 +427,103 @@ function renderFarmResults() {
   `).join("");
 
   farmResults.innerHTML = html;
+}
+
+/**
+ * Affiche les personnages groupés par campagne avec sections pliables
+ */
+function renderFarmByCampaign(results, searchTerm) {
+  // Définir l'ordre des campagnes
+  const campaignOrder = ["Heroes", "Villains", "Nexus", "Cosmic", "Mystic", "Doom"];
+  const campaignNames = {
+    "Heroes": "Heroes",
+    "Villains": "Villains",
+    "Nexus": "Nexus",
+    "Cosmic": "Cosmic",
+    "Mystic": "Mystic",
+    "Doom": "Doom"
+  };
+
+  // Grouper par campagne
+  const groups = {};
+  for (const char of results) {
+    const campaignLocs = char.locations.filter(loc => loc.type === "campaign" && loc.node);
+    for (const loc of campaignLocs) {
+      // Extraire le type de campagne du node (ex: "Heroes 6-9" -> "Heroes")
+      const match = loc.node.match(/^(Heroes|Villains|Nexus|Cosmic|Mystic|Doom)/i);
+      if (match) {
+        const campaign = match[1].charAt(0).toUpperCase() + match[1].slice(1).toLowerCase();
+        const normalizedCampaign = campaignOrder.find(c => c.toLowerCase() === campaign.toLowerCase()) || campaign;
+
+        if (!groups[normalizedCampaign]) {
+          groups[normalizedCampaign] = [];
+        }
+        groups[normalizedCampaign].push({
+          ...char,
+          node: loc.node
+        });
+      }
+    }
+  }
+
+  // Générer le HTML avec sections pliables
+  let html = "";
+  for (const campaign of campaignOrder) {
+    const chars = groups[campaign];
+    if (!chars || chars.length === 0) continue;
+
+    // Trier par node
+    chars.sort((a, b) => {
+      const nodeA = a.node.match(/(\d+)-(\d+)/);
+      const nodeB = b.node.match(/(\d+)-(\d+)/);
+      if (nodeA && nodeB) {
+        const chapterA = parseInt(nodeA[1]);
+        const chapterB = parseInt(nodeB[1]);
+        if (chapterA !== chapterB) return chapterA - chapterB;
+        return parseInt(nodeA[2]) - parseInt(nodeB[2]);
+      }
+      return a.node.localeCompare(b.node);
+    });
+
+    const isExpanded = searchTerm ? true : false; // Déplié si recherche active
+
+    html += `
+      <div class="farm-campaign-group">
+        <div class="farm-campaign-header" data-campaign="${campaign}">
+          <span class="farm-campaign-toggle">${isExpanded ? "▼" : "▶"}</span>
+          <span class="farm-campaign-name">${campaignNames[campaign] || campaign}</span>
+          <span class="farm-campaign-count">${chars.length} persos</span>
+        </div>
+        <div class="farm-campaign-chars ${isExpanded ? "show" : ""}">
+          ${chars.map(char => `
+            <div class="farm-char-compact">
+              ${char.portrait ? `<img src="${char.portrait}" class="farm-char-portrait-sm" alt="">` : '<div class="farm-char-portrait-sm"></div>'}
+              <span class="farm-char-name-sm">${char.name}</span>
+              <span class="farm-char-node">${char.node}</span>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  if (!html) {
+    html = '<div class="farm-no-results">Aucun personnage en campagne trouvé</div>';
+  }
+
+  farmResults.innerHTML = html;
+
+  // Ajouter les event listeners pour plier/déplier
+  farmResults.querySelectorAll(".farm-campaign-header").forEach(header => {
+    header.addEventListener("click", () => {
+      const chars = header.nextElementSibling;
+      const toggle = header.querySelector(".farm-campaign-toggle");
+      if (chars) {
+        chars.classList.toggle("show");
+        toggle.textContent = chars.classList.contains("show") ? "▼" : "▶";
+      }
+    });
+  });
 }
 
 function renderFarmLocation(loc) {
