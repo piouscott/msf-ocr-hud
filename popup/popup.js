@@ -348,7 +348,7 @@ function renderAllEvents({ blitz, milestone, raid }) {
             <span class="event-type">${event.milestone.typeName || "Milestone"}</span>
           </div>
           ${rows.length > 0 ? `
-            <button class="event-toggle" onclick="toggleEventDetails(${idx})">
+            <button class="event-toggle" data-event-idx="${idx}">
               ${rows.length} conditions ▼
             </button>
             <div class="event-details" id="event-details-${idx}">
@@ -377,6 +377,14 @@ function renderAllEvents({ blitz, milestone, raid }) {
   }
 
   eventsList.innerHTML = html;
+
+  // Ajouter les event listeners pour les boutons toggle (CSP-compliant)
+  eventsList.querySelectorAll(".event-toggle").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const idx = btn.dataset.eventIdx;
+      toggleEventDetails(idx);
+    });
+  });
 }
 
 
