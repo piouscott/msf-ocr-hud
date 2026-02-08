@@ -365,21 +365,41 @@ ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 });
 
 /**
- * Récupère les events en cours via l'API MSF publique
+ * Récupère les events en cours via l'API MSF
+ * Essaie d'abord /player/v1/events (avec progression), sinon /game/v1/events
  */
 async function handleGetEvents() {
   const token = await getValidToken();
+  const authHeader = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
 
-  const url = "https://api.marvelstrikeforce.com/game/v1/events";
+  // Essayer d'abord /player/v1/events (inclut la progression du joueur)
+  const playerUrl = "https://api.marvelstrikeforce.com/player/v1/events";
   const headers = {
     "x-api-key": MSF_OAUTH.apiKey,
-    "Authorization": token.startsWith("Bearer ") ? token : `Bearer ${token}`,
+    "Authorization": authHeader,
     "Accept": "application/json"
   };
 
-  console.log("[BG] Appel API events avec OAuth token");
+  console.log("[BG] Tentative /player/v1/events...");
 
-  const response = await fetch(url, { headers });
+  let response = await fetch(playerUrl, { headers });
+
+  if (response.ok) {
+    const data = await response.json();
+    console.log("[BG] Events joueur récupérés:", data);
+    return {
+      success: true,
+      events: data.data || data,
+      source: "player",
+      raw: data
+    };
+  }
+
+  console.log("[BG] /player/v1/events échoué:", response.status, "- tentative /game/v1/events");
+
+  // Fallback sur /game/v1/events (données publiques)
+  const gameUrl = "https://api.marvelstrikeforce.com/game/v1/events";
+  response = await fetch(gameUrl, { headers });
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -392,11 +412,12 @@ async function handleGetEvents() {
   }
 
   const data = await response.json();
-  console.log("[BG] Events récupérés:", data);
+  console.log("[BG] Events game récupérés:", data);
 
   return {
     success: true,
     events: data.data || data,
+    source: "game",
     raw: data
   };
 }
