@@ -2,6 +2,93 @@ const ext = typeof browser !== "undefined" ? browser : chrome;
 const isFirefox = typeof browser !== "undefined";
 
 // ============================================
+// CONFIGURATION OAUTH MSF
+// ============================================
+
+const MSF_OAUTH = {
+  clientId: "6ff39dae-e1ec-46f0-bcff-c8f2a9d50b4f",
+  clientSecret: "zJ~2rov.SnpRkGnDWhFUqFM-u0",
+  tokenUrl: "https://hydra-public.prod.m3.scopelypv.com/oauth2/token",
+  apiKey: "17wMKJLRxy3pYDCKG5ciP7VSU45OVumB2biCzzgw"
+};
+
+/**
+ * Rafraîchit le token OAuth en utilisant le refresh_token
+ */
+async function refreshOAuthToken() {
+  const stored = await ext.storage.local.get(["msfRefreshToken"]);
+
+  if (!stored.msfRefreshToken) {
+    throw new Error("Pas de refresh token disponible");
+  }
+
+  const credentials = btoa(`${MSF_OAUTH.clientId}:${MSF_OAUTH.clientSecret}`);
+
+  const response = await fetch(MSF_OAUTH.tokenUrl, {
+    method: "POST",
+    headers: {
+      "Authorization": `Basic ${credentials}`,
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(stored.msfRefreshToken)}`
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error_description || `Erreur refresh: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  // Sauvegarder les nouveaux tokens
+  await ext.storage.local.set({
+    msfApiToken: data.access_token,
+    msfRefreshToken: data.refresh_token,
+    msfTokenType: "oauth",
+    msfTokenExpiresAt: Date.now() + (data.expires_in * 1000),
+    msfTokenRefreshedAt: new Date().toISOString()
+  });
+
+  console.log("[BG] Token OAuth rafraîchi avec succès");
+  return data.access_token;
+}
+
+/**
+ * Obtient un token valide (rafraîchit si nécessaire)
+ */
+async function getValidToken() {
+  const stored = await ext.storage.local.get([
+    "msfApiToken",
+    "msfTokenType",
+    "msfTokenExpiresAt",
+    "msfRefreshToken"
+  ]);
+
+  // Si on a un token OAuth, vérifier s'il est expiré
+  if (stored.msfTokenType === "oauth" && stored.msfRefreshToken) {
+    const expiresAt = stored.msfTokenExpiresAt || 0;
+    const now = Date.now();
+
+    // Rafraîchir si expiré ou expire dans moins de 5 minutes
+    if (now >= expiresAt - 300000) {
+      console.log("[BG] Token OAuth expiré, rafraîchissement...");
+      try {
+        return await refreshOAuthToken();
+      } catch (e) {
+        console.error("[BG] Erreur refresh token:", e);
+        throw new Error("Token expiré. Reconnectez-vous via OAuth.");
+      }
+    }
+  }
+
+  if (!stored.msfApiToken) {
+    throw new Error("Pas de token disponible");
+  }
+
+  return stored.msfApiToken;
+}
+
+// ============================================
 // AUTO-CAPTURE DU TOKEN MSF
 // ============================================
 
@@ -158,14 +245,52 @@ ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
   // Debug: vérifier le token capturé
   if (msg.type === "MSF_CHECK_TOKEN") {
-    ext.storage.local.get(["msfApiToken", "msfTokenCapturedAt", "msfTokenAutoCapture", "msfTokenType"]).then(stored => {
+    ext.storage.local.get(["msfApiToken", "msfTokenCapturedAt", "msfTokenAutoCapture", "msfTokenType", "msfTokenExpiresAt", "msfRefreshToken"]).then(stored => {
       sendResponse({
         hasToken: !!stored.msfApiToken,
         tokenPreview: stored.msfApiToken ? stored.msfApiToken.substring(0, 30) + "..." : null,
         tokenType: stored.msfTokenType || "unknown",
         capturedAt: stored.msfTokenCapturedAt,
-        autoCapture: stored.msfTokenAutoCapture
+        autoCapture: stored.msfTokenAutoCapture,
+        expiresAt: stored.msfTokenExpiresAt,
+        hasRefreshToken: !!stored.msfRefreshToken
       });
+    });
+    return true;
+  }
+
+  // Sauvegarder les tokens OAuth (après login)
+  if (msg.type === "MSF_SAVE_OAUTH_TOKENS") {
+    ext.storage.local.set({
+      msfApiToken: msg.accessToken,
+      msfRefreshToken: msg.refreshToken,
+      msfTokenType: "oauth",
+      msfTokenExpiresAt: Date.now() + (msg.expiresIn * 1000),
+      msfTokenSavedAt: new Date().toISOString()
+    }).then(() => {
+      console.log("[BG] Tokens OAuth sauvegardés");
+      sendResponse({ success: true });
+    });
+    return true;
+  }
+
+  // Rafraîchir le token OAuth manuellement
+  if (msg.type === "MSF_REFRESH_TOKEN") {
+    refreshOAuthToken().then(token => {
+      sendResponse({ success: true, tokenPreview: token.substring(0, 30) + "..." });
+    }).catch(e => {
+      sendResponse({ success: false, error: e.message });
+    });
+    return true;
+  }
+
+  // Obtenir les infos OAuth pour le login
+  if (msg.type === "MSF_GET_OAUTH_CONFIG") {
+    sendResponse({
+      clientId: MSF_OAUTH.clientId,
+      authUrl: "https://hydra-public.prod.m3.scopelypv.com/oauth2/auth",
+      redirectUri: "https://piouscott.github.io/msf-ocr-hud/callback.html",
+      scopes: "openid offline m3p.f.pr.pro m3p.f.pr.ros m3p.f.pr.inv m3p.f.pr.act m3p.f.ar.pro"
     });
     return true;
   }

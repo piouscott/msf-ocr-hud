@@ -25,6 +25,7 @@
     h1 { color: #f39c12; margin-bottom: 20px; }
     .success { color: #51cf66; }
     .error { color: #ff6b6b; }
+    .info { color: #74c0fc; }
     .token-box {
       background: #0f0f23;
       padding: 15px;
@@ -35,6 +36,7 @@
       margin: 20px 0;
       max-height: 100px;
       overflow-y: auto;
+      text-align: left;
     }
     button {
       background: #f39c12;
@@ -45,61 +47,149 @@
       font-weight: bold;
       cursor: pointer;
       font-size: 14px;
+      margin: 5px;
     }
     button:hover { background: #e67e22; }
+    button.secondary {
+      background: #4a5568;
+      color: #fff;
+    }
     .instructions { margin-top: 20px; font-size: 14px; color: #aaa; }
+    .spinner {
+      border: 3px solid #16213e;
+      border-top: 3px solid #f39c12;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>MSF Counter</h1>
-    <div id="status">Traitement en cours...</div>
-    <div id="token-container" style="display:none;">
-      <div class="token-box" id="token-display"></div>
-      <button onclick="copyToken()">Copier le token</button>
-      <p class="instructions">Collez ce token dans l'extension MSF Counter (onglet API)</p>
+    <div id="status">
+      <div class="spinner"></div>
+      <p>Traitement en cours...</p>
     </div>
+    <div id="result" style="display:none;"></div>
   </div>
 
   <script>
-    // Extraire le token depuis l'URL (fragment ou query)
-    const hash = window.location.hash.substring(1);
-    const params = new URLSearchParams(hash || window.location.search);
+    const CLIENT_ID = "6ff39dae-e1ec-46f0-bcff-c8f2a9d50b4f";
+    const CLIENT_SECRET = "zJ~2rov.SnpRkGnDWhFUqFM-u0";
+    const TOKEN_URL = "https://hydra-public.prod.m3.scopelypv.com/oauth2/token";
+    const REDIRECT_URI = "https://piouscott.github.io/msf-ocr-hud/callback.html";
 
-    const accessToken = params.get('access_token');
+    const statusEl = document.getElementById('status');
+    const resultEl = document.getElementById('result');
+
+    // Extraire les parametres de l'URL
+    const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
     const error = params.get('error');
     const errorDesc = params.get('error_description');
 
-    const statusEl = document.getElementById('status');
-    const tokenContainer = document.getElementById('token-container');
-    const tokenDisplay = document.getElementById('token-display');
-
-    if (error) {
-      statusEl.innerHTML = `<p class="error">Erreur: ${error}</p><p>${errorDesc || ''}</p>`;
-    } else if (accessToken) {
-      statusEl.innerHTML = '<p class="success">Connexion reussie !</p>';
-      tokenDisplay.textContent = accessToken;
-      tokenContainer.style.display = 'block';
-
-      // Essayer d'envoyer le token a l'extension
-      try {
-        localStorage.setItem('msf_oauth_token', accessToken);
-      } catch(e) {}
-    } else if (code) {
-      statusEl.innerHTML = '<p>Code recu, echange en cours...</p><p class="instructions">Le code doit etre echange contre un token. Cette fonctionnalite sera ajoutee prochainement.</p>';
-      tokenDisplay.textContent = code;
-      tokenContainer.style.display = 'block';
-    } else {
-      statusEl.innerHTML = '<p class="error">Aucun token recu</p><p class="instructions">Verifiez que vous avez bien autorise l\'application.</p>';
+    function showResult(html) {
+      statusEl.style.display = 'none';
+      resultEl.style.display = 'block';
+      resultEl.innerHTML = html;
     }
 
-    function copyToken() {
-      const token = tokenDisplay.textContent;
-      navigator.clipboard.writeText(token).then(() => {
-        alert('Token copie !');
+    async function exchangeCodeForTokens(code) {
+      const credentials = btoa(`${CLIENT_ID}:${CLIENT_SECRET}`);
+
+      const response = await fetch(TOKEN_URL, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${credentials}`,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
+          code: code,
+          redirect_uri: REDIRECT_URI
+        })
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error_description || `Erreur: ${response.status}`);
+      }
+
+      return response.json();
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Copie dans le presse-papier !');
       });
     }
+
+    async function main() {
+      if (error) {
+        showResult(`
+          <p class="error">Erreur: ${error}</p>
+          <p>${errorDesc || ''}</p>
+          <p class="instructions">Fermez cette page et reessayez.</p>
+        `);
+        return;
+      }
+
+      if (!code) {
+        showResult(`
+          <p class="error">Aucun code d'autorisation recu</p>
+          <p class="instructions">Verifiez que vous avez bien autorise l'application.</p>
+        `);
+        return;
+      }
+
+      try {
+        // Echanger le code contre des tokens
+        statusEl.innerHTML = '<div class="spinner"></div><p>Echange du code...</p>';
+        const tokens = await exchangeCodeForTokens(code);
+
+        // Sauvegarder dans localStorage pour que l'extension puisse les recuperer
+        const tokenData = {
+          accessToken: tokens.access_token,
+          refreshToken: tokens.refresh_token,
+          expiresIn: tokens.expires_in,
+          scope: tokens.scope,
+          savedAt: new Date().toISOString()
+        };
+        localStorage.setItem('msf_oauth_tokens', JSON.stringify(tokenData));
+
+        showResult(`
+          <p class="success">Connexion reussie !</p>
+          <p class="info">Tokens obtenus avec succes.</p>
+          <div class="token-box">
+            <strong>Access Token:</strong><br>
+            ${tokens.access_token.substring(0, 50)}...<br><br>
+            <strong>Refresh Token:</strong><br>
+            ${tokens.refresh_token.substring(0, 50)}...
+          </div>
+          <button onclick="copyToClipboard('${tokens.refresh_token}')">Copier Refresh Token</button>
+          <p class="instructions">
+            Retournez dans l'extension MSF Counter et collez le refresh token dans les parametres API,
+            ou fermez simplement cette page si l'extension a detecte automatiquement les tokens.
+          </p>
+        `);
+
+      } catch (err) {
+        showResult(`
+          <p class="error">Erreur lors de l'echange</p>
+          <p>${err.message}</p>
+          <p class="instructions">Le code a peut-etre expire. Reessayez le processus de connexion.</p>
+        `);
+      }
+    }
+
+    main();
   </script>
 </body>
 </html>
