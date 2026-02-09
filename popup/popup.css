@@ -836,6 +836,8 @@ button:active {
 .event-card.milestone { border-left-color: #ffd43b; }
 .event-card.blitz { border-left-color: #ff922b; }
 .event-card.raid { border-left-color: #51cf66; }
+.event-card.episodic { border-left-color: #be4bdb; }
+.event-card.unlock { border-left-color: #868e96; }
 
 .event-header {
   display: flex;
@@ -913,6 +915,16 @@ button:active {
 
 .scoring-cap.unlimited {
   color: #51cf66;
+}
+
+.event-preview {
+  font-size: 11px;
+  color: #aaa;
+  margin: 4px 0;
+  padding: 4px 8px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 3px;
+  border-left: 2px solid #ffd43b;
 }
 
 .event-toggle {

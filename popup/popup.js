@@ -340,13 +340,44 @@ async function loadEvents() {
     const activeEvents = events
       .filter(e => e.endTime > now && e.startTime < now);
 
+    // Debug: afficher TOUS les events actifs avec leur JSON complet
+    console.log("[Events] ====== TOUS LES EVENTS ACTIFS ======");
+    console.log(`[Events] Nombre total: ${activeEvents.length}`);
+    activeEvents.forEach((e, i) => {
+      const name = e.name || e.id || "SANS NOM";
+      console.log(`\n[Events] --- Event ${i + 1}: ${name} (type: ${e.type}) ---`);
+      console.log(JSON.stringify(e, null, 2));
+    });
+    console.log("[Events] ====== FIN DES EVENTS ======")
+
     // Séparer par type
     const blitzEvents = activeEvents.filter(e => e.type === "blitz");
-    const milestoneEvents = activeEvents.filter(e => e.type === "milestone" && e.milestone?.scoring);
+
+    // Events episodic (Poste de Commandement) - eventCampaign, flashEvent, etc.
+    const episodicEvents = activeEvents.filter(e => e.type === "episodic" && e.episodic);
+
+    // Récupérer les noms des events episodic pour exclure leurs milestones liés
+    const episodicNames = new Set(episodicEvents.map(e => e.name).filter(Boolean));
+
+    // Filtrer les milestones qui ont du contenu utile ET qui ne sont pas déjà dans episodic
+    // (car les events episodic ont souvent un milestone lié invisible dans le jeu)
+    const milestoneEvents = activeEvents.filter(e => {
+      if (e.type !== "milestone" || !e.milestone?.scoring) return false;
+      const s = e.milestone.scoring;
+      const hasContent = (s.methods?.length > 0) || (s.cappedScorings?.length > 0) || s.description;
+      if (!hasContent) return false;
+      // Exclure les milestones qui ont le même nom qu'un event episodic
+      if (e.name && episodicNames.has(e.name)) {
+        console.log(`[Events] Milestone "${e.name}" exclu car lié à un event episodic`);
+        return false;
+      }
+      return true;
+    });
+
     const raidEvents = activeEvents.filter(e => e.type === "raid");
 
     // Afficher tous les types
-    renderAllEvents({ blitz: blitzEvents, milestone: milestoneEvents, raid: raidEvents });
+    renderAllEvents({ blitz: blitzEvents, milestone: milestoneEvents, raid: raidEvents, episodic: episodicEvents });
     eventsLoading.classList.add("hidden");
     eventsList.classList.remove("hidden");
 
@@ -436,7 +467,7 @@ async function loadWarTeamsForEvent() {
 /**
  * Affiche tous les types d'événements
  */
-function renderAllEvents({ blitz, milestone, raid }) {
+function renderAllEvents({ blitz, milestone, raid, episodic }) {
   let html = "";
 
   // Blitz avec requirements (pour les counters inverses!)
@@ -499,15 +530,21 @@ function renderAllEvents({ blitz, milestone, raid }) {
         });
       }
 
+      // Afficher un aperçu - utiliser description globale ou première condition
+      const preview = rows.length > 0
+        ? rows[0].desc
+        : (scoring.description || "");
+
       html += `
         <div class="event-card milestone">
           <div class="event-header">
             <span class="event-name">${event.name}</span>
             <span class="event-type">${event.milestone.typeName || "Milestone"}</span>
           </div>
-          ${rows.length > 0 ? `
+          ${preview ? `<div class="event-preview">${preview}</div>` : ""}
+          ${rows.length > 1 ? `
             <button class="event-toggle" data-event-idx="${idx}">
-              ${rows.length} conditions ▼
+              +${rows.length - 1} autres ▼
             </button>
             <div class="event-details" id="event-details-${idx}">
               <table class="scoring-table">
@@ -528,6 +565,46 @@ function renderAllEvents({ blitz, milestone, raid }) {
       `;
     });
     html += `</div>`;
+  }
+
+  // Episodic events (Poste de Commandement)
+  // Séparer les eventCampaign des unlockEvent
+  if (episodic && episodic.length > 0) {
+    const campaigns = episodic.filter(e => e.episodic?.type === "eventCampaign" || e.episodic?.type === "flashEvent");
+    const unlocks = episodic.filter(e => e.episodic?.type === "unlockEvent");
+
+    if (campaigns.length > 0) {
+      html += `<div class="events-section"><div class="events-section-title">Poste de Commandement</div>`;
+      campaigns.forEach(event => {
+        const ep = event.episodic;
+        const typeName = ep.typeName || (ep.type === "flashEvent" ? "Flash Event" : "Campagne");
+
+        html += `
+          <div class="event-card episodic">
+            <div class="event-header">
+              <span class="event-name">${event.name}</span>
+              <span class="event-type">${typeName}</span>
+            </div>
+          </div>
+        `;
+      });
+      html += `</div>`;
+    }
+
+    if (unlocks.length > 0) {
+      html += `<div class="events-section"><div class="events-section-title">Déblocages de personnages</div>`;
+      unlocks.forEach(event => {
+        html += `
+          <div class="event-card unlock">
+            <div class="event-header">
+              <span class="event-name">${event.name}</span>
+              <span class="event-type">Unlock</span>
+            </div>
+          </div>
+        `;
+      });
+      html += `</div>`;
+    }
   }
 
   if (!html) {
