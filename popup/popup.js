@@ -116,6 +116,436 @@ const MSF_API_KEY = "17wMKJLRxy3pYDCKG5ciP7VSU45OVumB2biCzzgw";
 let teamsData = [];
 let countersData = {};
 let currentSlots = []; // Resultats du dernier scan
+let playerRoster = new Set(); // Roster du joueur
+let showOnlyAvailable = false; // Filtre pour afficher seulement les counters disponibles
+
+/**
+ * Charge le roster du joueur depuis le storage
+ */
+async function loadPlayerRoster() {
+  try {
+    const stored = await storageGet("msfPlayerRoster");
+    if (stored.msfPlayerRoster && Array.isArray(stored.msfPlayerRoster)) {
+      playerRoster = new Set(stored.msfPlayerRoster);
+      console.log("[Popup] Roster chargé:", playerRoster.size, "personnages");
+    }
+  } catch (e) {
+    console.error("[Popup] Erreur chargement roster:", e);
+    playerRoster = new Set();
+  }
+}
+
+/**
+ * Vérifie si le joueur possède tous les membres d'une équipe
+ */
+function canMakeTeam(teamId) {
+  if (playerRoster.size === 0) return null; // Roster non chargé
+
+  const team = teamsData.find(t => t.id === teamId);
+  if (!team || !team.memberIds) return null;
+
+  const hasAll = team.memberIds.every(charId => playerRoster.has(charId));
+  const hasCount = team.memberIds.filter(charId => playerRoster.has(charId)).length;
+
+  return {
+    available: hasAll,
+    hasCount: hasCount,
+    totalCount: team.memberIds.length,
+    missing: team.memberIds.filter(charId => !playerRoster.has(charId))
+  };
+}
+
+/**
+ * Génère le badge de disponibilité pour un counter
+ */
+function renderAvailabilityBadge(teamId) {
+  const status = canMakeTeam(teamId);
+  if (status === null) return "";
+
+  if (status.available) {
+    return `<span class="counter-available" title="Vous avez cette équipe">✓</span>`;
+  } else if (status.hasCount >= status.totalCount - 1) {
+    // Il manque 1 personnage
+    return `<span class="counter-almost" title="Il manque: ${status.missing.join(', ')}">${status.hasCount}/${status.totalCount}</span>`;
+  } else {
+    return `<span class="counter-missing" title="Il manque: ${status.missing.join(', ')}">${status.hasCount}/${status.totalCount}</span>`;
+  }
+}
+
+/**
+ * Toggle le filtre roster et rafraîchit l'affichage
+ */
+function toggleRosterFilter() {
+  showOnlyAvailable = !showOnlyAvailable;
+  // Rafraîchir l'affichage des counters
+  if (currentSlots.length > 0) {
+    displayResults(currentSlots);
+  }
+}
+
+// Exposer pour le onclick dans le HTML
+window.toggleRosterFilter = toggleRosterFilter;
+
+/**
+ * Analyse les personnages à farmer en priorité
+ * Calcule l'impact de chaque personnage manquant (combien de counters il débloque)
+ */
+function analyzeFarmingPriorities() {
+  if (playerRoster.size === 0) {
+    return { error: "Roster non chargé. Récupérez votre roster via l'API." };
+  }
+
+  const charImpact = {}; // charId -> { unlocks: [], almostTeams: [] }
+
+  // Parcourir toutes les équipes de counters
+  Object.keys(countersData).forEach(defenseTeamId => {
+    const counterList = countersData[defenseTeamId] || [];
+
+    counterList.forEach(counter => {
+      const counterTeamId = counter.team;
+      const team = teamsData.find(t => t.id === counterTeamId);
+      if (!team || !team.memberIds) return;
+
+      // Calculer combien de membres manquent
+      const missing = team.memberIds.filter(charId => !playerRoster.has(charId));
+
+      if (missing.length === 0) {
+        // Équipe déjà complète, pas d'impact
+        return;
+      }
+
+      if (missing.length <= 2) {
+        // Équipe presque complète - chaque personnage manquant contribue
+        missing.forEach(charId => {
+          if (!charImpact[charId]) {
+            charImpact[charId] = { unlocks: [], almostTeams: [] };
+          }
+
+          // Si c'est le seul manquant, il débloque ce counter
+          if (missing.length === 1) {
+            charImpact[charId].unlocks.push({
+              counterTeam: team.name,
+              defenseTeam: defenseTeamId,
+              confidence: counter.confidence
+            });
+          } else {
+            // Il contribue mais ne débloque pas seul
+            charImpact[charId].almostTeams.push({
+              counterTeam: team.name,
+              missingWith: missing.filter(c => c !== charId)
+            });
+          }
+        });
+      }
+    });
+  });
+
+  // Trier par impact (unlocks d'abord, puis almostTeams)
+  const ranked = Object.entries(charImpact)
+    .map(([charId, data]) => ({
+      charId,
+      unlockCount: data.unlocks.length,
+      almostCount: data.almostTeams.length,
+      unlocks: data.unlocks,
+      almostTeams: data.almostTeams,
+      score: data.unlocks.length * 3 + data.almostTeams.length // Score pondéré
+    }))
+    .filter(c => c.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  return {
+    priorities: ranked.slice(0, 15),
+    totalAnalyzed: Object.keys(charImpact).length
+  };
+}
+
+/**
+ * Formate les counters pour Discord (markdown)
+ */
+function formatCountersForDiscord(teamName, counters, power = null) {
+  let text = `**🎯 ${teamName}**`;
+  if (power) {
+    text += ` (${formatPower(power)})`;
+  }
+  text += `\n`;
+
+  if (!counters || counters.length === 0) {
+    text += `_Aucun counter défini_\n`;
+    return text;
+  }
+
+  counters.slice(0, 5).forEach((c, idx) => {
+    const conf = c.confidence >= 95 ? "▲▲▲" :
+                 c.confidence >= 80 ? "▲▲" :
+                 c.confidence >= 65 ? "▲" :
+                 c.confidence >= 50 ? "⊜" : "▼";
+    const status = canMakeTeam(c.teamId);
+    const check = status?.available ? "✅" : "";
+    text += `${idx + 1}. **${c.teamName}** ${conf} ${check}`;
+    if (c.minPower) {
+      text += ` _(${formatPower(c.minPower)}+)_`;
+    }
+    text += `\n`;
+    if (c.notes) {
+      text += `   _${c.notes}_\n`;
+    }
+  });
+
+  return text;
+}
+
+/**
+ * Copie le texte dans le presse-papier
+ */
+async function copyToClipboard(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (e) {
+    console.error("[Clipboard] Erreur:", e);
+    return false;
+  }
+}
+
+/**
+ * Exporte le résultat War vers Discord
+ */
+async function exportWarToDiscord() {
+  if (!window.lastWarResult) {
+    setStatus("Aucun résultat à exporter", "error");
+    return;
+  }
+
+  const result = window.lastWarResult;
+  let text = "";
+
+  if (result.identified && result.team) {
+    const teamName = result.team.variantName || result.team.name;
+    text = formatCountersForDiscord(teamName, result.counters);
+  } else {
+    text = `**❓ Équipe non identifiée**\n`;
+    if (result.characters) {
+      text += `Personnages: ${result.characters.filter(n => n && n !== "?").join(", ")}\n`;
+    }
+  }
+
+  text += `\n_Via MSF Counter Extension_`;
+
+  const success = await copyToClipboard(text);
+  if (success) {
+    setStatus("📋 Copié pour Discord !", "success");
+  } else {
+    setStatus("Erreur copie", "error");
+  }
+}
+
+/**
+ * Exporte les counters d'un slot vers Discord
+ */
+async function exportSlotToDiscord(slotIndex) {
+  if (slotIndex < 0 || slotIndex >= currentSlots.length) return;
+
+  const slot = currentSlots[slotIndex];
+  if (!slot.team?.name) {
+    setStatus("Sélectionnez d'abord une équipe", "error");
+    return;
+  }
+
+  const text = formatCountersForDiscord(slot.team.name, slot.counters, slot.power) +
+               `\n_Via MSF Counter Extension_`;
+
+  const success = await copyToClipboard(text);
+  if (success) {
+    setStatus("📋 Copié pour Discord !", "success");
+  }
+}
+
+// Exposer pour les onclick
+window.exportWarToDiscord = exportWarToDiscord;
+window.exportSlotToDiscord = exportSlotToDiscord;
+
+// ============================================
+// War Stats Tracking
+// ============================================
+
+let warStats = {}; // { counterTeamId: { wins: 0, losses: 0, usages: [] } }
+
+/**
+ * Charge les stats de War depuis le storage
+ */
+async function loadWarStats() {
+  try {
+    const stored = await storageGet("msfWarStats");
+    warStats = stored.msfWarStats || {};
+    console.log("[WarStats] Chargé:", Object.keys(warStats).length, "équipes trackées");
+  } catch (e) {
+    console.error("[WarStats] Erreur chargement:", e);
+    warStats = {};
+  }
+}
+
+/**
+ * Enregistre une utilisation de counter
+ */
+async function recordCounterUsage(counterTeamId, counterTeamName, defenseTeamName, won) {
+  if (!warStats[counterTeamId]) {
+    warStats[counterTeamId] = {
+      teamName: counterTeamName,
+      wins: 0,
+      losses: 0,
+      usages: []
+    };
+  }
+
+  if (won) {
+    warStats[counterTeamId].wins++;
+  } else {
+    warStats[counterTeamId].losses++;
+  }
+
+  // Garder les 10 dernières utilisations
+  warStats[counterTeamId].usages.unshift({
+    defense: defenseTeamName,
+    won: won,
+    date: Date.now()
+  });
+  if (warStats[counterTeamId].usages.length > 10) {
+    warStats[counterTeamId].usages.pop();
+  }
+
+  await storageSet({ msfWarStats: warStats });
+  console.log("[WarStats] Enregistré:", counterTeamName, won ? "WIN" : "LOSS");
+}
+
+/**
+ * Obtient le taux de victoire pour un counter
+ */
+function getCounterWinRate(counterTeamId) {
+  const stats = warStats[counterTeamId];
+  if (!stats || (stats.wins + stats.losses) === 0) return null;
+
+  const total = stats.wins + stats.losses;
+  const rate = Math.round((stats.wins / total) * 100);
+
+  return {
+    wins: stats.wins,
+    losses: stats.losses,
+    total: total,
+    rate: rate
+  };
+}
+
+/**
+ * Génère le badge de stats pour un counter
+ */
+function renderStatsBadge(counterTeamId) {
+  const stats = getCounterWinRate(counterTeamId);
+  if (!stats) return "";
+
+  const color = stats.rate >= 70 ? "#51cf66" :
+                stats.rate >= 50 ? "#ffd43b" : "#ff6b6b";
+
+  return `<span class="counter-stats" style="color:${color}" title="${stats.wins}W/${stats.losses}L">${stats.rate}%</span>`;
+}
+
+/**
+ * Affiche le panel de stats War
+ */
+function displayWarStats() {
+  const sortedStats = Object.entries(warStats)
+    .map(([teamId, data]) => ({
+      teamId,
+      ...data,
+      rate: data.wins + data.losses > 0 ? (data.wins / (data.wins + data.losses)) * 100 : 0
+    }))
+    .filter(s => s.wins + s.losses > 0)
+    .sort((a, b) => (b.wins + b.losses) - (a.wins + a.losses));
+
+  if (sortedStats.length === 0) {
+    return `<div class="war-stats-empty">Aucune stat enregistrée. Marquez vos combats !</div>`;
+  }
+
+  let html = `<div class="war-stats-list">`;
+
+  sortedStats.slice(0, 10).forEach(s => {
+    const color = s.rate >= 70 ? "#51cf66" : s.rate >= 50 ? "#ffd43b" : "#ff6b6b";
+    html += `
+      <div class="war-stats-item">
+        <span class="war-stats-name">${s.teamName}</span>
+        <span class="war-stats-record">${s.wins}W / ${s.losses}L</span>
+        <span class="war-stats-rate" style="color:${color}">${Math.round(s.rate)}%</span>
+      </div>
+    `;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+// Charger les stats au démarrage
+loadWarStats();
+
+/**
+ * Enregistre une utilisation et rafraîchit l'affichage
+ */
+async function recordAndRefresh(teamId, teamName, defenseName, won) {
+  await recordCounterUsage(teamId, teamName, defenseName, won);
+  setStatus(won ? "✓ Victoire enregistrée !" : "✗ Défaite enregistrée", won ? "success" : "");
+
+  // Rafraîchir l'affichage
+  if (window.lastWarResult) {
+    displayWarResult(window.lastWarResult);
+  }
+}
+
+// Exposer pour les onclick
+window.recordCounterUsage = recordCounterUsage;
+window.recordAndRefresh = recordAndRefresh;
+
+/**
+ * Affiche les recommandations de farming
+ */
+function displayFarmingAdvisor() {
+  const result = analyzeFarmingPriorities();
+
+  if (result.error) {
+    return `<div class="farm-advisor-error">${result.error}</div>`;
+  }
+
+  if (result.priorities.length === 0) {
+    return `<div class="farm-advisor-complete">Vous avez toutes les équipes de counter !</div>`;
+  }
+
+  let html = `<div class="farm-advisor">
+    <div class="farm-advisor-header">🎯 Personnages à farmer en priorité</div>
+    <div class="farm-advisor-subtitle">${result.priorities.length} personnages analysés</div>
+    <div class="farm-advisor-list">
+  `;
+
+  result.priorities.forEach((char, idx) => {
+    // Chercher le nom du personnage dans charactersData
+    const charInfo = charactersData?.characters?.[char.charId] || { name: char.charId };
+
+    html += `
+      <div class="farm-priority-item">
+        <div class="farm-priority-rank">#${idx + 1}</div>
+        <div class="farm-priority-info">
+          ${charInfo.portrait ? `<img src="${charInfo.portrait}" class="farm-priority-portrait" alt="">` : ''}
+          <div class="farm-priority-details">
+            <span class="farm-priority-name">${charInfo.name || char.charId}</span>
+            <span class="farm-priority-impact">
+              ${char.unlockCount > 0 ? `<span class="unlock-count">🔓 ${char.unlockCount} counters</span>` : ''}
+              ${char.almostCount > 0 ? `<span class="almost-count">+${char.almostCount} partiels</span>` : ''}
+            </span>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  html += `</div></div>`;
+  return html;
+}
 
 /**
  * Convertit le niveau de confiance en symboles visuels (triangles)
@@ -170,6 +600,7 @@ async function loadTeamsAndCounters() {
 
 // Charger au demarrage
 loadTeamsAndCounters();
+loadPlayerRoster();
 
 // ============================================
 // Bouton Analyser
@@ -250,6 +681,28 @@ btnEvents.addEventListener("click", async () => {
 
 btnCloseEvents.addEventListener("click", () => {
   eventsPanel.classList.add("hidden");
+});
+
+// ============================================
+// Bouton Raids - Milestones liés aux raids
+// ============================================
+
+const raidsPanel = document.getElementById("raids-panel");
+const btnRaids = document.getElementById("btn-raids");
+const btnCloseRaids = document.getElementById("btn-close-raids");
+const raidsLoading = document.getElementById("raids-loading");
+const raidsError = document.getElementById("raids-error");
+const raidsList = document.getElementById("raids-list");
+
+btnRaids.addEventListener("click", async () => {
+  raidsPanel.classList.toggle("hidden");
+  if (!raidsPanel.classList.contains("hidden")) {
+    await loadRaids();
+  }
+});
+
+btnCloseRaids.addEventListener("click", () => {
+  raidsPanel.classList.add("hidden");
 });
 
 // ============================================
@@ -512,6 +965,18 @@ function renderFarmByCampaign(results, searchTerm) {
   }
 
   farmResults.innerHTML = html;
+
+  // Ajouter les event listeners pour les headers de campagne
+  farmResults.querySelectorAll(".farm-campaign-header").forEach(header => {
+    header.addEventListener("click", () => {
+      const chars = header.nextElementSibling;
+      const toggle = header.querySelector(".farm-campaign-toggle");
+      if (chars && chars.classList.contains("farm-campaign-chars")) {
+        chars.classList.toggle("show");
+        toggle.textContent = chars.classList.contains("show") ? "▼" : "▶";
+      }
+    });
+  });
 }
 
 function renderFarmLocation(loc) {
@@ -577,24 +1042,53 @@ document.querySelectorAll(".farm-filter").forEach(btn => {
   });
 });
 
-// Event delegation pour les headers de campagne (plier/déplier)
-farmResults.addEventListener("click", (e) => {
-  const header = e.target.closest(".farm-campaign-header");
-  if (header) {
-    const chars = header.nextElementSibling;
-    const toggle = header.querySelector(".farm-campaign-toggle");
-    if (chars && chars.classList.contains("farm-campaign-chars")) {
-      chars.classList.toggle("show");
-      toggle.textContent = chars.classList.contains("show") ? "▼" : "▶";
+// Farm tabs handler
+const farmTabSearch = document.getElementById("farm-tab-search");
+const farmTabAdvisor = document.getElementById("farm-tab-advisor");
+const farmSearchMode = document.getElementById("farm-search-mode");
+const farmAdvisorMode = document.getElementById("farm-advisor-mode");
+const farmAdvisorResults = document.getElementById("farm-advisor-results");
+
+if (farmTabSearch && farmTabAdvisor) {
+  farmTabSearch.addEventListener("click", () => {
+    farmTabSearch.classList.add("active");
+    farmTabAdvisor.classList.remove("active");
+    farmSearchMode.classList.remove("hidden");
+    farmAdvisorMode.classList.add("hidden");
+  });
+
+  farmTabAdvisor.addEventListener("click", async () => {
+    farmTabAdvisor.classList.add("active");
+    farmTabSearch.classList.remove("active");
+    farmAdvisorMode.classList.remove("hidden");
+    farmSearchMode.classList.add("hidden");
+
+    // Afficher l'analyse
+    farmAdvisorResults.innerHTML = '<div class="farm-advisor-loading">Analyse en cours...</div>';
+
+    // S'assurer que les données sont chargées
+    await loadTeamsAndCounters();
+    await loadPlayerRoster();
+    if (!charactersData) {
+      const response = await fetch(ext.runtime.getURL("data/characters-full.json"));
+      charactersData = await response.json();
     }
-  }
-});
+
+    farmAdvisorResults.innerHTML = displayFarmingAdvisor();
+  });
+}
 
 async function loadEvents() {
   eventsLoading.classList.remove("hidden");
   eventsError.classList.add("hidden");
   eventsList.classList.add("hidden");
   warEventSection.classList.add("hidden");
+
+  // Charger les alertes sauvegardées
+  await loadEventAlerts();
+
+  let isOffline = false;
+  let events = [];
 
   try {
     // Utiliser le background script pour l'appel API (gestion du refresh token)
@@ -604,31 +1098,144 @@ async function loadEvents() {
       throw new Error(response.error);
     }
 
-    const events = response.events || [];
-    const now = Date.now() / 1000;
+    events = response.events || [];
 
-    // Filtrer les événements actifs
-    const activeEvents = events
-      .filter(e => e.endTime > now && e.startTime < now);
-
-    // Séparer par type
-    const blitzEvents = activeEvents.filter(e => e.type === "blitz");
-    const milestoneEvents = activeEvents.filter(e => e.type === "milestone" && e.milestone?.scoring);
-    const raidEvents = activeEvents.filter(e => e.type === "raid");
-
-    // Afficher tous les types
-    renderAllEvents({ blitz: blitzEvents, milestone: milestoneEvents, raid: raidEvents });
-    eventsLoading.classList.add("hidden");
-    eventsList.classList.remove("hidden");
-
-    // Toujours afficher les équipes War offensives (utiles pour la guerre)
-    await loadWarTeamsForEvent();
+    // Sauvegarder en cache pour le mode offline
+    await storageSet({
+      msfEventsCache: events,
+      msfEventsCacheTime: Date.now()
+    });
 
   } catch (err) {
-    eventsLoading.classList.add("hidden");
-    eventsError.textContent = err.message;
-    eventsError.classList.remove("hidden");
+    console.log("[Events] Erreur API, tentative cache:", err.message);
+
+    // Essayer de charger depuis le cache
+    const cached = await storageGet(["msfEventsCache", "msfEventsCacheTime"]);
+
+    if (cached.msfEventsCache && cached.msfEventsCache.length > 0) {
+      events = cached.msfEventsCache;
+      isOffline = true;
+      console.log("[Events] Utilisation du cache (", events.length, "events)");
+    } else {
+      eventsLoading.classList.add("hidden");
+      eventsError.textContent = "Pas de connexion et aucun cache disponible";
+      eventsError.classList.remove("hidden");
+      return;
+    }
   }
+
+  const now = Date.now() / 1000;
+
+  // Filtrer les événements actifs
+  const activeEvents = events.filter(e => e.endTime > now && e.startTime < now);
+
+  // Séparer par type
+  const blitzEvents = activeEvents.filter(e => e.type === "blitz");
+  // Milestones + "raid" events (qui sont en fait des milestones liés aux raids)
+  const milestoneEvents = activeEvents.filter(e =>
+    (e.type === "milestone" && e.milestone?.scoring) || e.type === "raid"
+  );
+
+  renderAllEvents({ blitz: blitzEvents, milestone: milestoneEvents });
+  eventsLoading.classList.add("hidden");
+  eventsList.classList.remove("hidden");
+
+  // Afficher l'indicateur offline si nécessaire
+  if (isOffline) {
+    showOfflineIndicator();
+  }
+
+  // Toujours afficher les équipes War offensives (utiles pour la guerre)
+  await loadWarTeamsForEvent();
+}
+
+/**
+ * Affiche l'indicateur de mode hors ligne
+ */
+function showOfflineIndicator() {
+  const indicator = document.getElementById("offline-indicator");
+  if (indicator) {
+    indicator.classList.remove("hidden");
+
+    // Afficher le temps depuis le cache
+    storageGet("msfEventsCacheTime").then(cached => {
+      if (cached.msfEventsCacheTime) {
+        const cacheTime = new Date(cached.msfEventsCacheTime);
+        const ago = getTimeAgo(cacheTime);
+        indicator.querySelector(".offline-time").textContent = `Cache: ${ago}`;
+      }
+    });
+  }
+}
+
+/**
+ * Charge les milestones liés aux raids
+ */
+async function loadRaids() {
+  raidsLoading.classList.remove("hidden");
+  raidsError.classList.add("hidden");
+  raidsList.classList.add("hidden");
+
+  let events = [];
+
+  try {
+    const response = await ext.runtime.sendMessage({ type: "MSF_GET_EVENTS" });
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    events = response.events || [];
+
+  } catch (err) {
+    // Essayer le cache
+    const cached = await storageGet("msfEventsCache");
+    if (cached.msfEventsCache) {
+      events = cached.msfEventsCache;
+    } else {
+      raidsLoading.classList.add("hidden");
+      raidsError.textContent = err.message;
+      raidsError.classList.remove("hidden");
+      return;
+    }
+  }
+
+  const now = Date.now() / 1000;
+  const raidEvents = events.filter(e => e.type === "raid" && e.endTime > now && e.startTime < now);
+
+  renderRaids(raidEvents);
+  raidsLoading.classList.add("hidden");
+  raidsList.classList.remove("hidden");
+}
+
+/**
+ * Affiche les milestones raids avec traductions
+ */
+function renderRaids(raids) {
+  if (raids.length === 0) {
+    raidsList.innerHTML = '<div class="no-counters">Aucun milestone raid en cours</div>';
+    return;
+  }
+
+  let html = '';
+
+  raids.forEach(raid => {
+    const timeLeft = formatTimeRemaining(raid.endTime);
+    const translatedName = translateEventName(raid.name);
+    const translatedSub = raid.subName ? translateEventDescription(raid.subName) : '';
+
+    html += `
+      <div class="raid-card">
+        <div class="raid-header">
+          <span class="raid-name">${translatedName}</span>
+          <span class="raid-time">⏱ ${timeLeft}</span>
+        </div>
+        ${translatedSub ? `<div class="raid-subname">${translatedSub}</div>` : ''}
+      </div>
+    `;
+  });
+
+  raidsList.innerHTML = html;
 }
 
 /**
@@ -690,14 +1297,182 @@ async function loadWarTeamsForEvent() {
 }
 
 /**
- * Affiche tous les types d'événements
+ * Formate le temps restant en jours/heures/minutes
  */
-function renderAllEvents({ blitz, milestone, raid }) {
+function formatTimeRemaining(endTime) {
+  const now = Date.now() / 1000;
+  const remaining = endTime - now;
+
+  if (remaining <= 0) return "Terminé";
+
+  const days = Math.floor(remaining / 86400);
+  const hours = Math.floor((remaining % 86400) / 3600);
+  const minutes = Math.floor((remaining % 3600) / 60);
+
+  if (days > 0) {
+    return `${days}j ${hours}h`;
+  } else if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  } else {
+    return `${minutes}m`;
+  }
+}
+
+// Stockage des alertes d'événements
+let eventAlerts = {};
+
+/**
+ * Charge les alertes sauvegardées
+ */
+async function loadEventAlerts() {
+  try {
+    const stored = await storageGet("msfEventAlerts");
+    eventAlerts = stored.msfEventAlerts || {};
+    // Nettoyer les alertes expirées
+    const now = Date.now() / 1000;
+    Object.keys(eventAlerts).forEach(eventId => {
+      if (eventAlerts[eventId].endTime < now) {
+        delete eventAlerts[eventId];
+      }
+    });
+    await storageSet({ msfEventAlerts: eventAlerts });
+  } catch (e) {
+    console.error("[Alerts] Erreur chargement:", e);
+    eventAlerts = {};
+  }
+}
+
+/**
+ * Toggle l'alerte pour un événement
+ */
+async function toggleEventAlert(eventId, eventName, endTime) {
+  if (eventAlerts[eventId]) {
+    delete eventAlerts[eventId];
+  } else {
+    eventAlerts[eventId] = {
+      name: eventName,
+      endTime: endTime,
+      alertAt: endTime - 3600 // Alerter 1h avant la fin
+    };
+  }
+  await storageSet({ msfEventAlerts: eventAlerts });
+  updateAlertButtons();
+}
+
+/**
+ * Met à jour l'affichage des boutons d'alerte
+ */
+function updateAlertButtons() {
+  document.querySelectorAll(".event-alert-btn").forEach(btn => {
+    const eventId = btn.dataset.eventId;
+    const hasAlert = eventAlerts[eventId];
+    btn.classList.toggle("active", !!hasAlert);
+    btn.title = hasAlert ? "Alerte activée - Cliquer pour désactiver" : "Activer l'alerte (1h avant la fin)";
+    btn.textContent = hasAlert ? "🔔" : "🔕";
+  });
+}
+
+/**
+ * Vérifie si des événements sont sur le point de se terminer
+ */
+function checkExpiringEvents() {
+  const now = Date.now() / 1000;
+  const expiring = [];
+
+  Object.entries(eventAlerts).forEach(([eventId, alert]) => {
+    const remaining = alert.endTime - now;
+    // Alerter si moins d'1h restante
+    if (remaining > 0 && remaining <= 3600) {
+      expiring.push({
+        id: eventId,
+        name: alert.name,
+        remaining: remaining
+      });
+    }
+  });
+
+  return expiring;
+}
+
+/**
+ * Affiche les événements qui expirent bientôt
+ */
+function showExpiringEventsNotice(expiring) {
+  if (expiring.length === 0) return;
+
+  const notice = document.getElementById("expiring-notice");
+  if (!notice) return;
+
+  const html = expiring.map(e => {
+    const mins = Math.floor(e.remaining / 60);
+    return `<div class="expiring-event">⚠️ ${e.name} termine dans ${mins} min</div>`;
+  }).join("");
+
+  notice.innerHTML = html;
+  notice.classList.remove("hidden");
+}
+
+/**
+ * Génère le HTML des infos d'événement (temps restant, type, sous-titre)
+ */
+function renderEventInfo(event) {
+  const timeLeft = formatTimeRemaining(event.endTime);
+  const remaining = event.endTime - (Date.now() / 1000);
+  const isUrgent = remaining > 0 && remaining <= 3600; // Moins d'1h
+
+  // Détecter le type Solo/Series depuis milestone.typeName ou milestone.type
+  let eventMode = "Solo";
+  let isSeries = false;
+  if (event.milestone) {
+    const typeName = event.milestone.typeName || event.milestone.type || "";
+    isSeries = typeName.toLowerCase().includes("series") || typeName.toLowerCase().includes("série");
+    eventMode = typeName || "Solo";
+  }
+
+  // Sous-titre (ex: "Spend Campaign Energy")
+  const subName = event.subName ? `<span class="event-subname">${event.subName}</span>` : "";
+
+  // Bouton d'alerte
+  const hasAlert = eventAlerts[event.id];
+  const alertBtn = `<button class="event-alert-btn ${hasAlert ? 'active' : ''}"
+    data-event-id="${event.id}"
+    data-event-name="${event.name}"
+    data-end-time="${event.endTime}"
+    title="${hasAlert ? 'Alerte activée' : 'Activer l\'alerte'}">
+    ${hasAlert ? '🔔' : '🔕'}
+  </button>`;
+
+  return `
+    <div class="event-info">
+      <span class="event-time ${isUrgent ? 'urgent' : ''}">⏱ ${timeLeft}</span>
+      <span class="event-mode ${isSeries ? 'series' : 'solo'}">${eventMode}</span>
+      ${alertBtn}
+    </div>
+    ${subName}
+  `;
+}
+
+// Stockage des events milestones pour le calculateur
+let currentMilestoneEvents = [];
+
+/**
+ * Affiche tous les types d'événements avec accordéons
+ */
+function renderAllEvents({ blitz, milestone }) {
+  currentMilestoneEvents = milestone; // Sauvegarder pour le calculateur
   let html = "";
 
   // Blitz avec requirements (pour les counters inverses!)
   if (blitz.length > 0) {
-    html += `<div class="events-section"><div class="events-section-title">Blitz</div>`;
+    html += `
+      <div class="events-accordion">
+        <div class="events-accordion-header" data-section="blitz">
+          <span class="events-accordion-toggle">▼</span>
+          <span class="events-accordion-title">⚔️ Blitz</span>
+          <span class="events-accordion-count">${blitz.length}</span>
+        </div>
+        <div class="events-accordion-content show" id="events-section-blitz">
+    `;
     blitz.forEach(event => {
       const requirements = event.blitz?.requirements;
       const filters = requirements?.anyCharacterFilters || [];
@@ -705,9 +1480,10 @@ function renderAllEvents({ blitz, milestone, raid }) {
       html += `
         <div class="event-card blitz">
           <div class="event-header">
-            <span class="event-name">${event.name}</span>
+            <span class="event-name">${translateEventName(event.name)}</span>
             <span class="event-type">Blitz</span>
           </div>
+          ${renderEventInfo(event)}
           ${filters.length > 0 ? `
             <div class="event-filters">
               ${filters.map(f => `<span class="filter-tag">${f.filterName || f.filterType}</span>`).join("")}
@@ -716,55 +1492,75 @@ function renderAllEvents({ blitz, milestone, raid }) {
         </div>
       `;
     });
-    html += `</div>`;
+    html += `</div></div>`;
   }
 
-  // Raids
-  if (raid.length > 0) {
-    html += `<div class="events-section"><div class="events-section-title">Raids</div>`;
-    raid.forEach(event => {
-      html += `
-        <div class="event-card raid">
-          <div class="event-header">
-            <span class="event-name">${event.name}</span>
-            <span class="event-type">Raid</span>
-          </div>
-        </div>
-      `;
-    });
-    html += `</div>`;
-  }
-
-  // Milestones avec scoring
+  // Milestones avec scoring (inclut aussi les events de type "raid" qui sont des milestones)
   if (milestone.length > 0) {
-    html += `<div class="events-section"><div class="events-section-title">Milestones</div>`;
+    html += `
+      <div class="events-accordion">
+        <div class="events-accordion-header" data-section="milestone">
+          <span class="events-accordion-toggle">▼</span>
+          <span class="events-accordion-title">🎯 Milestones</span>
+          <span class="events-accordion-count">${milestone.length}</span>
+        </div>
+        <div class="events-accordion-content show" id="events-section-milestone">
+    `;
     milestone.forEach((event, idx) => {
-      const scoring = event.milestone.scoring;
+      const isRaidEvent = event.type === "raid";
+      const scoring = event.milestone?.scoring;
       const rows = [];
 
-      if (scoring.methods) {
+      if (scoring?.methods) {
         scoring.methods.forEach(m => {
-          rows.push({ desc: m.description, points: m.points, cap: null });
+          rows.push({ desc: translateEventDescription(m.description), points: m.points, cap: null });
         });
       }
-      if (scoring.cappedScorings) {
+      if (scoring?.cappedScorings) {
         scoring.cappedScorings.forEach(cs => {
           cs.methods.forEach(m => {
-            rows.push({ desc: m.description, points: m.points, cap: cs.cap });
+            rows.push({ desc: translateEventDescription(m.description), points: m.points, cap: cs.cap });
           });
         });
       }
 
+      // Générer les récompenses de paliers et le calculateur
+      const tierRewardsHtml = renderMilestoneTiers(event);
+      const calcHtml = renderPointsCalculator(event, idx);
+      const hasTiers = event.milestone?.tiers && event.milestone.tiers.length > 0;
+      const tierCount = event.milestone?.tiers?.length || 0;
+      const hasCalc = rows.length > 0;
+
+      // Déterminer le type à afficher
+      const typeLabel = isRaidEvent ? "Raid" : (event.milestone?.typeName || "Milestone");
+      const eventIcon = isRaidEvent ? "💀" : "";
+
       html += `
-        <div class="event-card milestone">
+        <div class="event-card milestone ${isRaidEvent ? 'raid-milestone' : ''}" data-event-idx="${idx}">
           <div class="event-header">
-            <span class="event-name">${event.name}</span>
-            <span class="event-type">${event.milestone.typeName || "Milestone"}</span>
+            <span class="event-name">${eventIcon} ${translateEventName(event.name)}</span>
+            <span class="event-type">${typeLabel}</span>
+          </div>
+          ${event.subName ? `<div class="event-subname">${translateEventName(event.subName)}</div>` : ''}
+          ${renderEventInfo(event)}
+          <div class="event-actions">
+            ${rows.length > 0 ? `
+              <button class="event-toggle" data-event-idx="${idx}">
+                ${rows.length} conditions ▼
+              </button>
+            ` : ""}
+            ${hasCalc ? `
+              <button class="calc-toggle" data-calc-idx="${idx}">
+                🧮 Calculer ▼
+              </button>
+            ` : ""}
+            ${hasTiers ? `
+              <button class="tier-toggle" data-tier-idx="${idx}">
+                🎁 Paliers ▼
+              </button>
+            ` : ""}
           </div>
           ${rows.length > 0 ? `
-            <button class="event-toggle" data-event-idx="${idx}">
-              ${rows.length} conditions ▼
-            </button>
             <div class="event-details" id="event-details-${idx}">
               <table class="scoring-table">
                 <thead><tr><th>Action</th><th>Pts</th><th>Cap</th></tr></thead>
@@ -780,10 +1576,21 @@ function renderAllEvents({ blitz, milestone, raid }) {
               </table>
             </div>
           ` : ""}
+          ${hasCalc ? `
+            <div class="points-calc-section" id="points-calc-${idx}">
+              ${calcHtml}
+            </div>
+          ` : ""}
+          ${hasTiers ? `
+            <div class="tier-rewards-section" id="tier-rewards-${idx}">
+              <div class="tier-header">Récompenses (${tierCount} paliers)</div>
+              ${tierRewardsHtml}
+            </div>
+          ` : ""}
         </div>
       `;
     });
-    html += `</div>`;
+    html += `</div></div>`;
   }
 
   if (!html) {
@@ -792,13 +1599,74 @@ function renderAllEvents({ blitz, milestone, raid }) {
 
   eventsList.innerHTML = html;
 
-  // Ajouter les event listeners pour les boutons toggle (CSP-compliant)
+  // Event delegation pour les accordéons de section
+  eventsList.querySelectorAll(".events-accordion-header").forEach(header => {
+    header.addEventListener("click", () => {
+      const section = header.dataset.section;
+      const content = document.getElementById(`events-section-${section}`);
+      const toggle = header.querySelector(".events-accordion-toggle");
+      if (content) {
+        content.classList.toggle("show");
+        toggle.textContent = content.classList.contains("show") ? "▼" : "▶";
+      }
+    });
+  });
+
+  // Ajouter les event listeners pour les boutons toggle des milestones (CSP-compliant)
   eventsList.querySelectorAll(".event-toggle").forEach(btn => {
     btn.addEventListener("click", () => {
       const idx = btn.dataset.eventIdx;
       toggleEventDetails(idx);
     });
   });
+
+  // Ajouter les event listeners pour les boutons toggle des paliers
+  eventsList.querySelectorAll(".tier-toggle").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const idx = btn.dataset.tierIdx;
+      toggleTierRewards(idx);
+    });
+  });
+
+  // Ajouter les event listeners pour les boutons toggle du calculateur
+  eventsList.querySelectorAll(".calc-toggle").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const idx = btn.dataset.calcIdx;
+      togglePointsCalc(idx);
+    });
+  });
+
+  // Ajouter les event listeners pour les inputs du calculateur
+  eventsList.querySelectorAll(".calc-qty").forEach(input => {
+    input.addEventListener("input", () => {
+      // Trouver l'index de l'event
+      const calcSection = input.closest(".points-calc-section");
+      if (calcSection) {
+        const idx = calcSection.id.replace("points-calc-", "");
+        const event = currentMilestoneEvents[parseInt(idx)];
+        if (event) {
+          updatePointsCalculation(idx, event);
+        }
+      }
+    });
+  });
+
+  // Ajouter les event listeners pour les boutons d'alerte
+  eventsList.querySelectorAll(".event-alert-btn").forEach(btn => {
+    btn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const eventId = btn.dataset.eventId;
+      const eventName = btn.dataset.eventName;
+      const endTime = parseFloat(btn.dataset.endTime);
+      await toggleEventAlert(eventId, eventName, endTime);
+    });
+  });
+
+  // Vérifier les événements qui expirent bientôt
+  const expiring = checkExpiringEvents();
+  if (expiring.length > 0) {
+    showExpiringEventsNotice(expiring);
+  }
 }
 
 
@@ -814,10 +1682,390 @@ function toggleEventDetails(idx) {
   }
 }
 
+/**
+ * Affiche/masque les récompenses des paliers
+ */
+function toggleTierRewards(idx) {
+  const rewards = document.getElementById(`tier-rewards-${idx}`);
+  if (rewards) {
+    rewards.classList.toggle("show");
+    const btn = document.querySelector(`.tier-toggle[data-tier-idx="${idx}"]`);
+    if (btn) {
+      const isOpen = rewards.classList.contains("show");
+      btn.innerHTML = isOpen ? `🎁 Masquer ▲` : `🎁 Paliers ▼`;
+    }
+  }
+}
+
+/**
+ * Affiche/masque le calculateur de points
+ */
+function togglePointsCalc(idx) {
+  const calc = document.getElementById(`points-calc-${idx}`);
+  if (calc) {
+    calc.classList.toggle("show");
+    const btn = document.querySelector(`.calc-toggle[data-calc-idx="${idx}"]`);
+    if (btn) {
+      const isOpen = calc.classList.contains("show");
+      btn.innerHTML = isOpen ? `🧮 Masquer ▲` : `🧮 Calculer ▼`;
+    }
+  }
+}
+
+/**
+ * Génère le HTML du calculateur de points pour un milestone event
+ */
+function renderPointsCalculator(event, idx) {
+  if (!event.milestone?.scoring) return "";
+
+  const scoring = event.milestone.scoring;
+  const rows = [];
+
+  if (scoring.methods) {
+    scoring.methods.forEach((m, i) => {
+      rows.push({ desc: translateEventDescription(m.description), points: m.points, cap: null, id: `calc-${idx}-${i}` });
+    });
+  }
+  if (scoring.cappedScorings) {
+    scoring.cappedScorings.forEach((cs, ci) => {
+      cs.methods.forEach((m, mi) => {
+        rows.push({ desc: translateEventDescription(m.description), points: m.points, cap: cs.cap, id: `calc-${idx}-cap-${ci}-${mi}` });
+      });
+    });
+  }
+
+  if (rows.length === 0) return "";
+
+  // Générer la liste des paliers si disponible
+  const tiers = event.milestone?.tiers || [];
+  let tiersHtml = "";
+  if (tiers.length > 0) {
+    // Afficher les 5 premiers paliers + dernier palier si plus de 6
+    const displayTiers = tiers.length <= 6 ? tiers : [...tiers.slice(0, 5), tiers[tiers.length - 1]];
+    tiersHtml = `
+      <div class="calc-tiers-breakdown" id="calc-tiers-${idx}">
+        <div class="calc-tiers-header">Objectifs par palier</div>
+        ${displayTiers.map((tier, i) => {
+          const tierNum = tiers.length <= 6 ? i + 1 : (i < 5 ? i + 1 : tiers.length);
+          const showDots = tiers.length > 6 && i === 5;
+          return `
+            ${showDots ? '<div class="calc-tier-dots">...</div>' : ''}
+            <div class="calc-tier-row" data-tier="${tierNum}" data-score="${tier.endScore}">
+              <span class="calc-tier-num">Palier ${tierNum}</span>
+              <span class="calc-tier-target">${formatNumber(tier.endScore)} pts</span>
+              <span class="calc-tier-status" id="calc-tier-status-${idx}-${tierNum}">—</span>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  let html = `
+    <div class="points-calc">
+      <div class="calc-header">Calculateur de points</div>
+      <div class="calc-rows">
+  `;
+
+  rows.forEach(r => {
+    html += `
+      <div class="calc-row" data-points="${r.points}" data-cap="${r.cap || ''}">
+        <span class="calc-action">${r.desc}</span>
+        <div class="calc-inputs">
+          <input type="number" class="calc-qty" id="${r.id}" min="0" value="0" placeholder="Qté">
+          <span class="calc-pts-per">× ${formatNumber(r.points)}</span>
+          ${r.cap ? `<span class="calc-cap-info">(max ${formatNumber(r.cap)})</span>` : ""}
+        </div>
+      </div>
+    `;
+  });
+
+  html += `
+      </div>
+      <div class="calc-result">
+        <span class="calc-total-label">Total estimé:</span>
+        <span class="calc-total-pts" id="calc-total-${idx}">0</span>
+        <span class="calc-tier-result" id="calc-tier-${idx}"></span>
+      </div>
+      ${tiersHtml}
+    </div>
+  `;
+
+  return html;
+}
+
+/**
+ * Met à jour le calcul des points pour un event
+ */
+function updatePointsCalculation(idx, event) {
+  const calcSection = document.querySelector(`#points-calc-${idx}`);
+  if (!calcSection) return;
+
+  const inputs = calcSection.querySelectorAll(".calc-qty");
+  let total = 0;
+
+  inputs.forEach(input => {
+    const row = input.closest(".calc-row");
+    const points = parseInt(row.dataset.points) || 0;
+    const cap = row.dataset.cap ? parseInt(row.dataset.cap) : null;
+    const qty = parseInt(input.value) || 0;
+
+    let earned = qty * points;
+    if (cap !== null && earned > cap) {
+      earned = cap;
+    }
+    total += earned;
+  });
+
+  const totalEl = document.getElementById(`calc-total-${idx}`);
+  const tierEl = document.getElementById(`calc-tier-${idx}`);
+
+  if (totalEl) {
+    totalEl.textContent = formatNumber(total);
+    totalEl.classList.toggle("has-points", total > 0);
+  }
+
+  // Calculer le palier atteint et mettre à jour l'affichage
+  if (event.milestone?.tiers) {
+    const tiers = event.milestone.tiers;
+    let reachedTier = 0;
+    let nextTierIdx = 0;
+
+    for (let i = 0; i < tiers.length; i++) {
+      if (total >= tiers[i].endScore) {
+        reachedTier = i + 1;
+        nextTierIdx = i + 1;
+      }
+    }
+
+    // Mise à jour du résumé
+    if (tierEl) {
+      if (reachedTier > 0) {
+        if (reachedTier === tiers.length) {
+          tierEl.textContent = `✓ Tous les paliers atteints !`;
+          tierEl.className = "calc-tier-result reached";
+        } else {
+          const nextTier = tiers[nextTierIdx];
+          const remaining = nextTier.endScore - total;
+          tierEl.textContent = `Palier ${reachedTier} ✓ | ${formatNumber(remaining)} pts → Palier ${reachedTier + 1}`;
+          tierEl.className = "calc-tier-result reached";
+        }
+      } else if (tiers.length > 0) {
+        const nextTier = tiers[0].endScore;
+        tierEl.textContent = `${formatNumber(nextTier - total)} pts → Palier 1`;
+        tierEl.className = "calc-tier-result pending";
+      } else {
+        tierEl.textContent = "";
+      }
+    }
+
+    // Mise à jour de chaque ligne de palier
+    const displayTierNums = tiers.length <= 6
+      ? tiers.map((_, i) => i + 1)
+      : [1, 2, 3, 4, 5, tiers.length];
+
+    displayTierNums.forEach(tierNum => {
+      const statusEl = document.getElementById(`calc-tier-status-${idx}-${tierNum}`);
+      if (!statusEl) return;
+
+      const tier = tiers[tierNum - 1];
+      if (!tier) return;
+
+      if (total >= tier.endScore) {
+        statusEl.textContent = "✓";
+        statusEl.className = "calc-tier-status reached";
+      } else {
+        const remaining = tier.endScore - total;
+        statusEl.textContent = `-${formatNumber(remaining)}`;
+        statusEl.className = "calc-tier-status pending";
+      }
+    });
+  }
+}
+
+/**
+ * Génère le HTML des récompenses de paliers pour un milestone event
+ */
+function renderMilestoneTiers(event) {
+  if (!event.milestone?.tiers || event.milestone.tiers.length === 0) {
+    return "";
+  }
+
+  const tiers = event.milestone.tiers;
+
+  // Mapper les itemId vers des noms/icônes lisibles
+  const itemNames = {
+    // Ressources communes
+    "core": "Cores",
+    "gold": "Or",
+    "trainingModules": "Modules",
+    "catalyst_orange": "Catalyseurs Orange",
+    "catalyst_purple": "Catalyseurs Violet",
+    "ability_purple": "T3 Ability",
+    "ability_orange": "T4 Ability",
+    "ability_teal": "T5 Ability",
+    "gear_teal": "Gear Teal",
+    "gear_orange": "Gear Orange",
+    "ionPiece": "Ions",
+    "blitz_credits": "Crédits Blitz",
+    "arena_credits": "Crédits Arena",
+    "raid_credits": "Crédits Raid",
+    "war_credits": "Crédits War",
+    // Orbes
+    "premiumOrb": "Orbe Premium",
+    "basicOrb": "Orbe Basic",
+    "blitzOrb": "Orbe Blitz",
+    "goldOrb": "Orbe Or",
+    "trainingOrb": "Orbe Training"
+  };
+
+  const itemIcons = {
+    "core": "💎",
+    "gold": "🪙",
+    "trainingModules": "📦",
+    "catalyst_orange": "🟠",
+    "catalyst_purple": "🟣",
+    "ability_purple": "📗",
+    "ability_orange": "📙",
+    "ability_teal": "📘",
+    "gear_teal": "⚙️",
+    "gear_orange": "⚙️",
+    "ionPiece": "⚡",
+    "blitz_credits": "🎫",
+    "arena_credits": "🏟️",
+    "raid_credits": "💀",
+    "war_credits": "⚔️",
+    "premiumOrb": "🔮",
+    "basicOrb": "🔵",
+    "blitzOrb": "🟠",
+    "goldOrb": "🟡",
+    "trainingOrb": "📦"
+  };
+
+  // Afficher seulement quelques paliers clés (premier, milieu, dernier)
+  const keyTiers = [];
+  if (tiers.length <= 5) {
+    keyTiers.push(...tiers.map((t, i) => ({ ...t, tierNum: i + 1 })));
+  } else {
+    // Premier, 25%, 50%, 75%, dernier
+    keyTiers.push({ ...tiers[0], tierNum: 1 });
+    keyTiers.push({ ...tiers[Math.floor(tiers.length * 0.25)], tierNum: Math.floor(tiers.length * 0.25) + 1 });
+    keyTiers.push({ ...tiers[Math.floor(tiers.length * 0.5)], tierNum: Math.floor(tiers.length * 0.5) + 1 });
+    keyTiers.push({ ...tiers[Math.floor(tiers.length * 0.75)], tierNum: Math.floor(tiers.length * 0.75) + 1 });
+    keyTiers.push({ ...tiers[tiers.length - 1], tierNum: tiers.length });
+  }
+
+  let html = `<div class="tier-rewards-list">`;
+
+  keyTiers.forEach(tier => {
+    const rewards = tier.rewards || [];
+    const rewardItems = rewards.map(r => {
+      const name = itemNames[r.itemId] || r.itemId;
+      const icon = itemIcons[r.itemId] || "📦";
+      const qty = r.quantity + (r.bonusQuantity || 0);
+      return `<span class="tier-reward-item" title="${name}">${icon} ${formatNumber(qty)}</span>`;
+    }).join("");
+
+    html += `
+      <div class="tier-row">
+        <span class="tier-num">Palier ${tier.tierNum}</span>
+        <span class="tier-score">${formatNumber(tier.endScore)} pts</span>
+        <div class="tier-rewards">${rewardItems}</div>
+      </div>
+    `;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
 function formatNumber(n) {
   if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
   if (n >= 1000) return (n / 1000).toFixed(0) + 'K';
   return n.toString();
+}
+
+/**
+ * Traductions des noms d'événements confus
+ */
+const EVENT_NAME_TRANSLATIONS = {
+  // Orbes
+  "Echo Orb": "Orbe Echo (récompenses spéciales)",
+  "Premium Orb": "Orbe Premium",
+  "Basic Orb": "Orbe Basique",
+  "Blitz Orb": "Orbe Blitz",
+  "Gold Orb": "Orbe Or",
+  "Training Orb": "Orbe Entrainement",
+  "Mega Orb": "Méga Orbe",
+  "Ultimus Orb": "Orbe Ultimus",
+  "Red Star Orb": "Orbe Étoile Rouge",
+
+  // Raids - Ces milestones donnent des points quand vous jouez en Raid
+  "Greek Raids": "🏛️ Raids Grecs",
+  "Annihilation Raids": "☠️ Raids Annihilation",
+  "Ultimus Raids": "⚡ Raids Ultimus",
+  "Doom Raids": "💀 Raids Doom",
+  "Incursion Raids": "🔥 Raids Incursion",
+  "Cosmic Crucible": "Creuset Cosmique",
+
+  // Événements
+  "Battle in War": "Combat en Guerre",
+  "War Season": "Saison de Guerre",
+  "Raid Season": "Saison de Raid"
+};
+
+/**
+ * Traductions des descriptions d'événements
+ */
+const EVENT_DESC_TRANSLATIONS = {
+  "Win War battles": "Victoires en Guerre",
+  "Win Alliance War attacks": "Victoires attaque en Guerre",
+  "Complete Raid nodes": "Noeuds de Raid complétés",
+  "Complete raid nodes": "Noeuds de Raid complétés",
+  "Earn Ability Materials": "Gagner des Matériaux de Capacité",
+  "Earn Gear up to Tier 20": "Gagner du Gear (jusqu'au Tier 20)",
+  "Earn Crimson Gear": "Gagner du Gear Crimson",
+  "Earn Gold": "Gagner de l'Or",
+  "Earn Training Modules": "Gagner des Modules d'Entrainement",
+  "Complete Blitz battles": "Combats Blitz complétés",
+  "Collect character shards": "Collecter des fragments de personnage",
+  "Open Orbs": "Ouvrir des Orbes"
+};
+
+/**
+ * Traduit un nom d'événement
+ */
+function translateEventName(name) {
+  if (!name) return "";
+  // Chercher une traduction exacte
+  if (EVENT_NAME_TRANSLATIONS[name]) {
+    return EVENT_NAME_TRANSLATIONS[name];
+  }
+  // Chercher une traduction partielle (contient le mot)
+  for (const [eng, fr] of Object.entries(EVENT_NAME_TRANSLATIONS)) {
+    if (name.toLowerCase().includes(eng.toLowerCase())) {
+      return name.replace(new RegExp(eng, 'i'), fr);
+    }
+  }
+  return name;
+}
+
+/**
+ * Traduit une description d'événement
+ */
+function translateEventDescription(desc) {
+  if (!desc) return "";
+  // Chercher une traduction exacte
+  if (EVENT_DESC_TRANSLATIONS[desc]) {
+    return EVENT_DESC_TRANSLATIONS[desc];
+  }
+  // Chercher une traduction partielle
+  for (const [eng, fr] of Object.entries(EVENT_DESC_TRANSLATIONS)) {
+    if (desc.toLowerCase().includes(eng.toLowerCase())) {
+      return desc.replace(new RegExp(eng, 'i'), fr);
+    }
+  }
+  return desc;
 }
 
 // ============================================
@@ -1098,16 +2346,53 @@ function generateCountersHtml(counters) {
     return '<div class="counters no-counters"><span class="no-counters-text">Selectionnez une equipe pour voir les counters</span></div>';
   }
 
+  // Filtrer si nécessaire
+  let displayCounters = counters;
+  if (showOnlyAvailable && playerRoster.size > 0) {
+    displayCounters = counters.filter(c => {
+      const status = canMakeTeam(c.teamId);
+      return status && status.available;
+    });
+  }
+
+  // Trier par disponibilité (disponibles en premier)
+  displayCounters = [...displayCounters].sort((a, b) => {
+    const statusA = canMakeTeam(a.teamId);
+    const statusB = canMakeTeam(b.teamId);
+    const availA = statusA?.available ? 1 : 0;
+    const availB = statusB?.available ? 1 : 0;
+    if (availA !== availB) return availB - availA;
+    return b.confidence - a.confidence;
+  });
+
+  if (displayCounters.length === 0) {
+    return '<div class="counters no-counters"><span class="no-counters-text">Aucun counter disponible avec votre roster</span></div>';
+  }
+
+  const hasRoster = playerRoster.size > 0;
+
   return `
     <div class="counters">
-      <div class="counters-title">Counters:</div>
-      ${counters.slice(0, 3).map(c => `
-        <div class="counter-item">
-          <span class="counter-name">${c.teamName}</span>
-          <span class="counter-confidence">${confidenceToSymbols(c.confidence)}</span>
-          ${c.minPower ? `<span class="counter-power">${formatPower(c.minPower)}+</span>` : ""}
-        </div>
-      `).join("")}
+      <div class="counters-header">
+        <span class="counters-title">Counters:</span>
+        ${hasRoster ? `
+          <button class="roster-filter-btn ${showOnlyAvailable ? 'active' : ''}" onclick="toggleRosterFilter()">
+            ${showOnlyAvailable ? '✓ Je peux' : 'Tous'}
+          </button>
+        ` : ''}
+      </div>
+      ${displayCounters.slice(0, 5).map(c => {
+        const status = canMakeTeam(c.teamId);
+        const isAvailable = status?.available;
+        return `
+          <div class="counter-item ${isAvailable ? 'available' : ''}">
+            <span class="counter-name">${c.teamName}</span>
+            ${hasRoster ? renderAvailabilityBadge(c.teamId) : ''}
+            <span class="counter-confidence">${confidenceToSymbols(c.confidence)}</span>
+            ${c.minPower ? `<span class="counter-power">${formatPower(c.minPower)}+</span>` : ""}
+          </div>
+        `;
+      }).join("")}
     </div>
   `;
 }
@@ -1602,35 +2887,82 @@ function showWarResult(message, type) {
 }
 
 function displayWarResult(result) {
+  window.lastWarResult = result; // Sauvegarder pour le toggle filter
   let html = "";
 
   if (result.identified && result.team) {
     // Utiliser variantName si disponible, sinon name
     const teamDisplayName = result.team.variantName || result.team.name;
-    html += `<div class="war-team-identified">Equipe: ${teamDisplayName}</div>`;
+    html += `<div class="war-result-header">
+      <div class="war-team-identified">Equipe: ${teamDisplayName}</div>
+      <button class="discord-export-btn" onclick="exportWarToDiscord()" title="Copier pour Discord">📋 Discord</button>
+    </div>`;
 
     if (result.matchConfidence) {
       html += `<div style="font-size:11px;color:#888;margin-bottom:8px;">Confiance: ${result.matchConfidence}%</div>`;
     }
 
     if (result.counters && result.counters.length > 0) {
-      html += `<div class="counters-title">Counters recommandes:</div>`;
+      // Filtrer et trier par disponibilité
+      let displayCounters = result.counters;
+      if (showOnlyAvailable && playerRoster.size > 0) {
+        displayCounters = displayCounters.filter(c => {
+          const status = canMakeTeam(c.teamId);
+          return status && status.available;
+        });
+      }
+
+      // Trier par disponibilité (disponibles en premier)
+      displayCounters = [...displayCounters].sort((a, b) => {
+        const statusA = canMakeTeam(a.teamId);
+        const statusB = canMakeTeam(b.teamId);
+        const availA = statusA?.available ? 1 : 0;
+        const availB = statusB?.available ? 1 : 0;
+        if (availA !== availB) return availB - availA;
+        return b.confidence - a.confidence;
+      });
+
+      const hasRoster = playerRoster.size > 0;
+
+      html += `<div class="counters-header">
+        <span class="counters-title">Counters recommandes:</span>
+        ${hasRoster ? `
+          <button class="roster-filter-btn ${showOnlyAvailable ? 'active' : ''}" onclick="toggleRosterFilter(); displayWarResult(window.lastWarResult);">
+            ${showOnlyAvailable ? '✓ Je peux' : 'Tous'}
+          </button>
+        ` : ''}
+      </div>`;
       html += `<div class="war-counters-list">`;
 
-      result.counters.slice(0, 5).forEach(c => {
-        html += `
-          <div class="war-counter-item">
-            <div class="war-counter-header">
-              <span class="war-counter-name">${c.teamName}</span>
-              <div class="war-counter-meta">
-                <span class="war-counter-confidence">${confidenceToSymbols(c.confidence)}</span>
-                ${c.minPower ? `<span class="war-counter-power">${formatPower(c.minPower)}+</span>` : ""}
+      if (displayCounters.length === 0) {
+        html += `<div class="no-counters">Aucun counter disponible avec votre roster</div>`;
+      } else {
+        const defenseName = result.team?.variantName || result.team?.name || "Équipe";
+        displayCounters.slice(0, 5).forEach(c => {
+          const status = canMakeTeam(c.teamId);
+          const isAvailable = status?.available;
+          html += `
+            <div class="war-counter-item ${isAvailable ? 'available' : ''}">
+              <div class="war-counter-header">
+                <span class="war-counter-name">${c.teamName}</span>
+                <div class="war-counter-meta">
+                  ${renderStatsBadge(c.teamId)}
+                  ${hasRoster ? renderAvailabilityBadge(c.teamId) : ''}
+                  <span class="war-counter-confidence">${confidenceToSymbols(c.confidence)}</span>
+                  ${c.minPower ? `<span class="war-counter-power">${formatPower(c.minPower)}+</span>` : ""}
+                </div>
+              </div>
+              <div class="war-counter-actions">
+                ${c.notes ? `<span class="war-counter-notes">${c.notes}</span>` : '<span></span>'}
+                <div class="war-record-btns">
+                  <button class="war-record-btn win" onclick="recordAndRefresh('${c.teamId}', '${c.teamName.replace(/'/g, "\\'")}', '${defenseName.replace(/'/g, "\\'")}', true)" title="Victoire">✓</button>
+                  <button class="war-record-btn loss" onclick="recordAndRefresh('${c.teamId}', '${c.teamName.replace(/'/g, "\\'")}', '${defenseName.replace(/'/g, "\\'")}', false)" title="Défaite">✗</button>
+                </div>
               </div>
             </div>
-            ${c.notes ? `<div class="war-counter-notes">${c.notes}</div>` : ""}
-          </div>
-        `;
-      });
+          `;
+        });
+      }
 
       html += `</div>`;
     } else {
@@ -1652,18 +2984,56 @@ function displayWarResult(result) {
 // War Mode - Onglets
 // ============================================
 
+const tabStats = document.getElementById("tab-stats");
+const warStatsMode = document.getElementById("war-stats-mode");
+const warStatsContent = document.getElementById("war-stats-content");
+const warPowerSection = document.getElementById("war-power-section");
+const btnClearStats = document.getElementById("btn-clear-stats");
+
 tabPortrait.addEventListener("click", () => {
   tabPortrait.classList.add("active");
   tabManual.classList.remove("active");
+  tabStats.classList.remove("active");
   warPortraitMode.classList.remove("hidden");
   warManualMode.classList.add("hidden");
+  warStatsMode.classList.add("hidden");
+  warPowerSection.classList.remove("hidden");
+  warResult.classList.remove("hidden");
 });
 
 tabManual.addEventListener("click", () => {
   tabManual.classList.add("active");
   tabPortrait.classList.remove("active");
+  tabStats.classList.remove("active");
   warManualMode.classList.remove("hidden");
   warPortraitMode.classList.add("hidden");
+  warStatsMode.classList.add("hidden");
+  warPowerSection.classList.remove("hidden");
+  warResult.classList.remove("hidden");
+});
+
+tabStats.addEventListener("click", async () => {
+  tabStats.classList.add("active");
+  tabPortrait.classList.remove("active");
+  tabManual.classList.remove("active");
+  warStatsMode.classList.remove("hidden");
+  warPortraitMode.classList.add("hidden");
+  warManualMode.classList.add("hidden");
+  warPowerSection.classList.add("hidden");
+  warResult.classList.add("hidden");
+
+  // Afficher les stats
+  await loadWarStats();
+  warStatsContent.innerHTML = displayWarStats();
+});
+
+btnClearStats.addEventListener("click", async () => {
+  if (!confirm("Effacer toutes les statistiques de War ?")) return;
+
+  warStats = {};
+  await storageSet({ msfWarStats: {} });
+  warStatsContent.innerHTML = displayWarStats();
+  setStatus("Statistiques effacées", "success");
 });
 
 // ============================================

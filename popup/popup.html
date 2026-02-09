@@ -18,16 +18,17 @@
     </section>
 
     <section id="tools">
-      <button id="btn-detach" class="btn-small" title="Ouvrir dans une fenêtre permanente">🪟 Fenêtre</button>
-      <button id="btn-notes" class="btn-small" title="Voir les notes de version">📋 Notes</button>
-      <button id="btn-events" class="btn-small" title="Événements en cours">📅 Events</button>
-      <button id="btn-defense" class="btn-small" title="Tester ma défense War">🛡️ Défense</button>
-      <button id="btn-farm" class="btn-small" title="Où farmer les personnages">🎯 Farm</button>
-      <button id="btn-export" class="btn-small">Exporter</button>
-      <button id="btn-import" class="btn-small">Importer</button>
-      <button id="btn-manage" class="btn-small">Counters</button>
-      <button id="btn-settings" class="btn-small">Sync</button>
-      <button id="btn-api" class="btn-small">API</button>
+      <button id="btn-events" class="btn-small" title="Événements en cours">📅<span>Events</span></button>
+      <button id="btn-raids" class="btn-small" title="Milestones liés aux Raids">💀<span>Raids</span></button>
+      <button id="btn-defense" class="btn-small" title="Tester ma défense War">🛡️<span>Défense</span></button>
+      <button id="btn-farm" class="btn-small" title="Où farmer les personnages">🌾<span>Farm</span></button>
+      <button id="btn-manage" class="btn-small" title="Gérer les counters">⚔️<span>Counters</span></button>
+      <button id="btn-detach" class="btn-small" title="Ouvrir dans une fenêtre permanente">🪟<span>Fenêtre</span></button>
+      <button id="btn-notes" class="btn-small" title="Voir les notes de version">📋<span>Notes</span></button>
+      <button id="btn-export" class="btn-small" title="Exporter la config">💾<span>Export</span></button>
+      <button id="btn-import" class="btn-small" title="Importer une config">📂<span>Import</span></button>
+      <button id="btn-api" class="btn-small" title="Configuration API">🔑<span>API</span></button>
+      <button id="btn-settings" class="btn-small" title="Synchronisation counters">🔄<span>Sync</span></button>
       <input type="file" id="import-file" accept=".json" class="hidden">
     </section>
 
@@ -74,6 +75,12 @@
         <span>Événements en cours</span>
         <button id="btn-close-events" class="btn-close">X</button>
       </div>
+      <div id="offline-indicator" class="offline-indicator hidden">
+        <span class="offline-icon">📴</span>
+        <span class="offline-text">Mode hors ligne</span>
+        <span class="offline-time"></span>
+      </div>
+      <div id="expiring-notice" class="expiring-notice hidden"></div>
       <div id="events-loading" class="events-loading">Chargement des événements...</div>
       <div id="events-error" class="events-error hidden"></div>
       <div id="events-list" class="events-list hidden"></div>
@@ -83,6 +90,17 @@
         <div class="events-section-title">Équipes offensives pour War</div>
         <div id="war-teams-list" class="war-teams-list"></div>
       </div>
+    </section>
+
+    <section id="raids-panel" class="hidden">
+      <div class="sync-header">
+        <span>💀 Milestones Raids</span>
+        <button id="btn-close-raids" class="btn-close">X</button>
+      </div>
+      <div class="raids-info">Ces événements donnent des points quand vous jouez en Raid</div>
+      <div id="raids-loading" class="events-loading">Chargement...</div>
+      <div id="raids-error" class="events-error hidden"></div>
+      <div id="raids-list" class="raids-list hidden"></div>
     </section>
 
     <section id="defense-panel" class="hidden">
@@ -105,18 +123,27 @@
         <span>Où farmer les personnages</span>
         <button id="btn-close-farm" class="btn-close">X</button>
       </div>
-      <div class="farm-search">
-        <input type="text" id="farm-search-input" class="sync-input" placeholder="Rechercher un personnage...">
+      <div class="farm-tabs">
+        <button id="farm-tab-search" class="farm-tab active">🔍 Recherche</button>
+        <button id="farm-tab-advisor" class="farm-tab">🎯 Conseiller</button>
       </div>
-      <div class="farm-filters">
+      <div id="farm-search-mode">
+        <div class="farm-search">
+          <input type="text" id="farm-search-input" class="sync-input" placeholder="Rechercher un personnage...">
+        </div>
+        <div class="farm-filters">
         <button class="farm-filter active" data-filter="all">Tous</button>
         <button class="farm-filter" data-filter="campaign">Campagne</button>
         <button class="farm-filter" data-filter="blitz">Blitz</button>
         <button class="farm-filter" data-filter="arena">Arene</button>
         <button class="farm-filter" data-filter="raid">Raid</button>
         <button class="farm-filter" data-filter="war">War</button>
+        </div>
+        <div id="farm-results" class="farm-results"></div>
       </div>
-      <div id="farm-results" class="farm-results"></div>
+      <div id="farm-advisor-mode" class="hidden">
+        <div id="farm-advisor-results" class="farm-advisor-results"></div>
+      </div>
     </section>
 
     <section id="war-panel" class="hidden">
@@ -129,6 +156,7 @@
       <div class="war-tabs">
         <button id="tab-portrait" class="war-tab active">Scan Portrait</button>
         <button id="tab-manual" class="war-tab">Saisie manuelle</button>
+        <button id="tab-stats" class="war-tab">📊 Stats</button>
       </div>
 
       <!-- Mode Portrait Scan -->
@@ -178,12 +206,21 @@
       </div>
 
       <!-- Puissance (commun aux deux modes) -->
-      <div class="war-power-row">
+      <div id="war-power-section" class="war-power-row">
         <label class="api-label">Puissance ennemi (optionnel)</label>
         <input type="text" id="war-power" class="sync-input" placeholder="Ex: 5000000">
       </div>
 
       <div id="war-result" class="war-result hidden"></div>
+
+      <!-- Mode Stats -->
+      <div id="war-stats-mode" class="hidden">
+        <div class="war-stats-header">
+          <span>Historique des combats</span>
+          <button id="btn-clear-stats" class="btn-danger" style="padding:4px 8px;font-size:10px;">Effacer</button>
+        </div>
+        <div id="war-stats-content"></div>
+      </div>
     </section>
 
     <section id="sync-panel" class="hidden">
