@@ -118,6 +118,7 @@ let countersData = {};
 let currentSlots = []; // Resultats du dernier scan
 let playerRoster = new Set(); // Roster du joueur
 let showOnlyAvailable = false; // Filtre pour afficher seulement les counters disponibles
+let eventBonusCharacters = []; // Personnages avec bonus d'event War/Blitz actif
 
 /**
  * Charge le roster du joueur depuis le storage
@@ -133,6 +134,92 @@ async function loadPlayerRoster() {
     console.error("[Popup] Erreur chargement roster:", e);
     playerRoster = new Set();
   }
+}
+
+/**
+ * Extrait les personnages avec bonus War/Blitz depuis les events actifs
+ * Cherche les descriptions comme "Battle in War or Blitz with Ursa Major"
+ */
+async function extractEventBonusCharacters() {
+  eventBonusCharacters = [];
+
+  try {
+    // Récupérer les events depuis le cache
+    const cached = await storageGet("msfEventsCache");
+    if (!cached.msfEventsCache) return;
+
+    const now = Date.now() / 1000;
+    const activeEvents = cached.msfEventsCache.filter(e => e.endTime > now && e.startTime < now);
+
+    // Charger characters-full.json pour le mapping nom -> id
+    const charsUrl = ext.runtime.getURL("data/characters-full.json");
+    const charsRes = await fetch(charsUrl);
+    const charsData = await charsRes.json();
+
+    // Créer un map des noms de personnages (en majuscules) vers leurs IDs
+    const nameToId = {};
+    Object.entries(charsData).forEach(([id, char]) => {
+      if (char.name) {
+        nameToId[char.name.toUpperCase()] = id;
+      }
+    });
+
+    // Regex pour extraire les noms de personnages des descriptions d'events
+    // Ex: "Battle in War or Blitz with Ursa Major at 5 Yellow Stars"
+    const warBlitzPattern = /battle in war or blitz with ([a-z\s\-']+?)(?:\s+at\s+\d+|\s*$)/gi;
+
+    activeEvents.forEach(event => {
+      if (event.type !== "milestone" || !event.milestone?.scoring) return;
+
+      const scoring = event.milestone.scoring;
+      const allMethods = [
+        ...(scoring.methods || []),
+        ...(scoring.cappedScorings || []).flatMap(cs => cs.methods || [])
+      ];
+
+      allMethods.forEach(method => {
+        if (!method.description) return;
+
+        // Vérifier si c'est une condition War/Blitz
+        let match;
+        warBlitzPattern.lastIndex = 0;
+        while ((match = warBlitzPattern.exec(method.description)) !== null) {
+          const charName = match[1].trim().toUpperCase();
+          const charId = nameToId[charName];
+
+          if (charId && !eventBonusCharacters.find(c => c.charId === charId)) {
+            eventBonusCharacters.push({
+              charId: charId,
+              charName: match[1].trim(),
+              eventName: event.name,
+              points: method.points,
+              description: method.description
+            });
+          }
+        }
+      });
+    });
+
+    if (eventBonusCharacters.length > 0) {
+      console.log("[Events] Personnages avec bonus War/Blitz:", eventBonusCharacters.map(c => c.charName));
+    }
+  } catch (e) {
+    console.error("[Events] Erreur extraction bonus characters:", e);
+  }
+}
+
+/**
+ * Vérifie si une équipe contient des personnages avec bonus d'event
+ */
+function getTeamEventBonus(teamId) {
+  if (eventBonusCharacters.length === 0) return [];
+
+  const team = teamsData.find(t => t.id === teamId);
+  if (!team || !team.memberIds) return [];
+
+  return eventBonusCharacters.filter(bonus =>
+    team.memberIds.includes(bonus.charId)
+  );
 }
 
 /**
@@ -1106,6 +1193,9 @@ async function loadEvents() {
       msfEventsCacheTime: Date.now()
     });
 
+    // Extraire les personnages avec bonus War/Blitz
+    await extractEventBonusCharacters();
+
   } catch (err) {
     console.log("[Events] Erreur API, tentative cache:", err.message);
 
@@ -1116,6 +1206,8 @@ async function loadEvents() {
       events = cached.msfEventsCache;
       isOffline = true;
       console.log("[Events] Utilisation du cache (", events.length, "events)");
+      // Extraire les personnages avec bonus War/Blitz depuis le cache
+      await extractEventBonusCharacters();
     } else {
       eventsLoading.classList.add("hidden");
       eventsError.textContent = "Pas de connexion et aucun cache disponible";
@@ -2939,17 +3031,30 @@ function displayWarResult(result) {
         displayCounters.slice(0, 5).forEach(c => {
           const status = canMakeTeam(c.teamId);
           const isAvailable = status?.available;
+          const eventBonuses = getTeamEventBonus(c.teamId);
+          const hasEventBonus = eventBonuses.length > 0;
+
+          // Générer le badge event bonus
+          let eventBonusHtml = '';
+          if (hasEventBonus) {
+            const bonusChars = eventBonuses.map(b => b.charName).join(', ');
+            const bonusPoints = eventBonuses.reduce((sum, b) => sum + (b.points || 0), 0);
+            eventBonusHtml = `<span class="event-bonus-badge" title="Event actif: ${bonusChars} (+${formatNumber(bonusPoints)} pts)">🎯 Event</span>`;
+          }
+
           html += `
-            <div class="war-counter-item ${isAvailable ? 'available' : ''}">
+            <div class="war-counter-item ${isAvailable ? 'available' : ''} ${hasEventBonus ? 'has-event-bonus' : ''}">
               <div class="war-counter-header">
                 <span class="war-counter-name">${c.teamName}</span>
                 <div class="war-counter-meta">
+                  ${eventBonusHtml}
                   ${renderStatsBadge(c.teamId)}
                   ${hasRoster ? renderAvailabilityBadge(c.teamId) : ''}
                   <span class="war-counter-confidence">${confidenceToSymbols(c.confidence)}</span>
                   ${c.minPower ? `<span class="war-counter-power">${formatPower(c.minPower)}+</span>` : ""}
                 </div>
               </div>
+              ${hasEventBonus ? `<div class="event-bonus-detail">🎯 Bonus: ${eventBonuses.map(b => `${b.charName} (+${formatNumber(b.points)} pts)`).join(', ')}</div>` : ''}
               <div class="war-counter-actions">
                 ${c.notes ? `<span class="war-counter-notes">${c.notes}</span>` : '<span></span>'}
                 <div class="war-record-btns">
