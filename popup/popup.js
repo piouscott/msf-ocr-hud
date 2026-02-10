@@ -1131,9 +1131,9 @@ async function loadEvents() {
 
   // Séparer par type
   const blitzEvents = activeEvents.filter(e => e.type === "blitz");
-  // Milestones + "raid" events (qui sont en fait des milestones liés aux raids)
+  // Milestones uniquement (les raids sont dans le panel Raids séparé)
   const milestoneEvents = activeEvents.filter(e =>
-    (e.type === "milestone" && e.milestone?.scoring) || e.type === "raid"
+    e.type === "milestone" && e.milestone?.scoring
   );
 
   renderAllEvents({ blitz: blitzEvents, milestone: milestoneEvents });
@@ -1507,7 +1507,6 @@ function renderAllEvents({ blitz, milestone }) {
         <div class="events-accordion-content show" id="events-section-milestone">
     `;
     milestone.forEach((event, idx) => {
-      const isRaidEvent = event.type === "raid";
       const scoring = event.milestone?.scoring;
       const rows = [];
 
@@ -1532,13 +1531,12 @@ function renderAllEvents({ blitz, milestone }) {
       const hasCalc = rows.length > 0;
 
       // Déterminer le type à afficher
-      const typeLabel = isRaidEvent ? "Raid" : (event.milestone?.typeName || "Milestone");
-      const eventIcon = isRaidEvent ? "💀" : "";
+      const typeLabel = event.milestone?.typeName || "Milestone";
 
       html += `
-        <div class="event-card milestone ${isRaidEvent ? 'raid-milestone' : ''}" data-event-idx="${idx}">
+        <div class="event-card milestone" data-event-idx="${idx}">
           <div class="event-header">
-            <span class="event-name">${eventIcon} ${translateEventName(event.name)}</span>
+            <span class="event-name">${translateEventName(event.name)}</span>
             <span class="event-type">${typeLabel}</span>
           </div>
           ${event.subName ? `<div class="event-subname">${translateEventName(event.subName)}</div>` : ''}
