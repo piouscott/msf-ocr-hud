@@ -2192,6 +2192,31 @@ button:active {
   border-radius: 6px;
 }
 
+/* Farm Locations Mini (for Roster mode) */
+.farm-locations-mini {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.farm-loc-tag {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: #2d2d44;
+  color: #aaa;
+}
+
+.farm-loc-tag.campaign { background: #1a3a5f; color: #4dabf7; }
+.farm-loc-tag.blitz { background: #4a2a0a; color: #ff922b; }
+.farm-loc-tag.arena { background: #3a1a5a; color: #845ef7; }
+.farm-loc-tag.raid { background: #4a1a3a; color: #f06595; }
+.farm-loc-tag.war { background: #4a1a1a; color: #ff6b6b; }
+.farm-loc-tag.milestone { background: #4a3a0a; color: #ffd43b; }
+.farm-loc-tag.legendary { background: #3a2a4a; color: #e599f7; }
+.farm-loc-tag.crucible { background: #0a3a3a; color: #20c997; }
+
 /* Discord Export */
 .war-result-header {
   display: flex;

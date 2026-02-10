@@ -659,6 +659,107 @@ function displayFarmingAdvisor() {
 }
 
 /**
+ * Affiche les personnages du roster < 7★ avec leurs lieux de farm
+ */
+async function displayRosterFarming() {
+  // Charger le roster complet depuis le storage
+  const stored = await storageGet("msfPlayerRosterFull");
+  const rosterFull = stored.msfPlayerRosterFull;
+
+  if (!rosterFull || rosterFull.length === 0) {
+    return `<div class="farm-advisor-error">
+      Roster non disponible.<br>
+      Cliquez sur "API" puis "Récupérer Squads" pour charger votre roster avec les étoiles.
+    </div>`;
+  }
+
+  // Filtrer les personnages < 7 étoiles jaunes
+  const under7Stars = rosterFull.filter(c => {
+    const yellowStars = c.yellow || c.activeYellow || c.stars || 0;
+    return yellowStars < 7;
+  });
+
+  if (under7Stars.length === 0) {
+    return `<div class="farm-advisor-complete">Tous vos personnages sont à 7★ jaunes ! 🎉</div>`;
+  }
+
+  // Filtrer ceux qui ont un lieu de farm
+  const farmableChars = under7Stars.filter(c => {
+    const farmInfo = farmingData?.characters?.[c.id];
+    return farmInfo && farmInfo.locations && farmInfo.locations.length > 0;
+  });
+
+  // Trier par nombre d'étoiles (les plus proches de 7 en premier)
+  farmableChars.sort((a, b) => {
+    const starsA = a.yellow || a.activeYellow || a.stars || 0;
+    const starsB = b.yellow || b.activeYellow || b.stars || 0;
+    return starsB - starsA; // Plus d'étoiles = plus haut
+  });
+
+  let html = `<div class="farm-advisor">
+    <div class="farm-advisor-header">⭐ Personnages à farmer</div>
+    <div class="farm-advisor-subtitle">${farmableChars.length} personnages < 7★ avec lieu de farm</div>
+    <div class="farm-advisor-list">
+  `;
+
+  // Afficher les 20 premiers
+  farmableChars.slice(0, 20).forEach((char, idx) => {
+    const charInfo = charactersData?.characters?.[char.id] || { name: char.id };
+    const farmInfo = farmingData?.characters?.[char.id];
+    const yellowStars = char.yellow || char.activeYellow || char.stars || 0;
+
+    // Formater les lieux de farm
+    const locationsHtml = farmInfo.locations.map(loc => {
+      const icon = getFarmLocationIcon(loc.type);
+      let detail = '';
+      if (loc.node) detail = loc.node;
+      else if (loc.cost) detail = `${loc.cost} crédits`;
+      else if (loc.orb) detail = loc.orb;
+      else if (loc.event) detail = loc.event;
+      return `<span class="farm-loc-tag ${loc.type}">${icon} ${detail}</span>`;
+    }).join(' ');
+
+    html += `
+      <div class="farm-priority-item">
+        <div class="farm-priority-rank">${yellowStars}★</div>
+        <div class="farm-priority-info">
+          ${charInfo.portrait ? `<img src="${charInfo.portrait}" class="farm-priority-portrait" alt="">` : ''}
+          <div class="farm-priority-details">
+            <span class="farm-priority-name">${charInfo.name || char.id}</span>
+            <div class="farm-locations-mini">${locationsHtml}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  if (farmableChars.length > 20) {
+    html += `<div class="farm-advisor-subtitle" style="margin-top:10px;">... et ${farmableChars.length - 20} autres</div>`;
+  }
+
+  html += `</div></div>`;
+  return html;
+}
+
+/**
+ * Retourne l'icône pour un type de lieu de farm
+ */
+function getFarmLocationIcon(type) {
+  const icons = {
+    campaign: '📍',
+    blitz: '⚡',
+    arena: '🏟️',
+    raid: '💀',
+    war: '⚔️',
+    milestone: '🏆',
+    legendary: '👑',
+    crucible: '🔥',
+    event: '📅'
+  };
+  return icons[type] || '📦';
+}
+
+/**
  * Convertit le niveau de confiance en symboles visuels (triangles)
  * 95% = ▲▲▲ (20% punch up)
  * 80% = ▲▲ (10% punch up)
@@ -1156,23 +1257,30 @@ document.querySelectorAll(".farm-filter").forEach(btn => {
 // Farm tabs handler
 const farmTabSearch = document.getElementById("farm-tab-search");
 const farmTabAdvisor = document.getElementById("farm-tab-advisor");
+const farmTabRoster = document.getElementById("farm-tab-roster");
 const farmSearchMode = document.getElementById("farm-search-mode");
 const farmAdvisorMode = document.getElementById("farm-advisor-mode");
+const farmRosterMode = document.getElementById("farm-roster-mode");
 const farmAdvisorResults = document.getElementById("farm-advisor-results");
+const farmRosterResults = document.getElementById("farm-roster-results");
 
 if (farmTabSearch && farmTabAdvisor) {
   farmTabSearch.addEventListener("click", () => {
     farmTabSearch.classList.add("active");
     farmTabAdvisor.classList.remove("active");
+    farmTabRoster?.classList.remove("active");
     farmSearchMode.classList.remove("hidden");
     farmAdvisorMode.classList.add("hidden");
+    farmRosterMode?.classList.add("hidden");
   });
 
   farmTabAdvisor.addEventListener("click", async () => {
     farmTabAdvisor.classList.add("active");
     farmTabSearch.classList.remove("active");
+    farmTabRoster?.classList.remove("active");
     farmAdvisorMode.classList.remove("hidden");
     farmSearchMode.classList.add("hidden");
+    farmRosterMode?.classList.add("hidden");
 
     // Afficher l'analyse
     farmAdvisorResults.innerHTML = '<div class="farm-advisor-loading">Analyse en cours...</div>';
@@ -1184,6 +1292,25 @@ if (farmTabSearch && farmTabAdvisor) {
 
     farmAdvisorResults.innerHTML = displayFarmingAdvisor();
   });
+
+  if (farmTabRoster) {
+    farmTabRoster.addEventListener("click", async () => {
+      farmTabRoster.classList.add("active");
+      farmTabSearch.classList.remove("active");
+      farmTabAdvisor.classList.remove("active");
+      farmRosterMode.classList.remove("hidden");
+      farmSearchMode.classList.add("hidden");
+      farmAdvisorMode.classList.add("hidden");
+
+      // Afficher l'analyse
+      farmRosterResults.innerHTML = '<div class="farm-advisor-loading">Analyse du roster...</div>';
+
+      // Charger les données nécessaires
+      await loadFarmingData();
+
+      farmRosterResults.innerHTML = await displayRosterFarming();
+    });
+  }
 }
 
 async function loadEvents() {
@@ -2889,10 +3016,23 @@ if (btnGetSquads) {
 
       // Utiliser le roster complet si disponible, sinon fallback sur les squads
       let playerRosterIds;
+      let playerRosterFull = null; // Avec étoiles, power, etc.
       if (rosterResult.roster && rosterResult.roster.length > 0) {
         playerRosterIds = rosterResult.roster;
+        playerRosterFull = rosterResult.rosterFull; // Données complètes avec stars
         output.push(`\n=== ROSTER COMPLET ===`);
         output.push(`${rosterResult.count} personnages possédés`);
+
+        // Compter les personnages par niveau d'étoiles
+        if (playerRosterFull) {
+          const starCounts = {};
+          playerRosterFull.forEach(c => {
+            const stars = c.yellow || c.stars || 0;
+            starCounts[stars] = (starCounts[stars] || 0) + 1;
+          });
+          const under7 = playerRosterFull.filter(c => (c.yellow || c.stars || 0) < 7).length;
+          output.push(`${under7} personnages < 7★ jaunes`);
+        }
       } else {
         // Fallback: extraire des squads
         const allRosterChars = new Set();
@@ -2912,6 +3052,7 @@ if (btnGetSquads) {
       // Sauvegarder les données pour manage.js
       await storageSet({
         msfPlayerRoster: playerRosterIds,
+        msfPlayerRosterFull: playerRosterFull, // Nouveau: données complètes avec étoiles
         msfWarSquads: tabs.war,
         msfSquadsUpdatedAt: new Date().toISOString()
       });
