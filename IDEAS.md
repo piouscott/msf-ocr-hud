@@ -98,6 +98,17 @@ Pour milestone events:
 
 ## Notes techniques
 
+### Modes de jeu (IMPORTANT)
+Les 3 modes sont DISTINCTS et ne doivent pas etre confondus:
+- **WAR** = Guerre (en francais)
+- **BLITZ** = Choc (en francais)
+- **RAID** = Raid
+
+Si un event stipule "Battle in War or Blitz with X":
+→ Afficher le bonus dans le panel WAR counters
+→ Afficher le bonus dans le panel BLITZ (si implemente)
+→ NE PAS melanger les modes
+
 - Les invocations (summons) ne comptent pas pour la possession d'equipe
 - Le roster est stocke dans `msfPlayerRoster` (storage local)
 - `/game/v1/events` utilise seulement x-api-key (pas besoin du Bearer token joueur)

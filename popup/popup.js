@@ -118,7 +118,7 @@ let countersData = {};
 let currentSlots = []; // Resultats du dernier scan
 let playerRoster = new Set(); // Roster du joueur
 let showOnlyAvailable = false; // Filtre pour afficher seulement les counters disponibles
-let eventBonusCharacters = []; // Personnages avec bonus d'event War/Blitz actif
+let eventBonusCharacters = []; // Personnages avec bonus d'event War actif
 
 /**
  * Charge le roster du joueur depuis le storage
@@ -137,8 +137,10 @@ async function loadPlayerRoster() {
 }
 
 /**
- * Extrait les personnages avec bonus War/Blitz depuis les events actifs
- * Cherche les descriptions comme "Battle in War or Blitz with Ursa Major"
+ * Extrait les personnages avec bonus War depuis les events actifs
+ * Cherche les descriptions comme "Battle in War with Ursa Major"
+ * NOTE: WAR (Guerre) != BLITZ (Choc) != RAID - modes distincts
+ * Si event dit "War or Blitz", on affiche dans War ET dans Blitz (séparément)
  */
 async function extractEventBonusCharacters() {
   eventBonusCharacters = [];
@@ -164,9 +166,12 @@ async function extractEventBonusCharacters() {
       }
     });
 
-    // Regex pour extraire les noms de personnages des descriptions d'events
-    // Ex: "Battle in War or Blitz with Ursa Major at 5 Yellow Stars"
-    const warBlitzPattern = /battle in war or blitz with ([a-z\s\-']+?)(?:\s+at\s+\d+|\s*$)/gi;
+    // Regex pour extraire les noms de personnages des descriptions d'events WAR uniquement
+    // Ex: "Battle in War with Ursa Major at 5 Yellow Stars"
+    // NOTE IMPORTANTE: WAR (Guerre) != BLITZ (Choc) != RAID
+    // On capture les events qui mentionnent "War" (inclut "War or Blitz" car donne des points en War)
+    // Mais on EXCLUT les events "Blitz" seul (sans War)
+    const warOnlyPattern = /battle in war(?:\s+or\s+blitz)?\s+with\s+([a-z\s\-']+?)(?:\s+at\s+\d+|\s*$)/gi;
 
     activeEvents.forEach(event => {
       if (event.type !== "milestone" || !event.milestone?.scoring) return;
@@ -180,10 +185,10 @@ async function extractEventBonusCharacters() {
       allMethods.forEach(method => {
         if (!method.description) return;
 
-        // Vérifier si c'est une condition War/Blitz
+        // Vérifier si c'est une condition War (exclut Blitz seul)
         let match;
-        warBlitzPattern.lastIndex = 0;
-        while ((match = warBlitzPattern.exec(method.description)) !== null) {
+        warOnlyPattern.lastIndex = 0;
+        while ((match = warOnlyPattern.exec(method.description)) !== null) {
           const charName = match[1].trim().toUpperCase();
           const charId = nameToId[charName];
 
@@ -201,7 +206,7 @@ async function extractEventBonusCharacters() {
     });
 
     if (eventBonusCharacters.length > 0) {
-      console.log("[Events] Personnages avec bonus War/Blitz:", eventBonusCharacters.map(c => c.charName));
+      console.log("[Events] Personnages avec bonus War:", eventBonusCharacters.map(c => c.charName));
     }
   } catch (e) {
     console.error("[Events] Erreur extraction bonus characters:", e);
