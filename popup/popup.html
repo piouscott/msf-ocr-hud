@@ -12,7 +12,8 @@
       <h1>MSF Counter</h1>
     </header>
 
-    <section id="actions">
+    <!-- Section actions masquée pour cette release -->
+    <section id="actions" class="hidden">
       <button id="btn-analyze" class="btn-primary">Analyser l'ecran</button>
       <button id="btn-war-ocr" class="btn-war">War OCR</button>
     </section>
@@ -25,10 +26,11 @@
       <button id="btn-manage" class="btn-small" title="Gérer les counters">⚔️<span>Counters</span></button>
       <button id="btn-detach" class="btn-small" title="Ouvrir dans une fenêtre permanente">🪟<span>Fenêtre</span></button>
       <button id="btn-notes" class="btn-small" title="Voir les notes de version">📋<span>Notes</span></button>
-      <button id="btn-export" class="btn-small" title="Exporter la config">💾<span>Export</span></button>
-      <button id="btn-import" class="btn-small" title="Importer une config">📂<span>Import</span></button>
+      <!-- Boutons masqués pour cette release -->
+      <button id="btn-export" class="btn-small hidden" title="Exporter la config">💾<span>Export</span></button>
+      <button id="btn-import" class="btn-small hidden" title="Importer une config">📂<span>Import</span></button>
       <button id="btn-api" class="btn-small" title="Configuration API">🔑<span>API</span></button>
-      <button id="btn-settings" class="btn-small" title="Synchronisation counters">🔄<span>Sync</span></button>
+      <button id="btn-settings" class="btn-small hidden" title="Synchronisation counters">🔄<span>Sync</span></button>
       <input type="file" id="import-file" accept=".json" class="hidden">
     </section>
 

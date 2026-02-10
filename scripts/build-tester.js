@@ -131,9 +131,17 @@ function main() {
   }
 
   try {
-    // Utiliser PowerShell pour creer le ZIP (Windows)
-    const cmd = `powershell -Command "Compress-Archive -Path '${OUTPUT}\\*' -DestinationPath '${zipPath}' -Force"`;
-    execSync(cmd, { stdio: "inherit" });
+    // Detecter l'OS et utiliser la bonne commande
+    const isWindows = process.platform === "win32";
+
+    if (isWindows) {
+      // Windows: PowerShell
+      const cmd = `powershell -Command "Compress-Archive -Path '${OUTPUT}\\*' -DestinationPath '${zipPath}' -Force"`;
+      execSync(cmd, { stdio: "inherit" });
+    } else {
+      // Linux/Mac: zip
+      execSync(`cd "${OUTPUT}" && zip -r "${zipPath}" .`, { stdio: "inherit" });
+    }
     console.log(`\n✓ ZIP cree: releases/msf-counter-tester.zip`);
   } catch (e) {
     console.error("\nErreur creation ZIP:", e.message);
