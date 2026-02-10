@@ -7,3 +7,4 @@ scripts/deploy-tester.ps1
 *.har
 DEPLOY.md
 RELEASE-READY.md
+.claude/settings.local.json
