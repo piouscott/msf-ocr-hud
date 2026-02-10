@@ -674,25 +674,36 @@ async function handleGetSquads() {
  * Récupère le roster complet du joueur (tous les personnages possédés)
  */
 async function handleGetRoster() {
-  const stored = await ext.storage.local.get(["msfApiToken", "msfTokenType"]);
+  const stored = await ext.storage.local.get(["msfApiToken", "msfTokenType", "msfRefreshToken"]);
 
   if (!stored.msfApiToken) {
     throw new Error("Token non disponible. Jouez sur la version web pour capturer le token.");
   }
 
-  // Seule l'API web (titan) supporte getPlayerRoster
-  if (stored.msfTokenType !== "titan") {
-    throw new Error("getPlayerRoster nécessite le x-titan-token (version web)");
+  let url, headers;
+
+  if (stored.msfTokenType === "titan") {
+    // API web avec x-titan-token
+    url = "https://api-prod.marvelstrikeforce.com/services/api/getPlayerRoster";
+    headers = {
+      "x-titan-token": stored.msfApiToken,
+      "x-app-version": "9.6.0-hp2",
+      "Accept": "application/json"
+    };
+    console.log("[BG] Appel API getPlayerRoster (titan)");
+  } else if (stored.msfTokenType === "oauth" || stored.msfRefreshToken) {
+    // Essayer avec l'API publique + OAuth Bearer
+    const token = await getValidToken();
+    url = "https://api.marvelstrikeforce.com/player/v1/roster";
+    headers = {
+      "x-api-key": MSF_OAUTH.apiKey,
+      "Authorization": `Bearer ${token}`,
+      "Accept": "application/json"
+    };
+    console.log("[BG] Appel API roster (OAuth)");
+  } else {
+    throw new Error(`Token type "${stored.msfTokenType || 'inconnu'}" non supporté. Jouez sur la version web.`);
   }
-
-  const url = "https://api-prod.marvelstrikeforce.com/services/api/getPlayerRoster";
-  const headers = {
-    "x-titan-token": stored.msfApiToken,
-    "x-app-version": "9.6.0-hp2",
-    "Accept": "application/json"
-  };
-
-  console.log("[BG] Appel API getPlayerRoster");
 
   const response = await fetch(url, { headers });
 
@@ -704,15 +715,28 @@ async function handleGetRoster() {
   }
 
   const data = await response.json();
-  console.log("[BG] Roster récupéré:", data.data?.length, "personnages");
+  console.log("[BG] Roster raw response:", JSON.stringify(data).substring(0, 500));
+
+  // L'API web retourne { data: [...] }, l'API OAuth peut retourner { data: { roster: [...] } }
+  let rosterData = data.data;
+  if (rosterData && rosterData.roster) {
+    rosterData = rosterData.roster;
+  }
+
+  if (!rosterData || !Array.isArray(rosterData)) {
+    console.error("[BG] Format roster inattendu:", data);
+    throw new Error("Format de réponse roster inattendu");
+  }
+
+  console.log("[BG] Roster récupéré:", rosterData.length, "personnages");
 
   // Extraire les IDs des personnages possédés
-  const characterIds = (data.data || []).map(c => c.id);
+  const characterIds = rosterData.map(c => c.id);
 
   return {
     success: true,
     roster: characterIds,
-    rosterFull: data.data, // Avec power, stars, etc.
+    rosterFull: rosterData, // Avec power, stars, etc.
     count: characterIds.length
   };
 }

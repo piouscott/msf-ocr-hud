@@ -663,13 +663,25 @@ function displayFarmingAdvisor() {
  */
 async function displayRosterFarming() {
   // Charger le roster complet depuis le storage
-  const stored = await storageGet("msfPlayerRosterFull");
+  const stored = await storageGet(["msfPlayerRosterFull", "msfTokenType"]);
   const rosterFull = stored.msfPlayerRosterFull;
+  const tokenType = stored.msfTokenType;
 
   if (!rosterFull || rosterFull.length === 0) {
+    // Diagnostic pour aider l'utilisateur
+    let hint = '';
+    if (tokenType === 'oauth') {
+      hint = `<br><small style="color:#ffd43b;">⚠️ Token OAuth détecté. Le roster complet nécessite le token web (x-titan-token).<br>Jouez sur la version web MSF pour capturer automatiquement ce token.</small>`;
+    } else if (!tokenType) {
+      hint = `<br><small>Aucun token détecté. Jouez sur la version web MSF.</small>`;
+    } else {
+      hint = `<br><small>Token "${tokenType}" détecté mais le roster n'a pas pu être récupéré.<br>Essayez de rejouer sur la version web pour rafraîchir le token.</small>`;
+    }
+
     return `<div class="farm-advisor-error">
-      Roster non disponible.<br>
-      Cliquez sur "API" puis "Récupérer Squads" pour charger votre roster avec les étoiles.
+      Roster avec étoiles non disponible.${hint}<br><br>
+      <strong>Solution:</strong> Ouvrez <a href="https://marvelstrikeforce.com/play" target="_blank" style="color:#4dabf7;">marvelstrikeforce.com/play</a>,
+      jouez quelques secondes, puis cliquez sur "Récupérer Squads".
     </div>`;
   }
 
@@ -3017,6 +3029,13 @@ if (btnGetSquads) {
       // Utiliser le roster complet si disponible, sinon fallback sur les squads
       let playerRosterIds;
       let playerRosterFull = null; // Avec étoiles, power, etc.
+
+      // Log l'erreur roster si présente
+      if (rosterResult.error) {
+        console.log("[Debug] Roster error:", rosterResult.error);
+        output.push(`\n⚠️ Roster complet: ${rosterResult.error}`);
+      }
+
       if (rosterResult.roster && rosterResult.roster.length > 0) {
         playerRosterIds = rosterResult.roster;
         playerRosterFull = rosterResult.rosterFull; // Données complètes avec stars
