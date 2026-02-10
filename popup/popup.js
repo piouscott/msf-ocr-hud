@@ -279,8 +279,25 @@ function toggleRosterFilter() {
 window.toggleRosterFilter = toggleRosterFilter;
 
 /**
+ * Vérifie si un personnage est farmable (pas un summon, existe, a un lieu de farm)
+ */
+function isCharacterFarmable(charId) {
+  // Vérifier le statut dans charactersData (doit être "playable")
+  const charInfo = charactersData?.characters?.[charId];
+  if (!charInfo) return false;
+  if (charInfo.status && charInfo.status !== "playable") return false;
+
+  // Vérifier s'il a un lieu de farm défini
+  const farmInfo = farmingData?.characters?.[charId];
+  if (!farmInfo || !farmInfo.locations || farmInfo.locations.length === 0) return false;
+
+  return true;
+}
+
+/**
  * Analyse les personnages à farmer en priorité
  * Calcule l'impact de chaque personnage manquant (combien de counters il débloque)
+ * Exclut: summons, personnages inconnus, personnages sans lieu de farm
  */
 function analyzeFarmingPriorities() {
   if (playerRoster.size === 0) {
@@ -298,11 +315,13 @@ function analyzeFarmingPriorities() {
       const team = teamsData.find(t => t.id === counterTeamId);
       if (!team || !team.memberIds) return;
 
-      // Calculer combien de membres manquent
-      const missing = team.memberIds.filter(charId => !playerRoster.has(charId));
+      // Calculer combien de membres manquent (seulement les farmables)
+      const missing = team.memberIds.filter(charId =>
+        !playerRoster.has(charId) && isCharacterFarmable(charId)
+      );
 
       if (missing.length === 0) {
-        // Équipe déjà complète, pas d'impact
+        // Équipe déjà complète ou membres manquants non farmables
         return;
       }
 
@@ -1158,13 +1177,10 @@ if (farmTabSearch && farmTabAdvisor) {
     // Afficher l'analyse
     farmAdvisorResults.innerHTML = '<div class="farm-advisor-loading">Analyse en cours...</div>';
 
-    // S'assurer que les données sont chargées
+    // S'assurer que les données sont chargées (teams, counters, roster, farming, characters)
     await loadTeamsAndCounters();
     await loadPlayerRoster();
-    if (!charactersData) {
-      const response = await fetch(ext.runtime.getURL("data/characters-full.json"));
-      charactersData = await response.json();
-    }
+    await loadFarmingData();
 
     farmAdvisorResults.innerHTML = displayFarmingAdvisor();
   });
