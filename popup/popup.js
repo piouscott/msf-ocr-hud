@@ -1,5 +1,23 @@
 const ext = typeof browser !== "undefined" ? browser : chrome;
 
+// Détecter si on est en mode fenêtré (pas dans le popup natif de l'extension)
+(async function detectWindowMode() {
+  try {
+    const currentWindow = await ext.windows.getCurrent();
+    // Si la fenêtre est de type "popup" créée par windows.create, on est en mode fenêtré
+    // Le popup natif de l'extension n'a pas de type "popup" accessible
+    if (currentWindow && currentWindow.type === "popup") {
+      document.body.classList.add("windowed");
+      // Cacher le bouton Fenêtre puisqu'on est déjà en fenêtre
+      const btnDetach = document.getElementById("btn-detach");
+      if (btnDetach) btnDetach.style.display = "none";
+    }
+  } catch (e) {
+    // Si on ne peut pas accéder à windows.getCurrent, on est probablement dans le popup natif
+    console.log("[Popup] Mode popup natif détecté");
+  }
+})();
+
 // Wrapper pour storage.local.get compatible Chrome/Firefox
 function storageGet(keys) {
   return new Promise((resolve) => {
@@ -870,8 +888,8 @@ btnDetach.addEventListener("click", async () => {
     await ext.windows.create({
       url: popupUrl,
       type: "popup",
-      width: 450,
-      height: 700,
+      width: 550,
+      height: 750,
       focused: true
     });
 
