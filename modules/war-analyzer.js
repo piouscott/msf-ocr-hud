@@ -631,10 +631,12 @@ class WarAnalyzer {
 
         // Crop: garder seulement les 70% du haut pour eviter le texte de puissance
         // qui s'affiche en bas du portrait dans le jeu
-        const cropTopPercent = 0.70;
+        // Pour les petites images (< 100px, ex: scan salle), pas de crop car deja croppes
+        const isSmall = img.height < 100;
+        const cropTopPercent = isSmall ? 1.0 : 0.70;
         const srcHeight = img.height * cropTopPercent;
 
-        console.log(`[WarAnalyzer] Taille source: ${img.width}x${img.height}, crop haut 70% = ${img.width}x${Math.round(srcHeight)}`);
+        console.log(`[WarAnalyzer] Taille source: ${img.width}x${img.height}, crop ${isSmall ? "desactive (petite image)" : "haut 70%"} = ${img.width}x${Math.round(srcHeight)}`);
         ctx.drawImage(img, 0, 0, img.width, srcHeight, 0, 0, size, size);
         const data = ctx.getImageData(0, 0, size, size);
         resolve(data);
@@ -686,7 +688,9 @@ class WarAnalyzer {
     canvas.height = 64;
     const ctx = canvas.getContext("2d");
 
-    const cropTopPercent = 0.70;
+    // Pour les petites images (scan salle ~93x76px), pas de crop vertical
+    const isSmall = img.height < 100;
+    const cropTopPercent = isSmall ? 1.0 : 0.70;
     const srcHeight = img.height * cropTopPercent;
 
     ctx.drawImage(img, 0, 0, img.width, srcHeight, 0, 0, 64, 64);
@@ -698,10 +702,32 @@ class WarAnalyzer {
     const hist = new Array(hueBins).fill(0);
     let totalWeight = 0;
 
+    // Pour les petites images (scan salle), appliquer un masque circulaire centre
+    // Le portrait du perso est dans un cercle au centre, les overlays UI sont aux bords
+    // (gear badge en haut-droite, power text en bas, etoiles en bas)
+    const useCircularMask = isSmall;
+    // Centre legerement au-dessus du milieu (le portrait est dans la moitie haute du crop)
+    const cx = 32, cy = isSmall ? 26 : 32;
+    const maxRadius = isSmall ? 22 : 32; // ~34% de l'image pour petit, 50% pour grand
+
     for (let i = 0; i < pixels.length; i += 4) {
+      // Masque circulaire : ignorer les pixels hors du cercle central
+      if (useCircularMask) {
+        const pixIdx = i / 4;
+        const px = pixIdx % 64;
+        const py = Math.floor(pixIdx / 64);
+        const dx = px - cx, dy = py - cy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist > maxRadius) continue;
+      }
+
       const { h, s, v } = this.rgbToHsv(pixels[i], pixels[i + 1], pixels[i + 2]);
 
-      if (s > 0.2 && v > 0.2) {
+      // Seuil plus bas pour petites images (plus de pixels utiles dans le cercle)
+      const minSat = isSmall ? 0.15 : 0.2;
+      const minVal = isSmall ? 0.15 : 0.2;
+
+      if (s > minSat && v > minVal) {
         const hueIdx = Math.min(Math.floor(h / 10), hueBins - 1);
         const weight = s * v;
         hist[hueIdx] += weight;
@@ -713,6 +739,10 @@ class WarAnalyzer {
       for (let i = 0; i < hueBins; i++) {
         hist[i] = hist[i] / totalWeight;
       }
+    }
+
+    if (isSmall) {
+      console.log(`[WarAnalyzer] Hue histogram (circular mask): ${totalWeight > 0 ? "OK" : "EMPTY"}, pixels utilises: ${Math.round(totalWeight * 100)}%`);
     }
 
     return hist;
@@ -765,13 +795,15 @@ class WarAnalyzer {
    * threshold: similarite minimale en % (defaut 90%)
    * minGap: ecart minimum avec le 2eme match (defaut 1.5%)
    */
-  findPortraitMatchByHue(captureHue, threshold = 90, minGap = 1.5) {
+  findPortraitMatchByHue(captureHue, threshold = 90, minGap = 1.5, useCircular = false) {
     const candidates = [];
 
     for (const [charId, data] of Object.entries(this.portraitsDb)) {
-      if (!data.hue) continue;
+      // Utiliser hueCircular si disponible et demande (petites images scan salle)
+      const refHue = (useCircular && data.hueCircular) ? data.hueCircular : data.hue;
+      if (!refHue) continue;
 
-      const sim = this.hueHistogramSimilarity(captureHue, data.hue);
+      const sim = this.hueHistogramSimilarity(captureHue, refHue);
       const simPercent = sim * 100;
 
       if (simPercent >= threshold) {
@@ -906,11 +938,17 @@ class WarAnalyzer {
         let match = null;
 
         // Methode principale: histogramme Hue (plus discriminant)
+        // Detecter si c'est une petite image (scan salle) pour adapter le matching
+        const tempImg = await this.loadImage(dataUrl);
+        const isSmallPortrait = tempImg.height < 100;
+        const hueThreshold = isSmallPortrait ? 75 : 90;
+
         if (hasHueHistograms) {
           const hueHist = await this.computeHueHistogram(dataUrl);
-          match = this.findPortraitMatchByHue(hueHist, 90, 1.5);
+          // Pour petites images: utiliser hueCircular de la DB (si disponible)
+          match = this.findPortraitMatchByHue(hueHist, hueThreshold, 1.5, isSmallPortrait);
           if (match) {
-            match.method = "hue";
+            match.method = isSmallPortrait ? "hue-circular" : "hue";
           }
         }
 

@@ -1,5 +1,15 @@
 const ext = typeof browser !== "undefined" ? browser : chrome;
 
+// Détecter si on est en mode fenêtré
+(async function detectWindowMode() {
+  try {
+    const currentWindow = await ext.windows.getCurrent();
+    if (currentWindow && currentWindow.type === "popup") {
+      document.body.classList.add("windowed");
+    }
+  } catch (e) {}
+})();
+
 // Wrapper pour storage.local.get compatible Chrome/Firefox
 function storageGet(keys) {
   return new Promise((resolve) => {
@@ -36,7 +46,8 @@ const i18n = {
     default: "Défaut",
     sync: "Sync",
     custom: "Perso",
-    notes: "Notes"
+    notes: "Notes",
+    bestOffensive: "Meilleures équipes offensives"
   },
   en: {
     title: "Manage Counters",
@@ -53,7 +64,8 @@ const i18n = {
     default: "Default",
     sync: "Sync",
     custom: "Custom",
-    notes: "Notes"
+    notes: "Notes",
+    bestOffensive: "Best offensive teams"
   }
 };
 
@@ -194,6 +206,7 @@ async function loadData() {
     mergeCounters();
 
     renderTeams();
+    renderOffensiveTeams();
     renderSourceLegend();
   } catch (e) {
     console.error("Erreur chargement:", e);
@@ -227,6 +240,92 @@ function mergeCounters() {
       counterSources[teamId] = "default";
     }
   }
+}
+
+/**
+ * Construit l'index inverse (attacker -> defenses) et affiche les meilleures équipes offensives
+ */
+function renderOffensiveTeams() {
+  const container = document.getElementById("offensive-content");
+  const accordion = document.getElementById("offensive-accordion");
+  const toggle = document.getElementById("offensive-toggle");
+  if (!container || !accordion || !toggle) return;
+
+  // Construire l'index inverse depuis mergedCounters
+  const inverse = {};
+  for (const [defenseId, attackers] of Object.entries(mergedCounters)) {
+    for (const counter of attackers) {
+      const attackerId = counter.team;
+      if (!inverse[attackerId]) inverse[attackerId] = [];
+      inverse[attackerId].push({
+        defenseId,
+        defenseName: getTeamName(teamsData.find(t => t.id === defenseId) || { name: defenseId }),
+        confidence: counter.confidence
+      });
+    }
+  }
+
+  // Trier chaque attaquant par confiance, puis trier par nombre de cibles
+  const offensiveTeams = Object.entries(inverse)
+    .map(([teamId, targets]) => {
+      targets.sort((a, b) => b.confidence - a.confidence);
+      const team = teamsData.find(t => t.id === teamId);
+      return {
+        teamId,
+        teamName: team ? getTeamName(team) : teamId,
+        targets,
+        targetCount: targets.length
+      };
+    })
+    .sort((a, b) => b.targetCount - a.targetCount)
+    .slice(0, 20);
+
+  if (offensiveTeams.length === 0) {
+    accordion.style.display = "none";
+    return;
+  }
+
+  let html = "";
+  offensiveTeams.forEach((team, idx) => {
+    html += `
+      <div class="offensive-team-card">
+        <div class="offensive-team-header">
+          <span class="offensive-team-name">${team.teamName}</span>
+          <span class="offensive-team-count">${t("counters") === "contres" ? "Bat" : "Beats"} ${team.targetCount} ${t("counters") === "contres" ? "équipes" : "teams"}</span>
+        </div>
+        <button class="offensive-toggle-btn" data-idx="${idx}">${t("counters") === "contres" ? "Voir cibles ▼" : "Show targets ▼"}</button>
+        <div class="offensive-targets" id="off-targets-${idx}">
+          ${team.targets.slice(0, 12).map(tgt => `
+            <div class="offensive-target">
+              <span>${tgt.defenseName}</span>
+              ${confidenceToSymbols(tgt.confidence)}
+            </div>
+          `).join("")}
+          ${team.targets.length > 12 ? `<div class="offensive-target" style="color:#888">+${team.targets.length - 12}</div>` : ""}
+        </div>
+      </div>`;
+  });
+
+  container.innerHTML = html;
+
+  // Toggle accordéon principal
+  toggle.addEventListener("click", () => {
+    accordion.classList.toggle("expanded");
+  });
+
+  // Toggles pour chaque équipe
+  container.querySelectorAll(".offensive-toggle-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const targets = document.getElementById(`off-targets-${btn.dataset.idx}`);
+      if (targets) {
+        targets.classList.toggle("show");
+        const isOpen = targets.classList.contains("show");
+        const showLabel = t("counters") === "contres" ? "Voir cibles" : "Show targets";
+        const hideLabel = t("counters") === "contres" ? "Masquer" : "Hide";
+        btn.textContent = isOpen ? `${hideLabel} ▲` : `${showLabel} ▼`;
+      }
+    });
+  });
 }
 
 /**
@@ -569,6 +668,7 @@ async function setLanguage(lang) {
   updateUILanguage();
   renderSourceLegend();
   renderTeams();
+  renderOffensiveTeams();
 }
 
 // Language button event listeners

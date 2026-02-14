@@ -148,6 +148,7 @@ async function computeHueHistogram(imageBuffer) {
   const canvas = createCanvas(64, 64);
   const ctx = canvas.getContext("2d");
 
+  // Crop 70% haut pour les grandes images (comme le runtime pour grandes images)
   const cropTopPercent = 0.70;
   const srcHeight = img.height * cropTopPercent;
 
@@ -163,7 +164,6 @@ async function computeHueHistogram(imageBuffer) {
   for (let i = 0; i < pixels.length; i += 4) {
     const { h, s, v } = rgbToHsv(pixels[i], pixels[i + 1], pixels[i + 2]);
 
-    // Ignorer les pixels trop sombres ou trop peu saturés
     if (s > 0.2 && v > 0.2) {
       const hueIdx = Math.min(Math.floor(h / 10), hueBins - 1);
       const weight = s * v;
@@ -172,7 +172,58 @@ async function computeHueHistogram(imageBuffer) {
     }
   }
 
-  // Normaliser
+  if (totalWeight > 0) {
+    for (let i = 0; i < hueBins; i++) {
+      hist[i] = Math.round((hist[i] / totalWeight) * 10000) / 10000;
+    }
+  }
+
+  return hist;
+}
+
+/**
+ * Calcule l'histogramme Hue avec masque circulaire centre
+ * Pour matcher les portraits captures dans la vue salle War
+ * Meme traitement que le runtime war-analyzer.js pour les petites images
+ */
+async function computeHueHistogramCircular(imageBuffer) {
+  const img = await loadImage(imageBuffer);
+
+  const canvas = createCanvas(64, 64);
+  const ctx = canvas.getContext("2d");
+
+  // Pas de crop vertical (comme le runtime pour petites images)
+  ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, 64, 64);
+
+  const imageData = ctx.getImageData(0, 0, 64, 64);
+  const pixels = imageData.data;
+
+  const hueBins = 36;
+  const hist = new Array(hueBins).fill(0);
+  let totalWeight = 0;
+
+  // Masque circulaire centre (memes params que war-analyzer.js)
+  const cx = 32, cy = 26;
+  const maxRadius = 22;
+
+  for (let i = 0; i < pixels.length; i += 4) {
+    const pixIdx = i / 4;
+    const px = pixIdx % 64;
+    const py = Math.floor(pixIdx / 64);
+    const dx = px - cx, dy = py - cy;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist > maxRadius) continue;
+
+    const { h, s, v } = rgbToHsv(pixels[i], pixels[i + 1], pixels[i + 2]);
+
+    if (s > 0.15 && v > 0.15) {
+      const hueIdx = Math.min(Math.floor(h / 10), hueBins - 1);
+      const weight = s * v;
+      hist[hueIdx] += weight;
+      totalWeight += weight;
+    }
+  }
+
   if (totalWeight > 0) {
     for (let i = 0; i < hueBins; i++) {
       hist[i] = Math.round((hist[i] / totalWeight) * 10000) / 10000;
@@ -240,15 +291,17 @@ async function main() {
       }
     }
 
-    // Calculer le hash et l'histogramme Hue
+    // Calculer le hash et les histogrammes Hue (standard + circulaire)
     try {
       const hash = await computePortraitHash(imageBuffer);
       const hueHist = await computeHueHistogram(imageBuffer);
+      const hueCircular = await computeHueHistogramCircular(imageBuffer);
 
       portraits[charId] = {
         name: name,
         hash: hash,
-        hue: hueHist
+        hue: hueHist,
+        hueCircular: hueCircular
       };
 
       // Index par hash pour lookup rapide

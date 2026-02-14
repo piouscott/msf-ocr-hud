@@ -129,6 +129,20 @@ ext.webRequest.onBeforeSendHeaders.addListener(
       console.log("[BG] Bearer token détecté sur:", details.url);
     }
 
+    // Auto-capturer x-app-version (change à chaque mise à jour du jeu)
+    const appVersionHeader = details.requestHeaders.find(
+      h => h.name.toLowerCase() === "x-app-version"
+    );
+    if (appVersionHeader && appVersionHeader.value) {
+      (async () => {
+        const stored = await ext.storage.local.get(["msfAppVersion"]);
+        if (stored.msfAppVersion !== appVersionHeader.value) {
+          await ext.storage.local.set({ msfAppVersion: appVersionHeader.value });
+          console.log("[BG] x-app-version capturé:", appVersionHeader.value);
+        }
+      })();
+    }
+
     if (tokenToSave) {
       // Sauvegarder le token (async dans un IIFE pour ne pas bloquer)
       (async () => {
@@ -375,6 +389,61 @@ ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
  * Récupère les events en cours via l'API MSF
  * Essaie d'abord /player/v1/events (avec progression), sinon /game/v1/events
  */
+/**
+ * Normalise un event milestone : extrait tiers, progress et ranges depuis brackets
+ * Convertit brackets[0].objective.tiers (objet indexé) en tableau trié
+ */
+function normalizeMilestoneEvent(event) {
+  if (event.type !== "milestone" || !event.milestone?.brackets?.length) return event;
+
+  const bracket = event.milestone.brackets[0];
+  const objective = bracket.objective;
+  if (!objective) return event;
+
+  // Convertir tiers objet indexé {"1": {goal, rewards}, ...} → tableau trié
+  if (objective.tiers && typeof objective.tiers === "object") {
+    event.milestone.tiers = Object.entries(objective.tiers)
+      .map(([num, data]) => ({
+        tierNum: parseInt(num),
+        endScore: data.goal || 0,
+        rewards: data.rewards
+          ? Object.entries(data.rewards).map(([itemId, val]) => ({
+              itemId,
+              quantity: typeof val === "object" ? (val.quantity || 0) : val,
+              bonusQuantity: typeof val === "object" ? (val.bonusQuantity || 0) : 0
+            }))
+          : [],
+        premiumRewards: data.premiumRewards || {}
+      }))
+      .sort((a, b) => a.tierNum - b.tierNum);
+  }
+
+  // Extraire la progression joueur (présente uniquement via /player/v1/events)
+  if (objective.progress) {
+    event.milestone.progress = {
+      points: objective.progress.points || 0,
+      completedTier: objective.progress.completedTier || 0,
+      goalTier: objective.progress.goalTier || 0,
+      goal: objective.progress.goal || 0,
+      claimableTiers: objective.progress.claimableTiers || [],
+      rank: objective.progress.rank || 0,
+      completionOffset: objective.progress.completionOffset || 0
+    };
+  }
+
+  // Extraire maxCompletions
+  if (objective.maxCompletions) {
+    event.milestone.maxCompletions = objective.maxCompletions;
+  }
+
+  // Extraire les ranges (rank/top rewards)
+  if (objective.ranges) {
+    event.milestone.ranges = objective.ranges;
+  }
+
+  return event;
+}
+
 async function handleGetEvents() {
   const token = await getValidToken();
   const authHeader = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
@@ -390,13 +459,15 @@ async function handleGetEvents() {
   console.log("[BG] Tentative /player/v1/events...");
 
   let response = await fetch(playerUrl, { headers });
+  let source = "player";
 
   if (response.ok) {
     const data = await response.json();
     console.log("[BG] Events joueur récupérés:", data);
+    const events = (data.data || data).map(normalizeMilestoneEvent);
     return {
       success: true,
-      events: data.data || data,
+      events,
       source: "player",
       raw: data
     };
@@ -420,10 +491,11 @@ async function handleGetEvents() {
 
   const data = await response.json();
   console.log("[BG] Events game récupérés:", data);
+  const events = (data.data || data).map(normalizeMilestoneEvent);
 
   return {
     success: true,
-    events: data.data || data,
+    events,
     source: "game",
     raw: data
   };
@@ -607,7 +679,7 @@ async function handleBarracksCommand(type) {
  * Récupère les squads du joueur via l'API MSF
  */
 async function handleGetSquads() {
-  const stored = await ext.storage.local.get(["msfApiToken", "msfTokenType"]);
+  const stored = await ext.storage.local.get(["msfApiToken", "msfTokenType", "msfAppVersion"]);
 
   if (!stored.msfApiToken) {
     throw new Error("Token non disponible. Jouez sur la version web pour capturer le token.");
@@ -615,13 +687,14 @@ async function handleGetSquads() {
 
   // Utiliser l'API appropriée selon le type de token
   let url, headers;
+  const appVersion = stored.msfAppVersion || "9.6.0-hp2";
 
   if (stored.msfTokenType === "titan") {
     // API web (api-prod) avec x-titan-token
     url = "https://api-prod.marvelstrikeforce.com/services/api/squads";
     headers = {
       "x-titan-token": stored.msfApiToken,
-      "x-app-version": "9.6.0-hp2",
+      "x-app-version": appVersion,
       "Accept": "application/json"
     };
   } else {
@@ -674,20 +747,21 @@ async function handleGetSquads() {
  * Récupère le roster complet du joueur (tous les personnages possédés)
  */
 async function handleGetRoster() {
-  const stored = await ext.storage.local.get(["msfApiToken", "msfTokenType", "msfRefreshToken"]);
+  const stored = await ext.storage.local.get(["msfApiToken", "msfTokenType", "msfRefreshToken", "msfAppVersion"]);
 
   if (!stored.msfApiToken) {
     throw new Error("Token non disponible. Jouez sur la version web pour capturer le token.");
   }
 
   let url, headers;
+  const appVersion = stored.msfAppVersion || "9.6.0-hp2";
 
   if (stored.msfTokenType === "titan") {
     // API web avec x-titan-token
     url = "https://api-prod.marvelstrikeforce.com/services/api/getPlayerRoster";
     headers = {
       "x-titan-token": stored.msfApiToken,
-      "x-app-version": "9.6.0-hp2",
+      "x-app-version": appVersion,
       "Accept": "application/json"
     };
     console.log("[BG] Appel API getPlayerRoster (titan)");

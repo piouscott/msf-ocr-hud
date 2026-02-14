@@ -7,37 +7,36 @@
   <style>
     body {
       width: 450px;
-      min-height: 400px;
+      min-height: 580px;
       max-width: 100vw;
     }
 
     /* Mode fenêtré: layout adaptatif */
-    @media (min-width: 500px) {
-      body {
-        width: 100%;
-        max-width: 800px;
-        margin: 0 auto;
-      }
-      #app {
-        max-height: none;
-        padding: 20px;
-      }
-      header h1 {
-        font-size: 24px;
-      }
-      .team-section {
-        padding: 16px;
-      }
-      .team-portraits {
-        gap: 4px;
-      }
-      .team-portrait-thumb {
-        width: 32px;
-        height: 32px;
-      }
+    body.windowed {
+      width: 100% !important;
+      max-width: 800px;
+      min-height: 100vh;
+      margin: 0 auto;
+    }
+    body.windowed #app {
+      max-height: none;
+      padding: 20px;
+    }
+    body.windowed header h1 {
+      font-size: 24px;
+    }
+    body.windowed .team-section {
+      padding: 16px;
+    }
+    body.windowed .team-portraits {
+      gap: 4px;
+    }
+    body.windowed .team-portrait-thumb {
+      width: 32px;
+      height: 32px;
     }
 
-    #app { max-height: 500px; overflow-y: auto; }
+    #app { max-height: calc(100vh - 20px); overflow-y: auto; }
 
     .back-link {
       display: inline-flex;
@@ -174,12 +173,11 @@
     }
 
     #save-bar {
-      position: sticky;
-      bottom: 0;
       background: #1a1a2e;
       padding: 12px 0;
       border-top: 1px solid #444;
       text-align: center;
+      margin-top: 12px;
     }
 
     #btn-save {
@@ -344,6 +342,96 @@
       border-color: #ff6b6b;
     }
 
+    /* Accordéon offensif */
+    .offensive-accordion {
+      background: #2d2d44;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      border-left: 3px solid #845ef7;
+      overflow: hidden;
+    }
+    .offensive-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      color: #845ef7;
+      user-select: none;
+      transition: background 0.2s;
+    }
+    .offensive-header:hover {
+      background: rgba(132, 94, 247, 0.1);
+    }
+    .offensive-arrow {
+      font-size: 12px;
+      color: #888;
+      transition: transform 0.3s;
+    }
+    .offensive-accordion.expanded .offensive-arrow {
+      transform: rotate(180deg);
+    }
+    .offensive-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    .offensive-accordion.expanded .offensive-content {
+      max-height: 2000px;
+    }
+    .offensive-team-card {
+      padding: 8px 14px;
+      border-top: 1px solid #3a3a55;
+    }
+    .offensive-team-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .offensive-team-name {
+      font-weight: 700;
+      font-size: 13px;
+      color: #fff;
+    }
+    .offensive-team-count {
+      font-size: 11px;
+      color: #845ef7;
+      font-weight: 600;
+    }
+    .offensive-targets {
+      display: none;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 6px;
+    }
+    .offensive-targets.show {
+      display: flex;
+    }
+    .offensive-target {
+      background: #1a1a2e;
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 11px;
+      color: #ccc;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .offensive-toggle-btn {
+      background: none;
+      border: none;
+      color: #888;
+      font-size: 11px;
+      cursor: pointer;
+      padding: 2px 0;
+    }
+    .offensive-toggle-btn:hover {
+      color: #00d4ff;
+    }
+
     .team-section.hidden {
       display: none;
     }
@@ -447,6 +535,17 @@
     <div class="search-bar">
       <input type="text" id="search-input" placeholder="Rechercher equipe ou personnage...">
       <button id="search-clear" class="btn-clear" title="Effacer">&times;</button>
+    </div>
+
+    <!-- Accordéon: Meilleures équipes offensives -->
+    <div id="offensive-accordion" class="offensive-accordion">
+      <div class="offensive-header" id="offensive-toggle">
+        <span>🗡️ <span data-i18n="bestOffensive">Meilleures équipes offensives</span></span>
+        <span class="offensive-arrow">▼</span>
+      </div>
+      <div id="offensive-content" class="offensive-content">
+        <!-- Généré par JS -->
+      </div>
     </div>
 
     <div id="teams-container">

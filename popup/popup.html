@@ -9,7 +9,46 @@
   <div id="app">
     <header>
       <h1>MSF Counter</h1>
+      <button id="btn-help" class="btn-help" title="Aide / Revoir l'introduction">?</button>
     </header>
+
+    <section id="welcome-banner" class="hidden">
+      <div class="wizard-progress">
+        <span class="wizard-dot active" data-step="1"></span>
+        <span class="wizard-dot" data-step="2"></span>
+        <span class="wizard-dot" data-step="3"></span>
+      </div>
+
+      <div class="wizard-step" data-step="1">
+        <div class="wizard-icon">&#9876;&#65039;</div>
+        <div class="wizard-title">Bienvenue sur MSF Counter !</div>
+        <div class="wizard-desc">Votre assistant pour Alliance War, Events et Raids.<br>Counters, progression, farming — tout en un clic.</div>
+      </div>
+
+      <div class="wizard-step hidden" data-step="2">
+        <div class="wizard-icon">&#128273;</div>
+        <div class="wizard-title">Connectez votre compte</div>
+        <div class="wizard-desc">Liez votre compte MSF pour acceder a vos Events, Raids et Roster en temps reel.</div>
+        <button id="wizard-connect" class="welcome-btn-connect">Se connecter avec MSF</button>
+        <div class="wizard-hint">Aucune donnee personnelle n'est stockee en dehors de votre navigateur.</div>
+      </div>
+
+      <div class="wizard-step hidden" data-step="3">
+        <div class="wizard-icon">&#127942;</div>
+        <div class="wizard-title">C'est parti !</div>
+        <div class="wizard-features">
+          <div class="wizard-feature"><span>&#9876;&#65039;</span> <strong>Counters</strong> — Trouvez le counter ideal</div>
+          <div class="wizard-feature"><span>&#128197;</span> <strong>Events</strong> — Suivez votre progression</div>
+          <div class="wizard-feature"><span>&#128128;</span> <strong>Raids</strong> — Infos et milestones</div>
+          <div class="wizard-feature"><span>&#127793;</span> <strong>Farm</strong> — Ou farmer vos persos</div>
+        </div>
+      </div>
+
+      <div class="wizard-nav">
+        <button id="wizard-skip" class="welcome-btn-dismiss">Passer</button>
+        <button id="wizard-next" class="welcome-btn-connect">Suivant</button>
+      </div>
+    </section>
 
     <section id="actions">
       <button id="btn-analyze" class="btn-primary">Analyser l'ecran</button>
@@ -37,19 +76,27 @@
         <button id="btn-close-api" class="btn-close">X</button>
       </div>
 
-      <!-- OAuth Login Section -->
+      <!-- Étape 1 : OAuth -->
+      <div class="api-step-label">Étape 1 — Connexion OAuth</div>
       <div class="oauth-section">
         <button id="btn-oauth-login" class="btn-oauth">🔐 Connexion OAuth MSF</button>
-        <div class="api-help">Connectez-vous pour accéder aux events et données avancées</div>
+        <div class="api-help">Accès aux events, roster et données avancées</div>
         <div id="oauth-status" class="oauth-status"></div>
       </div>
 
-      <div class="api-divider"><span>ou token manuel</span></div>
-
+      <!-- Étape 2 : Token web -->
+      <div class="api-step-label">Étape 2 — Token web (roster complet)</div>
       <div class="api-form">
         <label class="api-label">Bearer Token</label>
-        <input type="text" id="api-token" placeholder="Bearer xxxxx..." class="sync-input api-input">
-        <div class="api-help">Token d'authentification MSF (voir DevTools reseau)</div>
+        <div class="api-token-wrapper">
+          <input type="password" id="api-token" placeholder="Bearer xxxxx..." class="sync-input api-input">
+          <button type="button" id="btn-toggle-token" class="btn-toggle-token" title="Afficher/masquer le token">&#x1F441;</button>
+        </div>
+        <div class="api-help">
+          Ouvrez <a href="https://marvelstrikeforce.com/fr/web-playable" target="_blank" style="color:#00d4ff;">le player web MSF</a>,
+          appuyez sur <strong style="color:#fcc419;">F5</strong> pour recharger la page, puis jouez quelques secondes.
+          Le token sera capturé automatiquement.
+        </div>
       </div>
       <div class="api-actions">
         <button id="btn-save-api" class="btn-sync">Sauvegarder</button>
@@ -84,11 +131,6 @@
       <div id="events-error" class="events-error hidden"></div>
       <div id="events-list" class="events-list hidden"></div>
 
-      <!-- Section War Teams quand event Battle in War est actif -->
-      <div id="war-event-section" class="hidden">
-        <div class="events-section-title">Équipes offensives pour War</div>
-        <div id="war-teams-list" class="war-teams-list"></div>
-      </div>
     </section>
 
     <section id="raids-panel" class="hidden">
@@ -100,6 +142,10 @@
       <div id="raids-loading" class="events-loading">Chargement...</div>
       <div id="raids-error" class="events-error hidden"></div>
       <div id="raids-list" class="raids-list hidden"></div>
+      <div id="raid-teams-section" class="hidden">
+        <div class="events-section-title">Personnages / Équipes pour les Raids</div>
+        <div id="raid-teams-list" class="raid-teams-list"></div>
+      </div>
     </section>
 
     <section id="defense-panel" class="hidden">
@@ -107,8 +153,15 @@
         <span>Tester ma défense</span>
         <button id="btn-close-defense" class="btn-close">X</button>
       </div>
+      <div id="defense-war-squads" class="defense-war-squads hidden">
+        <div class="defense-section-title">
+          <span>Mes equipes War</span>
+          <button id="btn-refresh-squads" class="btn-refresh-squads" title="Rafraichir depuis le jeu">&#x1F504;</button>
+        </div>
+        <div id="defense-war-list" class="defense-war-list"></div>
+      </div>
       <div class="defense-form">
-        <label class="api-label">Équipe de défense</label>
+        <label class="api-label">Ou chercher une equipe</label>
         <select id="defense-team-select" class="team-selector defense-select">
           <option value="">-- Sélectionner une équipe --</option>
         </select>
@@ -153,6 +206,10 @@
       <div class="sync-header">
         <span>War - Analyse equipe</span>
         <button id="btn-close-war" class="btn-close">X</button>
+      </div>
+
+      <div class="api-actions" style="margin-bottom:8px;">
+        <button id="btn-war-scan-room" class="btn-sync">🏰 Scan Salle</button>
       </div>
 
       <!-- Onglets Mode -->

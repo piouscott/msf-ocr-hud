@@ -88,26 +88,47 @@
   <a href="popup/popup.html" class="btn-back">← Retour</a>
   <h1>MSF Counter - Notes de Version</h1>
 
-  <h2>Version Actuelle</h2>
+  <h2>Version 1.3</h2>
 
   <h3>Fonctionnalites Principales</h3>
 
   <div class="section">
-    <h4>Analyse d'ecran</h4>
+    <h4>Events &amp; Milestones</h4>
     <ul>
-      <li><strong>OCR automatique</strong> pour detecter les equipes ennemies</li>
-      <li><strong>Reconnaissance de portraits</strong> par comparaison de hash perceptuel</li>
-      <li><strong>Detection de puissance</strong> avec correction OCR</li>
+      <li><strong>Evenements en cours</strong> avec progression en temps reel</li>
+      <li><strong>Paliers milestone</strong> : visualisation des phases et recompenses</li>
+      <li><strong>Tracker de rythme</strong> : pts/h actuel vs requis, estimation du temps restant</li>
+      <li><strong>Calculateur d'actions</strong> : combien d'actions pour atteindre un palier</li>
+      <li><strong>Auto-exclusion</strong> des methodes de scoring indisponibles selon votre roster</li>
+      <li><strong>Milestones Raids</strong> : events lies aux Raids filtres separement</li>
     </ul>
   </div>
 
   <div class="section">
     <h4>War Mode</h4>
     <ul>
-      <li><strong>Scan Portrait</strong>: Capture et identification des 5 portraits d'une equipe</li>
-      <li><strong>Scan Barracks</strong>: Capture automatique depuis la vue casernes</li>
-      <li><strong>Saisie manuelle</strong>: Entrer les noms des personnages manuellement</li>
-      <li><strong>Calibration</strong>: Ajuster les zones de capture pour votre ecran</li>
+      <li><strong>Scan Portrait</strong> : capture et identification des 5 portraits d'une equipe</li>
+      <li><strong>Scan Barracks</strong> : capture automatique depuis la vue casernes</li>
+      <li><strong>Saisie manuelle</strong> : entrer les noms des personnages manuellement</li>
+      <li><strong>Calibration</strong> : ajuster les zones de capture pour votre ecran</li>
+      <li><strong>Historique</strong> : statistiques des combats War</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h4>Defense</h4>
+    <ul>
+      <li><strong>Tester ma defense</strong> : voir quelles equipes peuvent battre votre defense War</li>
+      <li><strong>Counters inverses</strong> : selectionnez une equipe et decouvrez ses faiblesses</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h4>Farm</h4>
+    <ul>
+      <li><strong>Recherche</strong> : trouver ou farmer un personnage (Campagne, Blitz, Arene, Raid, War)</li>
+      <li><strong>Conseiller Counters</strong> : personnages prioritaires a farmer pour vos counters</li>
+      <li><strong>Roster</strong> : liste de vos personnages avec etoiles et niveaux (necessite API)</li>
     </ul>
   </div>
 
@@ -123,11 +144,21 @@
   </div>
 
   <div class="section">
-    <h4>Synchronisation</h4>
+    <h4>Analyse d'ecran</h4>
+    <ul>
+      <li><strong>OCR automatique</strong> pour detecter les equipes ennemies</li>
+      <li><strong>Reconnaissance de portraits</strong> par comparaison de hash perceptuel</li>
+      <li><strong>Detection de puissance</strong> avec correction OCR</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h4>Synchronisation &amp; Donnees</h4>
     <ul>
       <li><strong>Import/Export</strong> de configuration</li>
       <li><strong>Sync distante</strong> depuis une URL externe</li>
-      <li><strong>Sources multiples</strong>: Default, Remote, Custom</li>
+      <li><strong>Connexion API</strong> : acces au roster, events et squads via OAuth ou token</li>
+      <li><strong>Capture automatique</strong> du token depuis le player web MSF</li>
     </ul>
   </div>
 
@@ -145,12 +176,43 @@
   <h2>Changelog</h2>
 
   <div class="section">
-    <span class="version-tag">v1.0.0</span>
+    <span class="version-tag">v1.3</span>
     <ul>
-      <li>Version complete avec toutes les fonctionnalites</li>
-      <li>OCR et reconnaissance de portraits</li>
-      <li>War mode avec scan barracks</li>
-      <li>Gestion complete des counters</li>
+      <li>Events : tracker de rythme et calculateur d'actions pour milestones</li>
+      <li>Events : auto-exclusion des methodes de scoring selon le roster</li>
+      <li>Farm : onglet Roster avec etoiles jaunes des personnages</li>
+      <li>Mode fenetre ameliore et popup agrandi</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <span class="version-tag">v1.2</span>
+    <ul>
+      <li>Panel Events avec progression joueur et milestones</li>
+      <li>Panel Raids dedie aux milestones de Raid</li>
+      <li>Panel Defense : tester sa defense War avec counters inverses</li>
+      <li>Panel Farm : recherche de lieux de farming, conseiller counters</li>
+      <li>Indicateurs de bonus d'event sur les counters War</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <span class="version-tag">v1.1</span>
+    <ul>
+      <li>Connexion OAuth MSF pour acces aux donnees joueur</li>
+      <li>Capture automatique du token depuis le player web</li>
+      <li>Recuperation des squads et du roster via API</li>
+      <li>Indicateurs de possession des personnages dans les counters</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <span class="version-tag">v1.0</span>
+    <ul>
+      <li>OCR et reconnaissance de portraits pour detection d'equipes</li>
+      <li>War mode : scan portraits, scan barracks, saisie manuelle</li>
+      <li>Gestion complete des counters avec recherche et portraits</li>
+      <li>Import/Export et synchronisation distante</li>
       <li>Mode fenetre detachee</li>
     </ul>
   </div>
@@ -169,15 +231,77 @@
     </ol>
   </div>
 
-  <h2>Configuration API (optionnel)</h2>
+  <h2>Connexion API</h2>
 
   <div class="section">
-    <p>Pour utiliser l'API MSF:</p>
+    <h4>A quoi ca sert ?</h4>
+    <p>La connexion API permet d'acceder a vos donnees de jeu directement dans l'extension :</p>
+    <ul>
+      <li><strong>Roster</strong> : vos personnages, leurs etoiles et niveaux</li>
+      <li><strong>Events</strong> : evenements en cours avec votre progression</li>
+      <li><strong>Squads</strong> : vos equipes de guerre</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h4>Comment se connecter ?</h4>
     <ol>
-      <li>Ouvrir le jeu dans le navigateur</li>
-      <li>Ouvrir DevTools &gt; Network</li>
-      <li>Copier le Bearer Token d'une requete</li>
-      <li>Coller dans l'extension &gt; API</li>
+      <li>Cliquez sur le bouton <strong>API</strong> dans l'extension</li>
+      <li>Cliquez sur <strong>"Se connecter avec MSF"</strong></li>
+      <li>Vous serez redirige vers le site officiel Marvel Strike Force</li>
+      <li>Connectez-vous avec votre compte Scopely</li>
+      <li>Autorisez l'acces quand c'est demande (voir les permissions ci-dessous)</li>
+      <li>Vous serez redirige automatiquement vers l'extension</li>
+    </ol>
+    <p style="color: #fcc419; font-size: 13px;">
+      Le token se renouvelle automatiquement. Si la connexion expire, recliquez sur "Se connecter".
+    </p>
+  </div>
+
+  <div class="section">
+    <h4>Permissions a autoriser</h4>
+    <p>Lors de la connexion OAuth, cochez les permissions suivantes :</p>
+    <div style="background: #1a1a2e; border-radius: 8px; padding: 16px; margin-top: 12px;">
+      <p style="color: #aaa; font-size: 13px; margin: 0 0 12px 0;">Joueur</p>
+      <div style="display: flex; align-items: center; gap: 10px; margin: 8px 0;">
+        <span style="color: #51cf66; font-size: 18px;">&#10004;</span>
+        <div><strong>Voir le profil</strong><br><span style="color: #aaa; font-size: 12px;">Pseudo, niveau, puissance totale</span></div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; margin: 8px 0;">
+        <span style="color: #51cf66; font-size: 18px;">&#10004;</span>
+        <div><strong>Voir l'effectif</strong><br><span style="color: #aaa; font-size: 12px;">Personnages, equipes enregistrees, favoris</span></div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; margin: 8px 0;">
+        <span style="color: #51cf66; font-size: 18px;">&#10004;</span>
+        <div><strong>Voir l'inventaire</strong><br><span style="color: #aaa; font-size: 12px;">Equipement, ressources</span></div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; margin: 8px 0;">
+        <span style="color: #51cf66; font-size: 18px;">&#10004;</span>
+        <div><strong>Voir l'activite de jeu</strong><br><span style="color: #aaa; font-size: 12px;">Avancee de campagne, avancee de phase</span></div>
+      </div>
+      <p style="color: #aaa; font-size: 13px; margin: 16px 0 12px 0; border-top: 1px solid #444; padding-top: 12px;">Alliance</p>
+      <div style="display: flex; align-items: center; gap: 10px; margin: 8px 0;">
+        <span style="color: #51cf66; font-size: 18px;">&#10004;</span>
+        <div><strong>Voir le profil d'alliance</strong><br><span style="color: #aaa; font-size: 12px;">Donnees, parametres, membres de l'alliance</span></div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; margin: 16px 0 0 0; border-top: 1px solid #444; padding-top: 12px;">
+        <span style="color: #51cf66; font-size: 18px;">&#10004;</span>
+        <div><strong>Acces persistant jusqu'a revocation</strong><br><span style="color: #aaa; font-size: 12px;">Desactive l'expiration automatique de l'acces</span></div>
+      </div>
+    </div>
+    <p style="color: #fcc419; font-size: 13px; margin-top: 12px;">
+      Cochez toutes les permissions pour un fonctionnement optimal. Aucune donnee n'est stockee en dehors de votre navigateur.
+    </p>
+  </div>
+
+  <div class="section">
+    <h4>Methode alternative (Token web)</h4>
+    <p>Pour des donnees plus completes (roster avec etoiles) :</p>
+    <ol>
+      <li>Ouvrez <a href="https://marvelstrikeforce.com/fr/web-playable" target="_blank" style="color: #00d4ff;">marvelstrikeforce.com/fr/web-playable</a> dans votre navigateur</li>
+      <li>Appuyez sur <strong>F5</strong> pour recharger la page (necessaire pour que le token soit capture)</li>
+      <li>Jouez quelques secondes, le token est capture automatiquement</li>
+      <li>Revenez dans l'extension, cliquez <strong>"Recuperer Squads"</strong></li>
     </ol>
   </div>
 

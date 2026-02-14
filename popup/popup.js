@@ -72,6 +72,16 @@ const apiStatus = document.getElementById("api-status");
 const apiAutoCapture = document.getElementById("api-auto-capture");
 const apiCaptureTime = document.getElementById("api-capture-time");
 
+// Toggle affichage token
+const btnToggleToken = document.getElementById("btn-toggle-token");
+if (btnToggleToken) {
+  btnToggleToken.addEventListener("click", () => {
+    const isHidden = apiToken.type === "password";
+    apiToken.type = isHidden ? "text" : "password";
+    btnToggleToken.textContent = isHidden ? "\u{1F648}" : "\u{1F441}";
+  });
+}
+
 // War panel elements
 const warPanel = document.getElementById("war-panel");
 const btnWarOcr = document.getElementById("btn-war-ocr");
@@ -102,10 +112,19 @@ const btnDefense = document.getElementById("btn-defense");
 const btnCloseDefense = document.getElementById("btn-close-defense");
 const defenseTeamSelect = document.getElementById("defense-team-select");
 const defenseCounters = document.getElementById("defense-counters");
+const defenseWarSquads = document.getElementById("defense-war-squads");
+const defenseWarList = document.getElementById("defense-war-list");
 
 // War event section elements
 const warEventSection = document.getElementById("war-event-section");
 const warTeamsList = document.getElementById("war-teams-list");
+
+// Wizard elements
+const welcomeBanner = document.getElementById("welcome-banner");
+const wizardNext = document.getElementById("wizard-next");
+const wizardSkip = document.getElementById("wizard-skip");
+const wizardConnectBtn = document.getElementById("wizard-connect");
+let wizardCurrentStep = 1;
 
 // Portraits captures pour le mode War
 let capturedWarPortraits = [null, null, null, null, null];
@@ -126,6 +145,83 @@ let capturedWarPortraits = [null, null, null, null, null];
     console.log("[Popup] Pas de portraits sauvegardes:", e);
   }
 })();
+
+// Verifier la connexion API au demarrage et afficher la banniere si necessaire
+(async function checkConnectionStatus() {
+  try {
+    const stored = await storageGet(["msfApiToken", "msfWelcomeDismissed"]);
+    if (!stored.msfApiToken && !stored.msfWelcomeDismissed) {
+      welcomeBanner.classList.remove("hidden");
+      btnApi.classList.add("needs-setup");
+    }
+  } catch (e) {
+    console.log("[Popup] Erreur check connexion:", e);
+  }
+})();
+
+// Wizard : navigation entre les etapes
+function wizardGoToStep(step) {
+  wizardCurrentStep = step;
+  const steps = welcomeBanner.querySelectorAll(".wizard-step");
+  const dots = welcomeBanner.querySelectorAll(".wizard-dot");
+
+  steps.forEach(s => {
+    const sStep = parseInt(s.dataset.step);
+    s.classList.toggle("hidden", sStep !== step);
+  });
+
+  dots.forEach(d => {
+    const dStep = parseInt(d.dataset.step);
+    d.classList.toggle("active", dStep === step);
+    d.classList.toggle("done", dStep < step);
+  });
+
+  // Dernier step : bouton "Suivant" → "C'est parti !"
+  if (step === 3) {
+    wizardNext.textContent = "C'est parti !";
+  } else {
+    wizardNext.textContent = "Suivant";
+  }
+}
+
+// Wizard : bouton "Suivant"
+wizardNext.addEventListener("click", async () => {
+  if (wizardCurrentStep < 3) {
+    wizardGoToStep(wizardCurrentStep + 1);
+  } else {
+    // Dernier step : fermer le wizard
+    welcomeBanner.classList.add("hidden");
+    btnApi.classList.remove("needs-setup");
+    await storageSet({ msfWelcomeDismissed: true });
+  }
+});
+
+// Wizard : bouton "Passer"
+wizardSkip.addEventListener("click", async () => {
+  welcomeBanner.classList.add("hidden");
+  btnApi.classList.remove("needs-setup");
+  await storageSet({ msfWelcomeDismissed: true });
+});
+
+// Wizard : bouton "Se connecter avec MSF" (step 2)
+wizardConnectBtn.addEventListener("click", () => {
+  welcomeBanner.classList.add("hidden");
+  apiPanel.classList.remove("hidden");
+  btnApi.classList.remove("needs-setup");
+});
+
+// Bouton "?" : réafficher le wizard
+document.getElementById("btn-help").addEventListener("click", () => {
+  wizardGoToStep(1);
+  welcomeBanner.classList.remove("hidden");
+});
+
+// Event delegation pour les boutons "Connecter mon compte" dans les etats vides
+document.addEventListener("click", (e) => {
+  if (e.target.classList.contains("btn-open-api")) {
+    apiPanel.classList.remove("hidden");
+  }
+});
 
 // API Key constante (ne change pas)
 const MSF_API_KEY = "17wMKJLRxy3pYDCKG5ciP7VSU45OVumB2biCzzgw";
@@ -178,7 +274,8 @@ async function extractEventBonusCharacters() {
 
     // Créer un map des noms de personnages (en majuscules) vers leurs IDs
     const nameToId = {};
-    Object.entries(charsData).forEach(([id, char]) => {
+    const charsMap = charsData.characters || charsData;
+    Object.entries(charsMap).forEach(([id, char]) => {
       if (char.name) {
         nameToId[char.name.toUpperCase()] = id;
       }
@@ -228,6 +325,115 @@ async function extractEventBonusCharacters() {
     }
   } catch (e) {
     console.error("[Events] Erreur extraction bonus characters:", e);
+  }
+}
+
+/**
+ * Extrait les personnages/équipes requis pour les raids depuis les scoring des events milestones
+ * Retourne un tableau de { charName, requiredStars, eventName, points, description, mode }
+ */
+async function extractRaidTeamsFromEvents(eventsData) {
+  try {
+    let allEvents = eventsData;
+    if (!allEvents) {
+      const cached = await storageGet("msfEventsCache");
+      if (!cached.msfEventsCache) return [];
+      allEvents = cached.msfEventsCache;
+    }
+
+    const now = Date.now() / 1000;
+    const activeEvents = allEvents.filter(e => e.endTime > now && e.startTime < now);
+
+    // Pattern 1 : "Play Raids with [Name]" / "Raid with [Name]" (+ optionnel "at N Yellow Stars" ou "at Gear Tier N")
+    const raidWithPattern = /(?:play\s+)?raids?\s+with\s+(.+?)(?:\s+at\s+(?:(\d+)\s+yellow\s+stars?|gear[- ]tier\s+\d+))?$/i;
+    // Pattern 2 : "Use [Trait] characters in Raid"
+    const raidUsePattern = /use\s+(.+?)\s+characters?\s+in\s+raid/i;
+    // Pattern 3 : "Battle in Raid with [Name]" (au cas où)
+    const raidBattlePattern = /battle\s+in\s+(?:[\w\s]+?\s+or\s+)?raid(?:\s+or\s+[\w]+)?\s+with\s+(.+?)(?:\s+at\s+(\d+)\s+yellow\s+stars?)?$/i;
+
+    const raidTeams = [];
+
+    activeEvents.forEach(event => {
+      if (event.type !== "milestone" || !event.milestone?.scoring) return;
+
+      const scoring = event.milestone.scoring;
+
+      // Construire les méthodes avec leur cap parent et progression (soFar)
+      const allMethods = [];
+      (scoring.methods || []).forEach(m => {
+        allMethods.push({ ...m, _cap: null, _capSoFar: null });
+      });
+      (scoring.cappedScorings || []).forEach(cs => {
+        (cs.methods || []).forEach(m => {
+          allMethods.push({
+            ...m,
+            _cap: cs.cap || null,
+            _capSoFar: cs.soFar ?? null
+          });
+        });
+      });
+
+      allMethods.forEach(method => {
+        if (!method.description) return;
+        const desc = method.description;
+
+        // Vérifier que c'est raid-related
+        if (!/raid/i.test(desc)) return;
+
+        let charName = null;
+        let requiredStars = 0;
+
+        // Essayer pattern 1 : "Play Raids with X"
+        let match = raidWithPattern.exec(desc);
+        if (!match) match = raidBattlePattern.exec(desc);
+
+        if (match) {
+          charName = match[1].trim();
+          requiredStars = match[2] ? parseInt(match[2]) : 0;
+        }
+
+        // Essayer pattern 2 : "Use X characters in Raid"
+        if (!charName) {
+          const useMatch = raidUsePattern.exec(desc);
+          if (useMatch) {
+            charName = useMatch[1].trim();
+          }
+        }
+
+        if (!charName) return;
+
+        // Détecter condition Gear Tier
+        let gearTier = 0;
+        const gearMatch = desc.match(/gear[- ]tier\s+(\d+)/i);
+        if (gearMatch) gearTier = parseInt(gearMatch[1]);
+
+        // Éviter les doublons (même perso, même event) - garder uniquement le plus accessible
+        // (sans condition > avec étoiles > avec gear tier)
+        const existing = raidTeams.find(r =>
+          r.charName.toUpperCase() === charName.toUpperCase() && r.eventName === event.name
+        );
+        if (existing) {
+          // Ajouter les points si condition différente
+          if (requiredStars > 0 || gearTier > 0) return; // ignorer les variantes plus restrictives
+        }
+
+        raidTeams.push({
+          charName,
+          requiredStars,
+          gearTier,
+          eventName: event.name,
+          points: method.points,
+          description: desc,
+          cap: method._cap,
+          soFar: method._capSoFar
+        });
+      });
+    });
+
+    return raidTeams;
+  } catch (e) {
+    console.error("[Raids] Erreur extraction teams raid:", e);
+    return [];
   }
 }
 
@@ -688,18 +894,23 @@ async function displayRosterFarming() {
   if (!rosterFull || rosterFull.length === 0) {
     // Diagnostic pour aider l'utilisateur
     let hint = '';
+    let showFetchBtn = false;
     if (tokenType === 'oauth') {
       hint = `<br><small style="color:#ffd43b;">⚠️ Token OAuth détecté. Le roster complet nécessite le token web (x-titan-token).<br>Jouez sur la version web MSF pour capturer automatiquement ce token.</small>`;
     } else if (!tokenType) {
       hint = `<br><small>Aucun token détecté. Jouez sur la version web MSF.</small>`;
     } else {
-      hint = `<br><small>Token "${tokenType}" détecté mais le roster n'a pas pu être récupéré.<br>Essayez de rejouer sur la version web pour rafraîchir le token.</small>`;
+      hint = `<br><small>Token détecté — tentez de récupérer vos données.</small>`;
+      showFetchBtn = true;
     }
 
-    return `<div class="farm-advisor-error">
-      Roster avec étoiles non disponible.${hint}<br><br>
-      <strong>Solution:</strong> Ouvrez <a href="https://marvelstrikeforce.com/play" target="_blank" style="color:#4dabf7;">marvelstrikeforce.com/play</a>,
-      jouez quelques secondes, puis cliquez sur "Récupérer Squads".
+    const fetchBtnHtml = showFetchBtn
+      ? `<button class="btn-fetch-roster" style="background:#00d4ff;color:#1a1a2e;border:none;border-radius:6px;padding:8px 16px;font-weight:600;cursor:pointer;margin-top:6px;">Recuperer mes equipes</button>`
+      : `<button class="btn-open-api">Connecter mon compte</button>`;
+
+    return `<div class="empty-state-cta" data-has-fetch="${showFetchBtn}">
+      <p>Roster non disponible.${hint}</p>
+      ${fetchBtnHtml}
     </div>`;
   }
 
@@ -915,8 +1126,10 @@ btnNotes.addEventListener("click", () => {
 // ============================================
 
 btnEvents.addEventListener("click", async () => {
-  eventsPanel.classList.toggle("hidden");
-  if (!eventsPanel.classList.contains("hidden")) {
+  const wasHidden = eventsPanel.classList.contains("hidden");
+  eventsPanel.classList.remove("hidden");
+  eventsPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (wasHidden) {
     await loadEvents();
   }
 });
@@ -935,10 +1148,14 @@ const btnCloseRaids = document.getElementById("btn-close-raids");
 const raidsLoading = document.getElementById("raids-loading");
 const raidsError = document.getElementById("raids-error");
 const raidsList = document.getElementById("raids-list");
+const raidTeamsSection = document.getElementById("raid-teams-section");
+const raidTeamsList = document.getElementById("raid-teams-list");
 
 btnRaids.addEventListener("click", async () => {
-  raidsPanel.classList.toggle("hidden");
-  if (!raidsPanel.classList.contains("hidden")) {
+  const wasHidden = raidsPanel.classList.contains("hidden");
+  raidsPanel.classList.remove("hidden");
+  raidsPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (wasHidden) {
     await loadRaids();
   }
 });
@@ -952,9 +1169,10 @@ btnCloseRaids.addEventListener("click", () => {
 // ============================================
 
 btnDefense.addEventListener("click", async () => {
-  defensePanel.classList.toggle("hidden");
-
-  if (!defensePanel.classList.contains("hidden")) {
+  const wasHidden = defensePanel.classList.contains("hidden");
+  defensePanel.classList.remove("hidden");
+  defensePanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (wasHidden) {
     await loadDefensePanel();
   }
 });
@@ -963,36 +1181,40 @@ btnCloseDefense.addEventListener("click", () => {
   defensePanel.classList.add("hidden");
 });
 
-async function loadDefensePanel() {
-  try {
-    if (!inverseCounters) {
-      inverseCounters = new InverseCounters();
-      await inverseCounters.init();
+/**
+ * Matche un squad (array de charIds) avec la meilleure equipe connue
+ */
+function matchSquadToTeam(charIds, teams) {
+  if (!charIds || charIds.length < 3) return null;
+
+  const normalized = charIds.filter(id => id).map(id => id.toUpperCase());
+  let bestTeam = null;
+  let bestCount = 0;
+
+  for (const team of teams) {
+    if (!team.memberIds) continue;
+    const memberUpper = team.memberIds.map(id => id.toUpperCase());
+    const matchCount = normalized.filter(id => memberUpper.includes(id)).length;
+    if (matchCount > bestCount) {
+      bestCount = matchCount;
+      bestTeam = team;
     }
-
-    // Remplir le select avec les équipes de défense
-    const defenseTeams = inverseCounters.getAllDefenseTeams();
-
-    defenseTeamSelect.innerHTML = '<option value="">-- Sélectionner une équipe --</option>';
-    defenseTeams.forEach(team => {
-      const option = document.createElement("option");
-      option.value = team.teamId;
-      option.textContent = `${team.teamName} (${team.counterCount} counters)`;
-      defenseTeamSelect.appendChild(option);
-    });
-
-    defenseCounters.classList.add("hidden");
-    defenseCounters.innerHTML = "";
-
-  } catch (e) {
-    console.error("[Defense] Erreur chargement:", e);
   }
+
+  if (bestCount < 3) return null;
+
+  return {
+    team: bestTeam,
+    matchCount: bestCount,
+    confidence: Math.round((bestCount / Math.min(5, normalized.length)) * 100)
+  };
 }
 
-defenseTeamSelect.addEventListener("change", () => {
-  const teamId = defenseTeamSelect.value;
-
-  if (!teamId) {
+/**
+ * Affiche les counters pour un teamId donne (reutilise par cards et dropdown)
+ */
+function showDefenseCounters(teamId) {
+  if (!teamId || !inverseCounters) {
     defenseCounters.classList.add("hidden");
     return;
   }
@@ -1000,7 +1222,7 @@ defenseTeamSelect.addEventListener("change", () => {
   const counters = inverseCounters.getCountersFor(teamId);
 
   if (counters.length === 0) {
-    defenseCounters.innerHTML = '<div class="no-counters">Aucun counter connu pour cette équipe</div>';
+    defenseCounters.innerHTML = '<div class="no-counters">Aucun counter connu pour cette equipe</div>';
   } else {
     defenseCounters.innerHTML = counters.map(c => `
       <div class="defense-counter-item">
@@ -1012,6 +1234,238 @@ defenseTeamSelect.addEventListener("change", () => {
   }
 
   defenseCounters.classList.remove("hidden");
+}
+
+async function loadDefensePanel() {
+  try {
+    if (!inverseCounters) {
+      inverseCounters = new InverseCounters();
+      await inverseCounters.init();
+    }
+
+    // Charger les portraits si pas encore fait
+    if (!charactersData) {
+      try {
+        const response = await fetch(ext.runtime.getURL("data/characters-full.json"));
+        charactersData = await response.json();
+      } catch (e) { /* ignore */ }
+    }
+
+    // Remplir le select avec les equipes de defense
+    const defenseTeams = inverseCounters.getAllDefenseTeams();
+
+    defenseTeamSelect.innerHTML = '<option value="">-- Selectionner une equipe --</option>';
+    defenseTeams.forEach(team => {
+      const option = document.createElement("option");
+      option.value = team.teamId;
+      option.textContent = `${team.teamName} (${team.counterCount} counters)`;
+      defenseTeamSelect.appendChild(option);
+    });
+
+    defenseCounters.classList.add("hidden");
+    defenseCounters.innerHTML = "";
+
+    // Charger les War squads du joueur + tags defense
+    const stored = await storageGet(["msfWarSquads", "msfPlayerRosterFull", "msfDefenseTagged"]);
+    defenseWarSquads.classList.remove("hidden");
+
+    if (stored.msfWarSquads && stored.msfWarSquads.length > 0) {
+      renderWarSquadCards(stored.msfWarSquads, stored.msfPlayerRosterFull, stored.msfDefenseTagged || []);
+    } else {
+      // Pas de squads : afficher bouton pour recuperer
+      defenseWarList.innerHTML = `
+        <div class="empty-state-cta" style="text-align:center;padding:12px;">
+          <p style="font-size:12px;color:#888;margin-bottom:8px;">Aucune equipe War chargee</p>
+          <button class="btn-fetch-squads" style="background:#00d4ff;color:#1a1a2e;border:none;border-radius:6px;padding:8px 16px;font-weight:600;cursor:pointer;">Recuperer mes equipes</button>
+        </div>`;
+      defenseWarList.querySelector(".btn-fetch-squads").addEventListener("click", () => refreshDefenseSquads());
+    }
+
+    // Bouton refresh toujours disponible dans le titre
+    const btnRefresh = document.getElementById("btn-refresh-squads");
+    if (btnRefresh) {
+      btnRefresh.addEventListener("click", () => refreshDefenseSquads());
+    }
+
+  } catch (e) {
+    console.error("[Defense] Erreur chargement:", e);
+  }
+}
+
+/**
+ * Rafraichit les War squads depuis l'API
+ */
+async function refreshDefenseSquads() {
+  const btnRefresh = document.getElementById("btn-refresh-squads");
+  if (btnRefresh) btnRefresh.classList.add("loading");
+
+  try {
+    const result = await fetchSquadsAndRoster();
+    // Recharger les tags existants
+    const tagStored = await storageGet(["msfDefenseTagged"]);
+
+    if (result.tabs.war.length > 0) {
+      renderWarSquadCards(result.tabs.war, result.playerRosterFull, tagStored.msfDefenseTagged || []);
+    } else {
+      defenseWarList.innerHTML = '<div style="text-align:center;padding:12px;font-size:12px;color:#888;">Aucune equipe War sauvegardee dans le jeu</div>';
+    }
+  } catch (err) {
+    console.error("[Defense] Refresh error:", err);
+    // Afficher erreur temporaire
+    const existing = defenseWarList.innerHTML;
+    const errorDiv = document.createElement("div");
+    errorDiv.style.cssText = "text-align:center;padding:6px;font-size:11px;color:#ff6b6b;";
+    errorDiv.textContent = "Erreur de connexion — verifiez votre token";
+    defenseWarList.prepend(errorDiv);
+    setTimeout(() => errorDiv.remove(), 4000);
+  } finally {
+    if (btnRefresh) btnRefresh.classList.remove("loading");
+  }
+}
+
+/**
+ * Affiche les cartes des War squads du joueur
+ */
+let currentDefenseTagged = [];
+
+function renderWarSquadCards(warSquads, rosterFull, defenseTagged) {
+  const teams = inverseCounters.teams || [];
+  const chars = charactersData?.characters || {};
+  currentDefenseTagged = defenseTagged || [];
+
+  // Index roster par ID pour lookup rapide de la puissance
+  const rosterMap = {};
+  if (rosterFull) {
+    rosterFull.forEach(c => {
+      rosterMap[c.id?.toUpperCase() || ""] = c;
+    });
+  }
+
+  let html = "";
+
+  warSquads.forEach((squad, idx) => {
+    if (!squad || squad.length === 0) return;
+
+    const validMembers = squad.filter(id => id);
+    const match = matchSquadToTeam(validMembers, teams);
+
+    const teamName = match ? match.team.name : validMembers.slice(0, 3).map(id => {
+      const c = chars[id];
+      return c ? c.name : id;
+    }).join(", ") + "...";
+
+    const teamId = match ? match.team.id : null;
+    const matchLabel = match ? `${match.matchCount}/5` : "";
+    const isDefense = currentDefenseTagged.includes(idx);
+
+    // Calculer puissance totale
+    let totalPower = 0;
+    validMembers.forEach(id => {
+      const r = rosterMap[id?.toUpperCase() || ""];
+      if (r && r.power) totalPower += r.power;
+    });
+
+    // Portraits des membres
+    let membersHtml = "";
+    validMembers.forEach(id => {
+      const charData = chars[id];
+      const portrait = charData?.portrait || "";
+      if (portrait) {
+        membersHtml += `<div class="defense-war-card-member" style="background-image:url('${portrait}')"></div>`;
+      } else {
+        membersHtml += `<div class="defense-war-card-member"></div>`;
+      }
+    });
+
+    const counterCount = teamId ? (inverseCounters.getCountersFor(teamId)?.length || 0) : 0;
+
+    html += `
+      <div class="defense-war-card${isDefense ? " tagged-defense" : ""}" data-team-id="${teamId || ""}" data-index="${idx}">
+        <div class="defense-war-card-header">
+          <span class="defense-war-card-name">${teamName}</span>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span class="defense-war-card-power">${totalPower > 0 ? Math.round(totalPower / 1000) + "k" : ""}</span>
+            <button class="defense-tag-btn${isDefense ? " tagged" : ""}" data-index="${idx}" title="Marquer en defense">&#x1F6E1;</button>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="defense-war-card-members">${membersHtml}</div>
+          <span class="defense-war-card-confidence">${isDefense ? "EN DEFENSE" : (counterCount > 0 ? counterCount + " counters" : matchLabel)}</span>
+        </div>
+      </div>`;
+  });
+
+  defenseWarList.innerHTML = html;
+
+  // Click handlers sur les cartes (pour voir les counters)
+  defenseWarList.querySelectorAll(".defense-war-card").forEach(card => {
+    card.addEventListener("click", (e) => {
+      // Ignorer si on clique sur le bouton tag
+      if (e.target.closest(".defense-tag-btn")) return;
+
+      const teamId = card.dataset.teamId;
+      if (!teamId) return;
+
+      // Activer la carte, desactiver les autres
+      defenseWarList.querySelectorAll(".defense-war-card").forEach(c => c.classList.remove("active"));
+      card.classList.add("active");
+
+      // Synchroniser le dropdown
+      defenseTeamSelect.value = teamId;
+
+      // Afficher les counters
+      showDefenseCounters(teamId);
+    });
+  });
+
+  // Click handlers sur les boutons tag defense
+  defenseWarList.querySelectorAll(".defense-tag-btn").forEach(btn => {
+    btn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const idx = parseInt(btn.dataset.index);
+      const tagIndex = currentDefenseTagged.indexOf(idx);
+
+      if (tagIndex >= 0) {
+        currentDefenseTagged.splice(tagIndex, 1);
+      } else {
+        currentDefenseTagged.push(idx);
+      }
+
+      // Sauvegarder
+      await storageSet({ msfDefenseTagged: currentDefenseTagged });
+
+      // Mettre a jour visuellement la carte
+      const card = btn.closest(".defense-war-card");
+      const confSpan = card.querySelector(".defense-war-card-confidence");
+
+      if (currentDefenseTagged.includes(idx)) {
+        card.classList.add("tagged-defense");
+        btn.classList.add("tagged");
+        confSpan.textContent = "EN DEFENSE";
+      } else {
+        card.classList.remove("tagged-defense");
+        btn.classList.remove("tagged");
+        const teamId = card.dataset.teamId;
+        const count = teamId ? (inverseCounters.getCountersFor(teamId)?.length || 0) : 0;
+        confSpan.textContent = count > 0 ? count + " counters" : "";
+      }
+    });
+  });
+}
+
+defenseTeamSelect.addEventListener("change", () => {
+  const teamId = defenseTeamSelect.value;
+
+  // Desactiver les cartes actives
+  defenseWarList.querySelectorAll(".defense-war-card.active").forEach(c => c.classList.remove("active"));
+
+  // Activer la carte correspondante si elle existe
+  if (teamId) {
+    const matchingCard = defenseWarList.querySelector(`.defense-war-card[data-team-id="${teamId}"]`);
+    if (matchingCard) matchingCard.classList.add("active");
+  }
+
+  showDefenseCounters(teamId);
 });
 
 // ============================================
@@ -1029,9 +1483,10 @@ let charactersData = null;
 let currentFarmFilter = "all";
 
 btnFarm.addEventListener("click", async () => {
-  farmPanel.classList.toggle("hidden");
-
-  if (!farmPanel.classList.contains("hidden")) {
+  const wasHidden = farmPanel.classList.contains("hidden");
+  farmPanel.classList.remove("hidden");
+  farmPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (wasHidden) {
     await loadFarmingData();
   }
 });
@@ -1064,8 +1519,10 @@ function renderFarmResults() {
   let results = [];
 
   for (const [charId, charData] of Object.entries(farmingData.characters)) {
-    // Get character info from characters-full.json
-    const charInfo = charactersData.characters[charId] || { name: charId, portrait: null };
+    // Get character info from characters-full.json (fallback: clé sans tirets pour matcher PascalCase)
+    const charInfo = charactersData.characters[charId]
+      || charactersData.characters[charId.replace(/-/g, '')]
+      || { name: charId, portrait: null };
 
     // Filter by search term
     if (searchTerm && !charInfo.name.toLowerCase().includes(searchTerm)) {
@@ -1339,6 +1796,30 @@ if (farmTabSearch && farmTabAdvisor) {
       await loadFarmingData();
 
       farmRosterResults.innerHTML = await displayRosterFarming();
+
+      // Attacher le handler du bouton "Recuperer mes equipes" si present
+      const fetchRosterBtn = farmRosterResults.querySelector(".btn-fetch-roster");
+      if (fetchRosterBtn) {
+        fetchRosterBtn.addEventListener("click", async (e) => {
+          const btn = e.target;
+          btn.textContent = "Chargement...";
+          btn.disabled = true;
+          try {
+            await fetchSquadsAndRoster();
+            // Recharger l'affichage du roster
+            farmRosterResults.innerHTML = await displayRosterFarming();
+            // Rattacher le handler si toujours en etat vide
+            const newFetchBtn = farmRosterResults.querySelector(".btn-fetch-roster");
+            if (newFetchBtn) {
+              newFetchBtn.textContent = "Aucune donnee - Reessayer";
+            }
+          } catch (err) {
+            btn.textContent = "Erreur - Reessayer";
+            btn.disabled = false;
+            console.error("[Roster] Fetch error:", err);
+          }
+        });
+      }
     });
   }
 }
@@ -1347,7 +1828,6 @@ async function loadEvents() {
   eventsLoading.classList.remove("hidden");
   eventsError.classList.add("hidden");
   eventsList.classList.add("hidden");
-  warEventSection.classList.add("hidden");
 
   // Charger les alertes sauvegardées
   await loadEventAlerts();
@@ -1388,7 +1868,7 @@ async function loadEvents() {
       await extractEventBonusCharacters();
     } else {
       eventsLoading.classList.add("hidden");
-      eventsError.textContent = "Pas de connexion et aucun cache disponible";
+      eventsError.innerHTML = '<div class="empty-state-cta"><p>Pas de donnees disponibles.</p><button class="btn-open-api">Connecter mon compte</button></div>';
       eventsError.classList.remove("hidden");
       return;
     }
@@ -1401,9 +1881,10 @@ async function loadEvents() {
 
   // Séparer par type
   const blitzEvents = activeEvents.filter(e => e.type === "blitz");
-  // Milestones uniquement (les raids sont dans le panel Raids séparé)
+  // Milestones uniquement (les raids sont dans le panel Raids séparé, les Echo Orb sont masqués)
   const milestoneEvents = activeEvents.filter(e =>
     e.type === "milestone" && e.milestone?.scoring
+    && !/echo\s*orb|orb\s*echo/i.test(e.name)
   );
 
   renderAllEvents({ blitz: blitzEvents, milestone: milestoneEvents });
@@ -1415,8 +1896,6 @@ async function loadEvents() {
     showOfflineIndicator();
   }
 
-  // Toujours afficher les équipes War offensives (utiles pour la guerre)
-  await loadWarTeamsForEvent();
 }
 
 /**
@@ -1464,7 +1943,7 @@ async function loadRaids() {
       events = cached.msfEventsCache;
     } else {
       raidsLoading.classList.add("hidden");
-      raidsError.textContent = err.message;
+      raidsError.innerHTML = '<div class="empty-state-cta"><p>Pas de donnees disponibles.</p><button class="btn-open-api">Connecter mon compte</button></div>';
       raidsError.classList.remove("hidden");
       return;
     }
@@ -1476,6 +1955,15 @@ async function loadRaids() {
   renderRaids(raidEvents);
   raidsLoading.classList.add("hidden");
   raidsList.classList.remove("hidden");
+
+  // Extraire les équipes raid depuis les milestones
+  const raidTeams = await extractRaidTeamsFromEvents(events);
+  if (raidTeams.length > 0) {
+    renderRaidTeams(raidTeams);
+    raidTeamsSection.classList.remove("hidden");
+  } else {
+    raidTeamsSection.classList.add("hidden");
+  }
 }
 
 /**
@@ -1506,6 +1994,86 @@ function renderRaids(raids) {
   });
 
   raidsList.innerHTML = html;
+}
+
+/**
+ * Affiche les personnages/équipes recommandées pour les raids (depuis les events milestones)
+ * Groupé par personnage/équipe avec les différentes conditions en sous-lignes
+ */
+function renderRaidTeams(raidTeams) {
+  // Grouper par nom de personnage/équipe
+  const byChar = {};
+  raidTeams.forEach(rt => {
+    const key = rt.charName.toUpperCase();
+    if (!byChar[key]) byChar[key] = { charName: rt.charName, entries: [] };
+    byChar[key].entries.push(rt);
+  });
+
+  let html = '';
+
+  Object.values(byChar).forEach(group => {
+    // Trier : sans condition d'abord, puis étoiles croissantes, puis gear
+    group.entries.sort((a, b) => {
+      if (a.requiredStars === 0 && a.gearTier === 0) return -1;
+      if (b.requiredStars === 0 && b.gearTier === 0) return 1;
+      if (a.requiredStars !== b.requiredStars) return a.requiredStars - b.requiredStars;
+      return a.gearTier - b.gearTier;
+    });
+
+    // Nom traduit de l'event source (prendre le premier)
+    const eventSource = translateEventName(group.entries[0].eventName);
+
+    html += `
+      <div class="raid-team-card" style="background:linear-gradient(135deg,#1e1e3a,#2a2040);border-radius:8px;padding:10px 12px;border-left:3px solid #845ef7;margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="font-weight:700;font-size:13px;color:#fff;">${group.charName}</span>
+          <span style="font-size:10px;color:#888;font-style:italic;max-width:140px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${eventSource}</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">`;
+
+    group.entries.forEach(entry => {
+      let conditionLabel = '';
+      let conditionColor = '#69db7c'; // base = vert
+
+      if (entry.requiredStars > 0) {
+        conditionLabel = `${entry.requiredStars}★`;
+        conditionColor = '#ffd43b';
+      } else if (entry.gearTier > 0) {
+        conditionLabel = `G${entry.gearTier}`;
+        conditionColor = '#cc5de8';
+      } else {
+        conditionLabel = 'Base';
+      }
+
+      // Calculer la progression (actions faites / max)
+      let progressHtml = '';
+      if (entry.cap && entry.points > 0) {
+        const maxActions = Math.round(entry.cap / entry.points);
+        if (entry.soFar !== null && entry.soFar !== undefined) {
+          const doneActions = Math.min(Math.round(entry.soFar / entry.points), maxActions);
+          const isComplete = doneActions >= maxActions;
+          const progColor = isComplete ? '#51cf66' : '#fcc419';
+          progressHtml = `<span style="font-size:10px;font-weight:700;color:${progColor};margin-left:2px;">${doneActions}/${maxActions}</span>`;
+        } else {
+          // Pas de soFar = 0 actions faites
+          progressHtml = `<span style="font-size:10px;font-weight:700;color:#ff6b6b;margin-left:2px;">0/${maxActions}</span>`;
+        }
+      }
+
+      html += `
+          <div style="display:flex;align-items:center;gap:4px;background:#16162a;border-radius:4px;padding:3px 8px;">
+            <span style="font-size:11px;font-weight:700;color:${conditionColor};min-width:32px;text-align:center;">${conditionLabel}</span>
+            <span style="font-size:10px;color:#51cf66;font-weight:600;">+${formatNumber(entry.points)} pts</span>
+            ${progressHtml}
+          </div>`;
+    });
+
+    html += `
+        </div>
+      </div>`;
+  });
+
+  raidTeamsList.innerHTML = html;
 }
 
 /**
@@ -1712,6 +2280,31 @@ function renderEventInfo(event) {
     ${hasAlert ? '🔔' : '🔕'}
   </button>`;
 
+  // Progression joueur (si disponible via /player/v1/events)
+  let progressHtml = "";
+  const progress = event.milestone?.progress;
+  const tiers = event.milestone?.tiers;
+  if (progress && tiers && tiers.length > 0) {
+    const totalTiers = tiers.length;
+    const completedTier = progress.completedTier || 0;
+    const currentPoints = progress.points || 0;
+    const nextGoal = progress.goal || (tiers[completedTier] ? tiers[completedTier].endScore : 0);
+    const pct = nextGoal > 0 ? Math.min(100, Math.round((currentPoints / nextGoal) * 100)) : 0;
+
+    progressHtml = `
+      <div class="event-progress">
+        <div class="event-progress-info">
+          <span class="event-progress-pts">${formatNumber(currentPoints)} pts</span>
+          <span class="event-progress-tier">Phase ${completedTier + (progress.completionOffset || 0)} / ${totalTiers + (progress.completionOffset || 0)}</span>
+        </div>
+        <div class="event-progress-bar-bg">
+          <div class="event-progress-bar" style="width: ${pct}%"></div>
+        </div>
+        <div class="event-progress-label">${formatNumber(currentPoints)} / ${formatNumber(nextGoal)} (${pct}%)</div>
+      </div>
+    `;
+  }
+
   return `
     <div class="event-info">
       <span class="event-time ${isUrgent ? 'urgent' : ''}">⏱ ${timeLeft}</span>
@@ -1719,6 +2312,7 @@ function renderEventInfo(event) {
       ${alertBtn}
     </div>
     ${subName}
+    ${progressHtml}
   `;
 }
 
@@ -1782,13 +2376,13 @@ function renderAllEvents({ blitz, milestone }) {
 
       if (scoring?.methods) {
         scoring.methods.forEach(m => {
-          rows.push({ desc: translateEventDescription(m.description), points: m.points, cap: null });
+          rows.push({ desc: translateEventDescription(m.description), points: m.points, cap: null, soFar: null });
         });
       }
       if (scoring?.cappedScorings) {
         scoring.cappedScorings.forEach(cs => {
           cs.methods.forEach(m => {
-            rows.push({ desc: translateEventDescription(m.description), points: m.points, cap: cs.cap });
+            rows.push({ desc: translateEventDescription(m.description), points: m.points, cap: cs.cap, soFar: cs.soFar ?? null });
           });
         });
       }
@@ -1831,15 +2425,24 @@ function renderAllEvents({ blitz, milestone }) {
           ${rows.length > 0 ? `
             <div class="event-details" id="event-details-${idx}">
               <table class="scoring-table">
-                <thead><tr><th>Action</th><th>Pts</th><th>Cap</th></tr></thead>
+                <thead><tr><th>Action</th><th>Pts</th><th>Cap</th><th>Fait</th></tr></thead>
                 <tbody>
-                  ${rows.map(r => `
+                  ${rows.map(r => {
+                    let progressCell = '-';
+                    if (r.cap !== null && r.points > 0) {
+                      const max = Math.round(r.cap / r.points);
+                      const done = r.soFar !== null ? Math.min(Math.round(r.soFar / r.points), max) : 0;
+                      const isComplete = done >= max;
+                      progressCell = `<span style="color:${isComplete ? '#51cf66' : done > 0 ? '#fcc419' : '#ff6b6b'};font-weight:700;">${done}/${max}</span>`;
+                    }
+                    return `
                     <tr>
                       <td class="scoring-action">${r.desc}</td>
                       <td class="scoring-points">${formatNumber(r.points)}</td>
                       <td class="scoring-cap ${r.cap === null ? "unlimited" : ""}">${r.cap === null ? "∞" : formatNumber(r.cap)}</td>
-                    </tr>
-                  `).join("")}
+                      <td class="scoring-progress">${progressCell}</td>
+                    </tr>`;
+                  }).join("")}
                 </tbody>
               </table>
             </div>
@@ -1904,16 +2507,72 @@ function renderAllEvents({ blitz, milestone }) {
     });
   });
 
-  // Ajouter les event listeners pour les inputs du calculateur
-  eventsList.querySelectorAll(".calc-qty").forEach(input => {
+  // Ajouter les event listeners pour le calculateur inversé
+  // Sélecteur de palier
+  eventsList.querySelectorAll(".calc-tier-select").forEach(select => {
+    select.addEventListener("change", () => {
+      const calcSection = select.closest(".points-calc-section");
+      if (calcSection) {
+        const idx = calcSection.id.replace("points-calc-", "");
+        // Vider le champ personnalisé quand on sélectionne un palier
+        const targetInput = document.getElementById(`calc-target-${idx}`);
+        if (targetInput && select.value !== "0") {
+          targetInput.value = "";
+        }
+        updatePointsCalculation(idx);
+      }
+    });
+  });
+
+  // Champ de points personnalisé
+  eventsList.querySelectorAll(".calc-target-pts").forEach(input => {
     input.addEventListener("input", () => {
-      // Trouver l'index de l'event
       const calcSection = input.closest(".points-calc-section");
       if (calcSection) {
         const idx = calcSection.id.replace("points-calc-", "");
-        const event = currentMilestoneEvents[parseInt(idx)];
-        if (event) {
-          updatePointsCalculation(idx, event);
+        // Réinitialiser le sélecteur de palier quand on tape un nombre
+        const tierSelect = document.getElementById(`calc-tier-select-${idx}`);
+        if (tierSelect && input.value) {
+          tierSelect.value = "0";
+        }
+        updatePointsCalculation(idx);
+      }
+    });
+  });
+
+  // Bouton "Max" pour remplir avec le score du palier max
+  eventsList.querySelectorAll(".calc-max-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const maxScore = btn.dataset.max;
+      const idx = btn.dataset.idx;
+      const targetInput = document.getElementById(`calc-target-${idx}`);
+      const tierSelect = document.getElementById(`calc-tier-select-${idx}`);
+      if (targetInput) {
+        targetInput.value = maxScore;
+        if (tierSelect) {
+          tierSelect.value = "0"; // Reset le select
+        }
+        updatePointsCalculation(idx);
+      }
+    });
+  });
+
+  // Checkbox d'exclusion de méthodes de scoring
+  eventsList.querySelectorAll(".calc-method-checkbox").forEach(cb => {
+    cb.addEventListener("change", () => {
+      const idx = cb.dataset.calcIdx;
+      updatePointsCalculation(idx);
+    });
+  });
+
+  // Auto-exclure les méthodes impossibles basées sur le roster, puis calcul initial
+  autoExcludeUnavailableMethods().then(() => {
+    eventsList.querySelectorAll(".calc-tier-select").forEach(select => {
+      if (select.value && select.value !== "0") {
+        const calcSection = select.closest(".points-calc-section");
+        if (calcSection) {
+          const idx = calcSection.id.replace("points-calc-", "");
+          updatePointsCalculation(idx);
         }
       }
     });
@@ -1981,7 +2640,277 @@ function togglePointsCalc(idx) {
 }
 
 /**
- * Génère le HTML du calculateur de points pour un milestone event
+ * Parse une description de scoring pour extraire le personnage requis et ses étoiles
+ * Ex: "Battle in Crucible or Blitz with Magneto (Phoenix Force) at 5 Yellow Stars"
+ * → { charName: "Magneto (Phoenix Force)", requiredStars: 5 }
+ */
+function parseScoringRequirement(rawDesc) {
+  if (!rawDesc) return null;
+
+  // Pattern: "... with <CharName> at <N> Yellow Stars"
+  const withStarsMatch = rawDesc.match(/with\s+(.+?)\s+at\s+(\d+)\s+yellow\s+stars?/i);
+  if (withStarsMatch) {
+    return { charName: withStarsMatch[1].trim(), requiredStars: parseInt(withStarsMatch[2]) };
+  }
+
+  // Pattern: "... with <CharName>" (sans étoiles requises)
+  const withMatch = rawDesc.match(/with\s+(.+?)(?:\s*$)/i);
+  if (withMatch) {
+    // Nettoyer les trailing words qui ne font pas partie du nom
+    const name = withMatch[1].replace(/\s+at\s+.*$/i, "").trim();
+    if (name.length > 2) {
+      return { charName: name, requiredStars: 0 };
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Auto-exclut les méthodes de scoring impossibles basées sur le roster du joueur
+ * Compare les personnages requis avec le roster full (étoiles jaunes)
+ */
+async function autoExcludeUnavailableMethods() {
+  try {
+    const stored = await storageGet("msfPlayerRosterFull");
+    const rosterFull = stored.msfPlayerRosterFull;
+    console.log("[AutoExclude] Roster full:", rosterFull ? rosterFull.length + " persos" : "ABSENT");
+    if (!rosterFull || rosterFull.length === 0) {
+      console.log("[AutoExclude] Pas de roster, abandon");
+      return;
+    }
+
+    // Log quelques IDs du roster pour debug
+    console.log("[AutoExclude] Premiers IDs roster:", rosterFull.slice(0, 10).map(c => c.id));
+    // Chercher les IDs contenant "magneto" ou "phoenix" dans le roster
+    const magnetoIds = rosterFull.filter(c => (c.id || "").toLowerCase().includes("magneto") || (c.id || "").toLowerCase().includes("phoenix"));
+    console.log("[AutoExclude] IDs roster avec magneto/phoenix:", magnetoIds.map(c => ({ id: c.id, yellow: c.yellow || c.activeYellow || c.stars })));
+
+    // Charger le mapping nom → id
+    const charsUrl = ext.runtime.getURL("data/characters-full.json");
+    const charsRes = await fetch(charsUrl);
+    const charsData = await charsRes.json();
+
+    // Map nom (majuscules) → id et id → char data
+    const nameToId = {};
+    const idToChar = {};
+    const allTraits = new Set();
+    const charsMap = charsData.characters || charsData;
+    Object.entries(charsMap).forEach(([id, char]) => {
+      idToChar[id] = char;
+      if (char.name) {
+        nameToId[char.name.toUpperCase()] = id;
+      }
+      if (char.traits) {
+        char.traits.forEach(t => allTraits.add(t.toUpperCase()));
+      }
+    });
+    console.log("[AutoExclude] Base personnages chargée:", Object.keys(nameToId).length, "noms,", allTraits.size, "traits");
+
+    const rosterById = {};
+    rosterFull.forEach(c => {
+      rosterById[c.id] = c;
+    });
+
+    /**
+     * Vérifie si un nom correspond à un trait/tag d'équipe (pas un personnage)
+     * Ex: "Winter Guard" → trait "WinterGuard" → true
+     */
+    function isTeamTrait(name) {
+      const normalized = name.replace(/[\s\-']/g, "").toUpperCase();
+      return allTraits.has(normalized);
+    }
+
+    /**
+     * Résout un nom de personnage depuis une description d'event vers un ID
+     */
+    function resolveCharId(charName) {
+      const upper = charName.toUpperCase();
+
+      // 1. Match exact
+      if (nameToId[upper]) {
+        console.log(`[AutoExclude]   resolveCharId("${charName}") → match exact: ${nameToId[upper]}`);
+        return nameToId[upper];
+      }
+
+      // 2. Nom avec parenthèses
+      const parenMatch = charName.match(/^(.+?)\s*\((.+?)\)$/);
+      if (parenMatch) {
+        const baseName = parenMatch[1].trim();
+        const variant = parenMatch[2].trim().replace(/\s+/g, "");
+        console.log(`[AutoExclude]   resolveCharId("${charName}") → paren: base="${baseName}", variant="${variant}"`);
+
+        const candidates = [
+          baseName.replace(/[\s\-']/g, "") + variant,
+          baseName.replace(/[\s\-']/g, "") + "_" + variant,
+          baseName.replace(/[\s\-']/g, "") + variant.replace(/Force$/i, ""),
+        ];
+        console.log(`[AutoExclude]   Candidats ID:`, candidates);
+
+        for (const candidateId of candidates) {
+          if (idToChar[candidateId]) {
+            console.log(`[AutoExclude]   → trouvé dans base: ${candidateId}`);
+            return candidateId;
+          }
+          const found = Object.keys(idToChar).find(id => id.toUpperCase() === candidateId.toUpperCase());
+          if (found) {
+            console.log(`[AutoExclude]   → trouvé case-insensitive: ${found}`);
+            return found;
+          }
+        }
+
+        // 3. Trait search
+        const baseUpper = baseName.toUpperCase();
+        const traitName = variant;
+        for (const [id, char] of Object.entries(charsMap)) {
+          if (char.name && char.name.toUpperCase().includes(baseUpper) && char.traits) {
+            if (char.traits.some(t => t.toUpperCase() === traitName.toUpperCase())) {
+              console.log(`[AutoExclude]   → trouvé par trait "${traitName}": ${id}`);
+              return id;
+            }
+          }
+        }
+      }
+
+      console.log(`[AutoExclude]   resolveCharId("${charName}") → NON TROUVÉ dans base`);
+      return null;
+    }
+
+    // Pour chaque méthode dans le calculateur, vérifier le roster
+    const allRows = document.querySelectorAll(".calc-method-row[data-raw-desc]");
+    console.log("[AutoExclude] Nombre de méthodes à vérifier:", allRows.length);
+
+    let excludedCount = 0;
+    allRows.forEach(row => {
+      const rawDesc = row.dataset.rawDesc;
+      const req = parseScoringRequirement(rawDesc);
+      console.log(`[AutoExclude] rawDesc="${rawDesc}" → parsed:`, req);
+      if (!req) return;
+
+      // Si c'est un tag d'équipe (ex: "Winter Guard"), vérifier si le joueur a au moins un membre
+      if (isTeamTrait(req.charName)) {
+        const traitNorm = req.charName.replace(/[\s\-']/g, "").toUpperCase();
+        const teamCharIds = [];
+        for (const [id, char] of Object.entries(charsMap)) {
+          if (char.traits && char.traits.some(t => t.toUpperCase() === traitNorm)) {
+            teamCharIds.push(id);
+          }
+        }
+        const checkbox = row.querySelector(".calc-method-checkbox");
+        if (!checkbox) return;
+        const ownedMembers = teamCharIds.filter(id => {
+          const rc = rosterById[id];
+          if (!rc) return false;
+          if (req.requiredStars > 0) {
+            const ys = rc.yellow || rc.activeYellow || rc.stars || 0;
+            return ys >= req.requiredStars;
+          }
+          return true;
+        });
+        console.log(`[AutoExclude] Tag équipe "${req.charName}": ${teamCharIds.length} membres connus, ${ownedMembers.length} éligibles${req.requiredStars > 0 ? ` à ${req.requiredStars}★+` : ""}`);
+        if (ownedMembers.length === 0) {
+          console.log(`[AutoExclude] ❌ "${req.charName}" → aucun membre éligible, on décoche`);
+          checkbox.checked = false;
+          row.title = req.requiredStars > 0
+            ? `Aucun ${req.charName} a ${req.requiredStars}★+`
+            : `Aucun membre ${req.charName} recrute`;
+          excludedCount++;
+        } else {
+          console.log(`[AutoExclude] ✅ "${req.charName}" → ${ownedMembers.length} membre(s) éligible(s)`);
+        }
+        return;
+      }
+
+      const charId = resolveCharId(req.charName);
+      const checkbox = row.querySelector(".calc-method-checkbox");
+      if (!checkbox) return;
+
+      let rosterChar = charId ? rosterById[charId] : null;
+      console.log(`[AutoExclude] charId=${charId}, trouvé dans roster par ID: ${!!rosterChar}`);
+
+      // Si le perso n'est pas dans la base de noms, chercher directement dans le roster par ID
+      if (!rosterChar) {
+        const searchName = req.charName.replace(/[\s\-'()]/g, "").toUpperCase();
+        console.log(`[AutoExclude] Recherche roster directe: "${searchName}"`);
+
+        // D'abord match exact (le plus fiable)
+        for (const c of rosterFull) {
+          const rosterId = (c.id || "").replace(/[\s\-_]/g, "").toUpperCase();
+          if (rosterId === searchName) {
+            rosterChar = c;
+            console.log(`[AutoExclude]   → match exact roster: id="${c.id}", yellow=${c.yellow || c.activeYellow || c.stars}`);
+            break;
+          }
+        }
+
+        // Si pas de match exact, chercher l'ID roster qui COMMENCE par le searchName ou vice-versa
+        // mais seulement si la différence est petite (éviter "MAGNETO" ⊂ "MAGNETOPHOENIXFORCE")
+        if (!rosterChar) {
+          for (const c of rosterFull) {
+            const rosterId = (c.id || "").replace(/[\s\-_]/g, "").toUpperCase();
+            // Le roster ID contient le searchName complet (ex: roster "XMAGNETOPHOENIXFORCE" contient "MAGNETOPHOENIXFORCE")
+            if (rosterId.includes(searchName) && searchName.length >= rosterId.length * 0.7) {
+              rosterChar = c;
+              console.log(`[AutoExclude]   → match partiel roster: id="${c.id}", yellow=${c.yellow || c.activeYellow || c.stars}`);
+              break;
+            }
+          }
+        }
+
+        if (!rosterChar) {
+          // Log tous les IDs proches pour debug
+          const close = rosterFull.filter(c => {
+            const rid = (c.id || "").toUpperCase();
+            return rid.includes(searchName.substring(0, 6)) || searchName.includes(rid.substring(0, 6));
+          });
+          console.log(`[AutoExclude]   → PAS trouvé. IDs proches:`, close.map(c => ({ id: c.id, yellow: c.yellow || c.activeYellow || c.stars })));
+        }
+      }
+
+      if (!rosterChar) {
+        // Joueur n'a pas ce personnage du tout
+        console.log(`[AutoExclude] ❌ "${req.charName}" → NON RECRUTÉ, on décoche`);
+        checkbox.checked = false;
+        row.title = `${req.charName} non recruté`;
+        excludedCount++;
+        return;
+      }
+
+      const yellowStars = rosterChar.yellow || rosterChar.activeYellow || rosterChar.stars || 0;
+      console.log(`[AutoExclude] "${req.charName}" trouvé: id=${rosterChar.id}, yellow=${yellowStars}, requis=${req.requiredStars}`);
+
+      if (req.requiredStars > 0 && yellowStars < req.requiredStars) {
+        console.log(`[AutoExclude] ❌ "${req.charName}" → ${yellowStars}★ < ${req.requiredStars}★ requis, on décoche`);
+        checkbox.checked = false;
+        row.title = `${req.charName}: ${yellowStars}★ (${req.requiredStars}★ requises)`;
+        excludedCount++;
+      } else {
+        console.log(`[AutoExclude] ✅ "${req.charName}" → OK (${yellowStars}★ >= ${req.requiredStars}★)`);
+      }
+    });
+
+    if (excludedCount > 0) {
+      console.log(`[Events] Auto-exclusion: ${excludedCount} méthodes impossibles basées sur le roster`);
+      // Re-déclencher le calcul pour chaque calculateur
+      document.querySelectorAll(".calc-tier-select").forEach(select => {
+        if (select.value && select.value !== "0") {
+          const calcSection = select.closest(".points-calc-section");
+          if (calcSection) {
+            const idx = calcSection.id.replace("points-calc-", "");
+            updatePointsCalculation(idx);
+          }
+        }
+      });
+    }
+  } catch (e) {
+    console.error("[Events] Erreur auto-exclusion roster:", e);
+  }
+}
+
+/**
+ * Génère le HTML du calculateur de points INVERSÉ pour un milestone event
+ * L'utilisateur choisit un objectif (palier ou points) et voit combien d'actions sont nécessaires
+ * + tracker de rythme (pts/h actuel vs requis)
  */
 function renderPointsCalculator(event, idx) {
   if (!event.milestone?.scoring) return "";
@@ -1991,71 +2920,99 @@ function renderPointsCalculator(event, idx) {
 
   if (scoring.methods) {
     scoring.methods.forEach((m, i) => {
-      rows.push({ desc: translateEventDescription(m.description), points: m.points, cap: null, id: `calc-${idx}-${i}` });
+      rows.push({ desc: translateEventDescription(m.description), rawDesc: m.description || "", points: m.points, cap: null, id: `calc-${idx}-${i}` });
     });
   }
   if (scoring.cappedScorings) {
     scoring.cappedScorings.forEach((cs, ci) => {
       cs.methods.forEach((m, mi) => {
-        rows.push({ desc: translateEventDescription(m.description), points: m.points, cap: cs.cap, id: `calc-${idx}-cap-${ci}-${mi}` });
+        rows.push({ desc: translateEventDescription(m.description), rawDesc: m.description || "", points: m.points, cap: cs.cap, id: `calc-${idx}-cap-${ci}-${mi}` });
       });
     });
   }
 
   if (rows.length === 0) return "";
 
-  // Générer la liste des paliers si disponible
+  // Générer les options de paliers si disponible
   const tiers = event.milestone?.tiers || [];
-  let tiersHtml = "";
-  if (tiers.length > 0) {
-    // Afficher les 5 premiers paliers + dernier palier si plus de 6
-    const displayTiers = tiers.length <= 6 ? tiers : [...tiers.slice(0, 5), tiers[tiers.length - 1]];
-    tiersHtml = `
-      <div class="calc-tiers-breakdown" id="calc-tiers-${idx}">
-        <div class="calc-tiers-header">Objectifs par palier</div>
-        ${displayTiers.map((tier, i) => {
-          const tierNum = tiers.length <= 6 ? i + 1 : (i < 5 ? i + 1 : tiers.length);
-          const showDots = tiers.length > 6 && i === 5;
-          return `
-            ${showDots ? '<div class="calc-tier-dots">...</div>' : ''}
-            <div class="calc-tier-row" data-tier="${tierNum}" data-score="${tier.endScore}">
-              <span class="calc-tier-num">Palier ${tierNum}</span>
-              <span class="calc-tier-target">${formatNumber(tier.endScore)} pts</span>
-              <span class="calc-tier-status" id="calc-tier-status-${idx}-${tierNum}">—</span>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    `;
+  const hasTiers = tiers.length > 0;
+  const maxTierScore = hasTiers ? tiers[tiers.length - 1].endScore : 0;
+  const progress = event.milestone?.progress;
+  const currentPoints = progress?.points || 0;
+  const completedTier = progress?.completedTier || 0;
+  const offset = progress?.completionOffset || 0;
+
+  // Pré-sélectionner le prochain palier non complété
+  const nextTierIdx = completedTier; // index dans le tableau (tier 10 complété → index 10 = tier 11)
+  let tierOptions = '<option value="0">-- Choisir un palier --</option>';
+  if (hasTiers) {
+    tiers.forEach((tier, i) => {
+      const label = `Phase ${tier.tierNum + offset} (${formatNumber(tier.endScore)} pts)`;
+      const selected = i === nextTierIdx ? ' selected' : '';
+      const completed = i < completedTier ? ' disabled' : '';
+      tierOptions += `<option value="${tier.endScore}"${selected}${completed}>${label}</option>`;
+    });
   }
 
-  let html = `
-    <div class="points-calc">
-      <div class="calc-header">Calculateur de points</div>
-      <div class="calc-rows">
-  `;
-
-  rows.forEach(r => {
-    html += `
-      <div class="calc-row" data-points="${r.points}" data-cap="${r.cap || ''}">
-        <span class="calc-action">${r.desc}</span>
-        <div class="calc-inputs">
-          <input type="number" class="calc-qty" id="${r.id}" min="0" value="0" placeholder="Qté">
-          <span class="calc-pts-per">× ${formatNumber(r.points)}</span>
-          ${r.cap ? `<span class="calc-cap-info">(max ${formatNumber(r.cap)})</span>` : ""}
-        </div>
-      </div>
-    `;
+  // Stocker données pour le calcul JS (méthodes + timing + progression)
+  const methodsData = JSON.stringify(rows.map(r => ({ points: r.points, cap: r.cap, desc: r.desc })));
+  const eventData = JSON.stringify({
+    startTime: event.startTime,
+    endTime: event.endTime,
+    currentPoints,
+    completedTier,
+    offset,
+    totalTiers: tiers.length
   });
 
-  html += `
+  let html = `
+    <div class="points-calc inverse-calc" data-methods='${methodsData}' data-event='${eventData}'>
+      <div class="calc-header">🎯 Planificateur d'objectif</div>
+
+      <div class="calc-objective">
+        ${hasTiers ? `
+        <div class="calc-objective-row">
+          <label>Objectif:</label>
+          <select class="calc-tier-select" id="calc-tier-select-${idx}">
+            ${tierOptions}
+          </select>
+        </div>
+        <div class="calc-objective-row">
+          <label>ou points:</label>
+          <input type="number" class="calc-target-pts" id="calc-target-${idx}" min="0" value="" placeholder="Ex: 100000">
+          <button class="calc-max-btn" data-max="${maxTierScore}" data-idx="${idx}" title="Palier max: ${formatNumber(maxTierScore)} pts">Max</button>
+        </div>
+        <div class="calc-max-info">Palier max: ${tiers.length + offset} (${formatNumber(maxTierScore)} pts)</div>
+        ` : `
+        <div class="calc-objective-row">
+          <label>Points cible:</label>
+          <input type="number" class="calc-target-pts" id="calc-target-${idx}" min="0" value="" placeholder="Ex: 100000">
+        </div>
+        <div class="calc-no-tiers">Pas de paliers définis pour cet event</div>
+        `}
       </div>
-      <div class="calc-result">
-        <span class="calc-total-label">Total estimé:</span>
-        <span class="calc-total-pts" id="calc-total-${idx}">0</span>
-        <span class="calc-tier-result" id="calc-tier-${idx}"></span>
+
+      <div class="pace-tracker-section" id="pace-tracker-${idx}"></div>
+
+      <div class="calc-results-section" id="calc-results-${idx}">
+        <div class="calc-results-header">Actions nécessaires:</div>
+        <div class="calc-methods-list">
+          ${rows.map((r, i) => `
+            <div class="calc-method-row" data-points="${r.points}" data-cap="${r.cap || ''}" data-idx="${i}" data-raw-desc="${r.rawDesc.replace(/"/g, '&quot;')}">
+              <label class="calc-method-toggle" title="Exclure cette methode si vous ne pouvez pas la realiser">
+                <input type="checkbox" class="calc-method-checkbox" data-calc-idx="${idx}" checked>
+                <span class="calc-method-check-icon"></span>
+              </label>
+              <span class="calc-method-name">${r.desc}</span>
+              <span class="calc-method-pts">${formatNumber(r.points)} pts/action</span>
+              <div class="calc-method-result">
+                <span class="calc-method-needed" id="calc-needed-${idx}-${i}">—</span>
+                ${r.cap ? `<span class="calc-method-cap">(cap: ${formatNumber(r.cap)} pts)</span>` : '<span class="calc-method-unlimited">∞</span>'}
+              </div>
+            </div>
+          `).join('')}
+        </div>
       </div>
-      ${tiersHtml}
     </div>
   `;
 
@@ -2063,92 +3020,206 @@ function renderPointsCalculator(event, idx) {
 }
 
 /**
- * Met à jour le calcul des points pour un event
+ * Met à jour le calcul INVERSÉ des points pour un event
+ * Calcule combien d'actions sont nécessaires pour atteindre l'objectif
  */
-function updatePointsCalculation(idx, event) {
+function updatePointsCalculation(idx) {
   const calcSection = document.querySelector(`#points-calc-${idx}`);
   if (!calcSection) return;
 
-  const inputs = calcSection.querySelectorAll(".calc-qty");
-  let total = 0;
+  const calcDiv = calcSection.querySelector(".points-calc");
+  const eventData = calcDiv ? JSON.parse(calcDiv.dataset.event || "{}") : {};
+  const currentPoints = eventData.currentPoints || 0;
 
-  inputs.forEach(input => {
-    const row = input.closest(".calc-row");
+  // Récupérer l'objectif (soit du sélecteur de palier, soit du champ personnalisé)
+  const tierSelect = document.getElementById(`calc-tier-select-${idx}`);
+  const targetInput = document.getElementById(`calc-target-${idx}`);
+
+  let targetPoints = 0;
+
+  // Priorité au champ personnalisé s'il est rempli
+  if (targetInput && targetInput.value && parseInt(targetInput.value) > 0) {
+    targetPoints = parseInt(targetInput.value);
+  } else if (tierSelect && tierSelect.value && parseInt(tierSelect.value) > 0) {
+    targetPoints = parseInt(tierSelect.value);
+  }
+
+  // Points restants (cible - points actuels)
+  const remainingPoints = Math.max(0, targetPoints - currentPoints);
+
+  // Mettre à jour le tracker de rythme
+  updatePaceTracker(idx, targetPoints);
+
+  // Mettre à jour chaque méthode
+  const methodRows = calcSection.querySelectorAll(".calc-method-row");
+  methodRows.forEach((row, i) => {
     const points = parseInt(row.dataset.points) || 0;
     const cap = row.dataset.cap ? parseInt(row.dataset.cap) : null;
-    const qty = parseInt(input.value) || 0;
+    const neededEl = document.getElementById(`calc-needed-${idx}-${i}`);
+    const checkbox = row.querySelector(".calc-method-checkbox");
+    const isExcluded = checkbox && !checkbox.checked;
 
-    let earned = qty * points;
-    if (cap !== null && earned > cap) {
-      earned = cap;
+    if (!neededEl) return;
+
+    // Méthode exclue par le joueur
+    if (isExcluded) {
+      row.classList.add("excluded");
+      row.classList.remove("capped", "possible");
+      neededEl.textContent = "Exclu";
+      neededEl.className = "calc-method-needed excluded";
+      return;
     }
-    total += earned;
+    row.classList.remove("excluded");
+
+    if (targetPoints === 0 || points === 0) {
+      neededEl.textContent = "—";
+      neededEl.className = "calc-method-needed";
+      row.classList.remove("capped", "possible");
+      return;
+    }
+
+    if (remainingPoints <= 0) {
+      neededEl.textContent = "Atteint !";
+      neededEl.className = "calc-method-needed possible";
+      row.classList.add("possible");
+      row.classList.remove("capped");
+      return;
+    }
+
+    // Calculer le nombre d'actions nécessaires pour les points RESTANTS
+    const actionsNeeded = Math.ceil(remainingPoints / points);
+
+    // Vérifier si le cap permet d'atteindre l'objectif
+    if (cap !== null && cap < remainingPoints) {
+      // Le cap est insuffisant pour atteindre l'objectif seul
+      const maxActions = Math.ceil(cap / points);
+      neededEl.innerHTML = `<span class="capped-warning">⚠️ ${formatNumber(maxActions)} max</span> <span class="cap-note">(${formatNumber(cap)} pts max)</span>`;
+      neededEl.className = "calc-method-needed capped";
+      row.classList.add("capped");
+      row.classList.remove("possible");
+    } else {
+      // L'objectif est atteignable avec cette méthode seule
+      neededEl.textContent = `${formatNumber(actionsNeeded)} actions`;
+      neededEl.className = "calc-method-needed possible";
+      row.classList.add("possible");
+      row.classList.remove("capped");
+    }
   });
+}
 
-  const totalEl = document.getElementById(`calc-total-${idx}`);
-  const tierEl = document.getElementById(`calc-tier-${idx}`);
+/**
+ * Met à jour le tracker de rythme pour un event milestone
+ * Affiche pts/h actuel vs requis et estimation de complétion
+ */
+function updatePaceTracker(idx, targetPoints) {
+  const trackerEl = document.getElementById(`pace-tracker-${idx}`);
+  if (!trackerEl) return;
 
-  if (totalEl) {
-    totalEl.textContent = formatNumber(total);
-    totalEl.classList.toggle("has-points", total > 0);
+  const calcSection = document.querySelector(`#points-calc-${idx}`);
+  const calcDiv = calcSection?.querySelector(".points-calc");
+  const eventData = calcDiv ? JSON.parse(calcDiv.dataset.event || "{}") : {};
+
+  const { startTime, endTime, currentPoints, completedTier, offset, totalTiers } = eventData;
+
+  // Pas de données de progression → masquer le tracker
+  if (!currentPoints && !startTime) {
+    trackerEl.innerHTML = "";
+    return;
   }
 
-  // Calculer le palier atteint et mettre à jour l'affichage
-  if (event.milestone?.tiers) {
-    const tiers = event.milestone.tiers;
-    let reachedTier = 0;
-    let nextTierIdx = 0;
-
-    for (let i = 0; i < tiers.length; i++) {
-      if (total >= tiers[i].endScore) {
-        reachedTier = i + 1;
-        nextTierIdx = i + 1;
-      }
-    }
-
-    // Mise à jour du résumé
-    if (tierEl) {
-      if (reachedTier > 0) {
-        if (reachedTier === tiers.length) {
-          tierEl.textContent = `✓ Tous les paliers atteints !`;
-          tierEl.className = "calc-tier-result reached";
-        } else {
-          const nextTier = tiers[nextTierIdx];
-          const remaining = nextTier.endScore - total;
-          tierEl.textContent = `Palier ${reachedTier} ✓ | ${formatNumber(remaining)} pts → Palier ${reachedTier + 1}`;
-          tierEl.className = "calc-tier-result reached";
-        }
-      } else if (tiers.length > 0) {
-        const nextTier = tiers[0].endScore;
-        tierEl.textContent = `${formatNumber(nextTier - total)} pts → Palier 1`;
-        tierEl.className = "calc-tier-result pending";
-      } else {
-        tierEl.textContent = "";
-      }
-    }
-
-    // Mise à jour de chaque ligne de palier
-    const displayTierNums = tiers.length <= 6
-      ? tiers.map((_, i) => i + 1)
-      : [1, 2, 3, 4, 5, tiers.length];
-
-    displayTierNums.forEach(tierNum => {
-      const statusEl = document.getElementById(`calc-tier-status-${idx}-${tierNum}`);
-      if (!statusEl) return;
-
-      const tier = tiers[tierNum - 1];
-      if (!tier) return;
-
-      if (total >= tier.endScore) {
-        statusEl.textContent = "✓";
-        statusEl.className = "calc-tier-status reached";
-      } else {
-        const remaining = tier.endScore - total;
-        statusEl.textContent = `-${formatNumber(remaining)}`;
-        statusEl.className = "calc-tier-status pending";
-      }
-    });
+  if (!targetPoints || targetPoints <= 0) {
+    trackerEl.innerHTML = "";
+    return;
   }
+
+  const now = Date.now() / 1000;
+  const hoursElapsed = Math.max(0.1, (now - startTime) / 3600);
+  const hoursRemaining = Math.max(0, (endTime - now) / 3600);
+  const remainingPoints = Math.max(0, targetPoints - currentPoints);
+
+  // Calculs de rythme
+  const currentPace = currentPoints / hoursElapsed;
+  const requiredPace = hoursRemaining > 0 ? remainingPoints / hoursRemaining : Infinity;
+  const paceRatio = requiredPace > 0 ? currentPace / requiredPace : Infinity;
+  const estimatedHours = currentPace > 0 ? remainingPoints / currentPace : Infinity;
+
+  // Progression vers la cible
+  const pct = targetPoints > 0 ? Math.min(100, Math.round((currentPoints / targetPoints) * 100)) : 0;
+
+  // Status
+  let statusClass, statusIcon, statusText;
+  if (remainingPoints <= 0) {
+    statusClass = "pace-achieved";
+    statusIcon = "✅";
+    statusText = "Objectif atteint !";
+  } else if (paceRatio >= 1.0) {
+    statusClass = "pace-ahead";
+    statusIcon = "✅";
+    statusText = `En avance (x${paceRatio.toFixed(1)})`;
+  } else if (paceRatio >= 0.7) {
+    statusClass = "pace-warning";
+    statusIcon = "⚠️";
+    statusText = `Attention (x${paceRatio.toFixed(1)})`;
+  } else {
+    statusClass = "pace-behind";
+    statusIcon = "🔴";
+    statusText = `En retard (x${paceRatio.toFixed(1)})`;
+  }
+
+  // Estimation temps restant
+  let estimateText = "";
+  if (remainingPoints <= 0) {
+    estimateText = "Objectif deja atteint";
+  } else if (estimatedHours === Infinity) {
+    estimateText = "Impossible a estimer";
+  } else if (estimatedHours > hoursRemaining) {
+    const deficit = Math.round(estimatedHours - hoursRemaining);
+    estimateText = `${deficit}h de retard sur le temps restant`;
+  } else {
+    estimateText = `Estime dans ~${formatDuration(estimatedHours * 3600)}`;
+  }
+
+  trackerEl.innerHTML = `
+    <div class="pace-tracker ${statusClass}">
+      <div class="pace-progress-row">
+        <span class="pace-points">${formatNumber(currentPoints)} / ${formatNumber(targetPoints)} pts</span>
+        <span class="pace-pct">${pct}%</span>
+      </div>
+      <div class="pace-bar-bg">
+        <div class="pace-bar" style="width: ${pct}%"></div>
+      </div>
+      <div class="pace-stats">
+        <div class="pace-stat">
+          <span class="pace-label">Rythme actuel</span>
+          <span class="pace-value">${formatNumber(Math.round(currentPace))} pts/h</span>
+        </div>
+        <div class="pace-stat">
+          <span class="pace-label">Rythme requis</span>
+          <span class="pace-value">${requiredPace === Infinity ? "—" : formatNumber(Math.round(requiredPace)) + " pts/h"}</span>
+        </div>
+      </div>
+      <div class="pace-status ${statusClass}">
+        <span>${statusIcon} ${statusText}</span>
+      </div>
+      <div class="pace-estimate">${estimateText}</div>
+    </div>
+  `;
+}
+
+/**
+ * Formate une durée en secondes en texte lisible (ex: "4h 20min")
+ */
+function formatDuration(seconds) {
+  if (seconds <= 0) return "0min";
+  const h = Math.floor(seconds / 3600);
+  const m = Math.round((seconds % 3600) / 60);
+  if (h > 24) {
+    const d = Math.floor(h / 24);
+    const rh = h % 24;
+    return `${d}j ${rh}h`;
+  }
+  if (h > 0) return `${h}h ${m}min`;
+  return `${m}min`;
 }
 
 /**
@@ -2417,10 +3488,12 @@ btnManage.addEventListener("click", () => {
 // ============================================
 
 btnSettings.addEventListener("click", async () => {
-  syncPanel.classList.toggle("hidden");
+  const wasHidden = syncPanel.classList.contains("hidden");
+  syncPanel.classList.remove("hidden");
   apiPanel.classList.add("hidden"); // Fermer l'autre panneau
+  syncPanel.scrollIntoView({ behavior: "smooth", block: "start" });
 
-  if (!syncPanel.classList.contains("hidden")) {
+  if (wasHidden) {
     // Charger l'URL sauvegardee et les infos de sync
     const stored = await storageGet(["msfSyncUrl", "msfRemoteCounters"]);
 
@@ -2775,10 +3848,12 @@ function setStatus(text, type = "") {
 // ============================================
 
 btnApi.addEventListener("click", async () => {
-  apiPanel.classList.toggle("hidden");
+  const wasHidden = apiPanel.classList.contains("hidden");
+  apiPanel.classList.remove("hidden");
   syncPanel.classList.add("hidden"); // Fermer l'autre panneau
+  apiPanel.scrollIntoView({ behavior: "smooth", block: "start" });
 
-  if (!apiPanel.classList.contains("hidden")) {
+  if (wasHidden) {
     // Charger le token sauvegarde et les infos de capture
     const stored = await storageGet(["msfApiToken", "msfTokenCapturedAt", "msfTokenAutoCapture", "msfTokenType", "msfRefreshToken"]);
     if (stored.msfApiToken) {
@@ -2811,6 +3886,9 @@ function updateOAuthStatus(stored) {
     oauthStatus.textContent = "✓ Connecté via OAuth";
     oauthStatus.className = "oauth-status success";
     btnOAuthLogin.textContent = "🔄 Reconnecter OAuth";
+    // Retirer le highlight setup et masquer la banniere
+    btnApi.classList.remove("needs-setup");
+    welcomeBanner.classList.add("hidden");
   } else {
     oauthStatus.textContent = "";
     oauthStatus.className = "oauth-status";
@@ -2980,6 +4058,66 @@ if (btnClearToken) {
 }
 
 // Bouton Get Squads (+ Roster complet)
+/**
+ * Recupere squads + roster depuis l'API et sauvegarde dans le storage.
+ * Reutilisable depuis n'importe quel panel.
+ * Retourne { success, tabs, playerRosterIds, playerRosterFull, error }
+ */
+async function fetchSquadsAndRoster() {
+  const [squadsResult2, rosterResult] = await Promise.all([
+    ext.runtime.sendMessage({ type: "MSF_GET_SQUADS" }),
+    ext.runtime.sendMessage({ type: "MSF_GET_ROSTER" }).catch(e => ({ error: e.message }))
+  ]);
+
+  console.log("[Debug] Squads result:", squadsResult2);
+  console.log("[Debug] Roster result:", rosterResult);
+
+  if (squadsResult2.error) {
+    throw new Error(squadsResult2.error);
+  }
+
+  const squads = squadsResult2.squads || {};
+  const actualTabs = squads.tabs || squads;
+
+  const tabs = {
+    raids: actualTabs.raids || [],
+    arena: actualTabs.arena || [],
+    war: actualTabs.war || [],
+    blitz: actualTabs.blitz || [],
+    tower: actualTabs.tower || [],
+    crucible: actualTabs.crucible || [],
+    roster: actualTabs.roster || []
+  };
+
+  let playerRosterIds;
+  let playerRosterFull = null;
+
+  if (rosterResult.roster && rosterResult.roster.length > 0) {
+    playerRosterIds = rosterResult.roster;
+    playerRosterFull = rosterResult.rosterFull;
+  } else {
+    const allRosterChars = new Set();
+    const allTabs = [tabs.roster, tabs.blitz, tabs.war, tabs.arena, tabs.raids, tabs.tower, tabs.crucible];
+    allTabs.forEach(tabSquads => {
+      (tabSquads || []).forEach(squad => {
+        (squad || []).forEach(charId => {
+          if (charId) allRosterChars.add(charId);
+        });
+      });
+    });
+    playerRosterIds = Array.from(allRosterChars);
+  }
+
+  await storageSet({
+    msfPlayerRoster: playerRosterIds,
+    msfPlayerRosterFull: playerRosterFull,
+    msfWarSquads: tabs.war,
+    msfSquadsUpdatedAt: new Date().toISOString()
+  });
+
+  return { tabs, playerRosterIds, playerRosterFull, rosterError: rosterResult.error };
+}
+
 const btnGetSquads = document.getElementById("btn-get-squads");
 const squadsResult = document.getElementById("squads-result");
 if (btnGetSquads) {
@@ -2989,114 +4127,42 @@ if (btnGetSquads) {
     btnGetSquads.disabled = true;
 
     try {
-      // Appeler les deux APIs en parallèle
-      const [squadsResult2, rosterResult] = await Promise.all([
-        ext.runtime.sendMessage({ type: "MSF_GET_SQUADS" }),
-        ext.runtime.sendMessage({ type: "MSF_GET_ROSTER" }).catch(e => ({ error: e.message }))
-      ]);
+      const result = await fetchSquadsAndRoster();
+      const tabs = result.tabs;
 
-      console.log("[Debug] Squads result:", squadsResult2);
-      console.log("[Debug] Roster result:", rosterResult);
-
-      if (squadsResult2.error) {
-        throw new Error(squadsResult2.error);
-      }
-
-      const squads = squadsResult2.squads || {};
-
-      // L'API retourne tabs: { roster, blitz, tower, arena, raids, war, crucible }
-      const actualTabs = squads.tabs || squads;
-
-      const tabs = {
-        raids: actualTabs.raids || [],
-        arena: actualTabs.arena || [],
-        war: actualTabs.war || [],
-        blitz: actualTabs.blitz || [],
-        tower: actualTabs.tower || [],
-        crucible: actualTabs.crucible || [],
-        roster: actualTabs.roster || []
-      };
-
-      // Afficher les squads par catégorie
       let output = [];
 
-      // RAIDS (priorité)
       if (tabs.raids.length > 0) {
         output.push("=== RAIDS ===");
         tabs.raids.forEach((squad, i) => {
-          const names = squad.filter(n => n).join(", ");
-          output.push(`${i + 1}. ${names}`);
+          output.push(`${i + 1}. ${squad.filter(n => n).join(", ")}`);
         });
       }
-
-      // ARENA
       if (tabs.arena.length > 0) {
         output.push("\n=== ARENA ===");
         tabs.arena.forEach((squad, i) => {
-          const names = squad.filter(n => n).join(", ");
-          output.push(`${i + 1}. ${names}`);
+          output.push(`${i + 1}. ${squad.filter(n => n).join(", ")}`);
         });
       }
-
-      // WAR
       if (tabs.war.length > 0) {
         output.push(`\n=== WAR (${tabs.war.length}) ===`);
-        output.push("(voir console pour détails)");
       }
 
-      // Utiliser le roster complet si disponible, sinon fallback sur les squads
-      let playerRosterIds;
-      let playerRosterFull = null; // Avec étoiles, power, etc.
-
-      // Log l'erreur roster si présente
-      if (rosterResult.error) {
-        console.log("[Debug] Roster error:", rosterResult.error);
-        output.push(`\n⚠️ Roster complet: ${rosterResult.error}`);
+      if (result.rosterError) {
+        output.push(`\n⚠️ Roster complet: ${result.rosterError}`);
       }
 
-      if (rosterResult.roster && rosterResult.roster.length > 0) {
-        playerRosterIds = rosterResult.roster;
-        playerRosterFull = rosterResult.rosterFull; // Données complètes avec stars
+      if (result.playerRosterFull) {
         output.push(`\n=== ROSTER COMPLET ===`);
-        output.push(`${rosterResult.count} personnages possédés`);
-
-        // Compter les personnages par niveau d'étoiles
-        if (playerRosterFull) {
-          const starCounts = {};
-          playerRosterFull.forEach(c => {
-            const stars = c.yellow || c.stars || 0;
-            starCounts[stars] = (starCounts[stars] || 0) + 1;
-          });
-          const under7 = playerRosterFull.filter(c => (c.yellow || c.stars || 0) < 7).length;
-          output.push(`${under7} personnages < 7★ jaunes`);
-        }
+        output.push(`${result.playerRosterIds.length} personnages possédés`);
+        const under7 = result.playerRosterFull.filter(c => (c.yellow || c.stars || 0) < 7).length;
+        output.push(`${under7} personnages < 7★ jaunes`);
       } else {
-        // Fallback: extraire des squads
-        const allRosterChars = new Set();
-        const allTabs = [tabs.roster, tabs.blitz, tabs.war, tabs.arena, tabs.raids, tabs.tower, tabs.crucible];
-        allTabs.forEach(tabSquads => {
-          (tabSquads || []).forEach(squad => {
-            (squad || []).forEach(charId => {
-              if (charId) allRosterChars.add(charId);
-            });
-          });
-        });
-        playerRosterIds = Array.from(allRosterChars);
         output.push(`\n=== ROSTER (depuis squads) ===`);
-        output.push(`${playerRosterIds.length} personnages (partiel)`);
+        output.push(`${result.playerRosterIds.length} personnages (partiel)`);
       }
 
-      // Sauvegarder les données pour manage.js
-      await storageSet({
-        msfPlayerRoster: playerRosterIds,
-        msfPlayerRosterFull: playerRosterFull, // Nouveau: données complètes avec étoiles
-        msfWarSquads: tabs.war,
-        msfSquadsUpdatedAt: new Date().toISOString()
-      });
-
-      setApiStatus(`${tabs.raids.length} RAID, ${tabs.arena.length} Arena, ${playerRosterIds.length} personnages`, "success");
-      console.log("[Debug] Roster sauvegardé:", playerRosterIds.length, "personnages");
-
+      setApiStatus(`${tabs.raids.length} RAID, ${tabs.arena.length} Arena, ${result.playerRosterIds.length} personnages`, "success");
       squadsResult.textContent = output.join("\n");
     } catch (e) {
       setApiStatus("Erreur: " + e.message, "error");
@@ -3111,11 +4177,13 @@ if (btnGetSquads) {
 // ============================================
 
 btnWarOcr.addEventListener("click", () => {
-  warPanel.classList.toggle("hidden");
+  const wasHidden = warPanel.classList.contains("hidden");
+  warPanel.classList.remove("hidden");
   syncPanel.classList.add("hidden");
   apiPanel.classList.add("hidden");
+  warPanel.scrollIntoView({ behavior: "smooth", block: "start" });
 
-  if (!warPanel.classList.contains("hidden")) {
+  if (wasHidden) {
     warResult.classList.add("hidden");
   }
 });
@@ -3735,3 +4803,258 @@ btnWarBarracks.addEventListener("click", async () => {
     console.log("[Popup] Pas de calibration:", e);
   }
 })();
+
+// ============================================
+// War Mode - Scan Salle (4 equipes)
+// ============================================
+
+/**
+ * Charge une image depuis un dataUrl
+ */
+function loadImageFromDataUrl(dataUrl) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = dataUrl;
+  });
+}
+
+/**
+ * Scan de la salle War : capture screenshot, decoupe 4 equipes, identifie tous les portraits
+ */
+async function handleScanSalle(debugMode = false) {
+  showWarResult("Capture de la salle en cours...", "");
+
+  // 1. Capturer le screenshot du tab
+  const response = await ext.runtime.sendMessage({ type: "MSF_CAPTURE_TAB" });
+  if (!response || response.error || !response.dataUrl) {
+    throw new Error(response?.error || "Echec capture ecran");
+  }
+
+  showWarResult("Decoupe des 4 equipes...", "");
+
+  // 2. Charger l'image
+  const img = await loadImageFromDataUrl(response.dataUrl);
+  console.log(`[ScanSalle] Screenshot: ${img.naturalWidth}x${img.naturalHeight}`);
+
+  // 3. Charger la config zones et extraire les 4 slots
+  const configUrl = ext.runtime.getURL("msf-zones-config.json");
+  const cropper = await ZoneCropper.loadConfig(configUrl);
+  const slots = cropper.extractAllSlots(img);
+
+  console.log(`[ScanSalle] ${slots.length} slots extraits`);
+
+  // Mode debug : afficher les zones de decoupe
+  if (debugMode) {
+    displayScanDebug(response.dataUrl, slots, cropper);
+    return;
+  }
+
+  // 4. Initialiser WarAnalyzer
+  if (!warAnalyzer) {
+    warAnalyzer = new WarAnalyzer();
+    await warAnalyzer.init();
+  }
+
+  // 5. Analyser chaque slot
+  const results = [];
+  for (const slot of slots) {
+    showWarResult(`Analyse equipe ${slot.slotNumber}/4...`, "");
+    try {
+      const result = await warAnalyzer.analyzeEnemyTeamFromPortraits(slot.portraits, null);
+      results.push({ teamIndex: slot.slotNumber, ...result });
+    } catch (e) {
+      console.error(`[ScanSalle] Erreur equipe ${slot.slotNumber}:`, e);
+      results.push({ teamIndex: slot.slotNumber, identified: false, error: e.message });
+    }
+  }
+
+  // 6. Afficher les resultats
+  displayScanRoomResults(results, slots);
+}
+
+/**
+ * Affiche les resultats du scan salle : 4 cartes depliables avec portraits + counters
+ */
+function displayScanRoomResults(results, slots) {
+  const identifiedCount = results.filter(r => r.identified).length;
+
+  let html = `<div class="scan-room-results">`;
+  html += `<div class="scan-room-summary">${identifiedCount}/4 equipes identifiees</div>`;
+
+  for (let i = 0; i < results.length; i++) {
+    const result = results[i];
+    const slot = slots[i];
+    const cardId = `scan-card-${result.teamIndex}`;
+
+    html += `<div class="scan-room-card" id="${cardId}" data-slot="${result.teamIndex}">`;
+
+    // Header : portraits + nom equipe
+    html += `<div class="scan-room-card-header">`;
+
+    // Portraits miniatures
+    html += `<div class="scan-room-portraits">`;
+    if (slot && slot.portraits) {
+      for (let j = 0; j < slot.portraits.length; j++) {
+        const portrait = result.portraits ? result.portraits[j] : null;
+        const isIdentified = portrait && portrait.charId;
+        const name = portrait ? (portrait.name || "?") : "?";
+        html += `<img src="${slot.portraits[j]}" class="scan-room-portrait ${isIdentified ? '' : 'unknown'}" title="${name}">`;
+      }
+    }
+    html += `</div>`;
+
+    // Info equipe
+    html += `<div class="scan-room-team-info">`;
+    if (result.identified && result.team) {
+      const teamName = result.team.variantName || result.team.name;
+      html += `<span class="scan-room-team-name">${teamName}</span>`;
+      html += `<span class="scan-room-confidence">Confiance: ${result.matchConfidence}%</span>`;
+    } else {
+      html += `<span class="scan-room-team-name scan-room-unknown">Equipe ${result.teamIndex}</span>`;
+      if (result.characters) {
+        const names = result.characters.filter(n => n && n !== "?");
+        if (names.length > 0) {
+          html += `<span class="scan-room-confidence">${names.join(", ")}</span>`;
+        } else {
+          html += `<span class="scan-room-confidence">Non identifiee</span>`;
+        }
+      }
+    }
+    html += `</div>`;
+    html += `</div>`; // fin header
+
+    // Top 3 counters en mode compact
+    if (result.counters && result.counters.length > 0) {
+      html += `<div class="scan-room-counters">`;
+      result.counters.slice(0, 3).forEach(c => {
+        html += `<span class="scan-room-mini-counter">${c.teamName} ${confidenceToSymbols(c.confidence)}</span>`;
+      });
+      if (result.counters.length > 3) {
+        html += `<span class="scan-room-mini-counter scan-room-more">+${result.counters.length - 3}</span>`;
+      }
+      html += `</div>`;
+    } else if (result.identified) {
+      html += `<div class="scan-room-counters"><span class="scan-room-mini-counter">Pas de counters</span></div>`;
+    }
+
+    // Detail depliable (tous les counters)
+    html += `<div class="scan-room-detail hidden" id="detail-${result.teamIndex}">`;
+    if (result.counters && result.counters.length > 0) {
+      const hasRoster = typeof playerRoster !== "undefined" && playerRoster.size > 0;
+      const defenseName = result.team?.variantName || result.team?.name || "Equipe";
+
+      result.counters.forEach(c => {
+        const status = typeof canMakeTeam === "function" ? canMakeTeam(c.teamId) : null;
+        const isAvailable = status?.available;
+
+        html += `<div class="war-counter-item ${isAvailable ? 'available' : ''}">
+          <div class="war-counter-header">
+            <span class="war-counter-name">${c.teamName}</span>
+            <div class="war-counter-meta">
+              ${typeof renderStatsBadge === "function" ? renderStatsBadge(c.teamId) : ''}
+              ${hasRoster && typeof renderAvailabilityBadge === "function" ? renderAvailabilityBadge(c.teamId) : ''}
+              <span class="war-counter-confidence">${confidenceToSymbols(c.confidence)}</span>
+              ${c.minPower ? `<span class="war-counter-power">${typeof formatPower === "function" ? formatPower(c.minPower) : c.minPower}+</span>` : ""}
+            </div>
+          </div>
+          ${c.notes ? `<div class="war-counter-actions"><span class="war-counter-notes">${c.notes}</span></div>` : ''}
+        </div>`;
+      });
+    }
+    html += `</div>`; // fin detail
+
+    html += `</div>`; // fin card
+  }
+
+  html += `</div>`;
+
+  warResult.innerHTML = html;
+  warResult.classList.remove("hidden");
+
+  // Ajouter les event listeners pour deplier/replier les cartes
+  document.querySelectorAll(".scan-room-card").forEach(card => {
+    card.addEventListener("click", () => {
+      const slot = card.dataset.slot;
+      const detail = document.getElementById(`detail-${slot}`);
+      if (detail) {
+        detail.classList.toggle("hidden");
+        card.classList.toggle("expanded");
+      }
+    });
+  });
+}
+
+/**
+ * Mode debug : affiche le screenshot avec overlay des zones + portraits extraits
+ */
+async function displayScanDebug(screenshotDataUrl, slots, cropper) {
+  const img = await loadImageFromDataUrl(screenshotDataUrl);
+  const imgW = img.naturalWidth;
+  const imgH = img.naturalHeight;
+
+  let html = `<div class="scan-debug">`;
+  html += `<div style="font-size:12px;color:#845ef7;font-weight:600;margin-bottom:8px;">Mode Debug — Zones de decoupe</div>`;
+  html += `<div style="font-size:11px;color:#888;margin-bottom:8px;">Screenshot: ${imgW}x${imgH}px (captureVisibleTab)</div>`;
+
+  // Screenshot avec overlay des zones de portrait
+  html += `<div style="position:relative;margin-bottom:12px;">`;
+  html += `<img id="debug-screenshot" src="${screenshotDataUrl}" style="width:100%;border-radius:4px;border:1px solid #333;display:block;">`;
+
+  // Overlay des zones (en % pour s'adapter a la taille affichee)
+  const colors = ['#ff4444', '#44ff44', '#4444ff', '#ffff44'];
+  for (const slot of cropper.slots) {
+    const color = colors[(slot.slotNumber - 1) % 4];
+    for (let p = 1; p <= 5; p++) {
+      const zone = slot.zones[`portrait_${p}`];
+      html += `<div style="position:absolute;left:${zone.x * 100}%;top:${zone.y * 100}%;width:${zone.w * 100}%;height:${zone.h * 100}%;border:2px solid ${color};border-radius:4px;pointer-events:none;box-sizing:border-box;"></div>`;
+    }
+  }
+  html += `</div>`;
+
+  // Portraits extraits par slot
+  for (const slot of slots) {
+    html += `<div style="margin-bottom:10px;">`;
+    html += `<div style="font-size:11px;color:#00d4ff;margin-bottom:4px;">Slot ${slot.slotNumber} <span style="color:#666;">(${colors[(slot.slotNumber - 1) % 4]})</span></div>`;
+    html += `<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:flex-end;">`;
+    slot.portraits.forEach((p, i) => {
+      html += `<div style="text-align:center;">`;
+      html += `<img src="${p}" style="width:48px;height:48px;border-radius:4px;border:2px solid ${colors[(slot.slotNumber - 1) % 4]};">`;
+      html += `<div style="font-size:9px;color:#888;">P${i + 1}</div>`;
+      html += `</div>`;
+    });
+    html += `<div style="text-align:center;">`;
+    html += `<img src="${slot.team_full}" style="height:48px;border-radius:4px;border:1px solid #555;">`;
+    html += `<div style="font-size:9px;color:#888;">Full</div>`;
+    html += `</div>`;
+    html += `</div>`;
+    html += `</div>`;
+  }
+
+  html += `<div style="font-size:10px;color:#666;margin-top:8px;">Les rectangles colores sur le screenshot montrent ou les portraits sont decoupes. Si decales, ajuster msf-zones-config.json.</div>`;
+
+  html += `</div>`;
+
+  warResult.innerHTML = html;
+  warResult.classList.remove("hidden");
+}
+
+// Event listener Scan Salle
+document.getElementById("btn-war-scan-room").addEventListener("click", async (e) => {
+  const btn = document.getElementById("btn-war-scan-room");
+  const debugMode = e.ctrlKey || e.metaKey;
+
+  btn.disabled = true;
+  btn.textContent = debugMode ? "Debug..." : "Scan en cours...";
+
+  try {
+    await handleScanSalle(debugMode);
+  } catch (err) {
+    console.error("[ScanSalle] Erreur:", err);
+    showWarResult("Erreur: " + (err?.message || "Erreur inconnue"), "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "\u{1F3F0} Scan Salle";
+  }
+});
