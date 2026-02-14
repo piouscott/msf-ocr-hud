@@ -1153,11 +1153,30 @@ button:active {
   gap: 8px;
 }
 
+.scan-room-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
 .scan-room-summary {
-  font-size: 12px;
-  color: #888;
+  font-size: 11px;
+  color: #666;
   text-align: center;
-  padding: 4px 0;
+  padding: 2px 0;
+}
+.scan-room-btn-export {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid #555;
+  background: #2a2040;
+  color: #ccc;
+  cursor: pointer;
+}
+.scan-room-btn-export:hover {
+  border-color: #845ef7;
+  color: #fff;
 }
 
 .scan-room-card {
@@ -1165,100 +1184,205 @@ button:active {
   border: 1px solid #333;
   border-radius: 8px;
   padding: 10px;
-  cursor: pointer;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s;
 }
 
-.scan-room-card:hover {
-  border-color: #00d4ff;
+.scan-room-card-title {
+  font-weight: 700;
+  font-size: 12px;
+  color: #845ef7;
+  margin-bottom: 8px;
 }
 
-.scan-room-card.expanded {
-  border-color: #845ef7;
-  box-shadow: 0 0 8px rgba(132, 94, 247, 0.2);
-}
-
-.scan-room-card-header {
+/* Portraits en ligne */
+.scan-room-portraits-row {
   display: flex;
-  gap: 10px;
+  gap: 6px;
+  justify-content: center;
+}
+
+.scan-room-portrait-slot {
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  cursor: pointer;
+  padding: 3px;
+  border-radius: 6px;
+  transition: background 0.15s;
+  width: 60px;
 }
 
-.scan-room-portraits {
-  display: flex;
-  gap: 3px;
-  flex-shrink: 0;
+.scan-room-portrait-slot:hover {
+  background: rgba(132, 94, 247, 0.15);
 }
 
-.scan-room-portrait {
-  width: 32px;
-  height: 32px;
+.scan-room-portrait-img {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  border: 2px solid #444;
+  border: 2px solid #555;
   object-fit: cover;
   background: #1a1a2e;
+  transition: border-color 0.2s;
 }
 
-.scan-room-portrait.unknown {
-  filter: grayscale(100%);
-  opacity: 0.5;
-  border-color: #555;
+.scan-room-portrait-img.learned {
+  border-color: #22c55e;
 }
 
-.scan-room-team-info {
-  flex: 1;
-  min-width: 0;
+.scan-room-portrait-img.guessed {
+  border-color: #f59e0b;
 }
 
-.scan-room-team-name {
-  font-weight: 700;
-  font-size: 13px;
-  color: #fff;
-  display: block;
-  white-space: nowrap;
+.scan-room-portrait-name {
+  font-size: 9px;
+  color: #ccc;
+  text-align: center;
+  margin-top: 3px;
+  max-width: 58px;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
 }
 
-.scan-room-team-name.scan-room-unknown {
-  color: #888;
-  font-style: italic;
+.scan-room-portrait-name.empty {
+  color: #555;
 }
 
-.scan-room-confidence {
-  font-size: 11px;
-  color: #888;
-  display: block;
+/* Zone de recherche */
+.scan-room-search {
+  margin-top: 8px;
+  border-top: 1px solid #333;
+  padding-top: 8px;
 }
 
-.scan-room-counters {
+.scan-room-search-bar {
   display: flex;
-  flex-wrap: wrap;
   gap: 4px;
-  margin-top: 6px;
 }
 
-.scan-room-mini-counter {
+.scan-room-search-input {
+  flex: 1;
   background: #1a1a2e;
+  border: 1px solid #444;
   border-radius: 4px;
-  padding: 3px 8px;
+  color: #fff;
+  padding: 6px 8px;
+  font-size: 12px;
+  outline: none;
+}
+
+.scan-room-search-input:focus {
+  border-color: #845ef7;
+}
+
+.scan-room-search-close {
+  background: #333;
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #888;
+  padding: 4px 8px;
+  cursor: pointer;
   font-size: 11px;
+}
+
+.scan-room-search-close:hover {
+  background: #444;
+  color: #fff;
+}
+
+.scan-room-search-results {
+  max-height: 150px;
+  overflow-y: auto;
+  margin-top: 4px;
+}
+
+.scan-room-search-item {
+  padding: 5px 8px;
+  font-size: 11px;
+  color: #ccc;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.scan-room-search-fr {
+  color: #666;
+  font-size: 10px;
+  margin-left: 6px;
+}
+
+.scan-room-search-item:hover .scan-room-search-fr {
   color: #ccc;
 }
 
-.scan-room-mini-counter.scan-room-more {
-  color: #845ef7;
-  font-weight: 600;
+.scan-room-search-item:hover {
+  background: #845ef7;
+  color: #fff;
 }
 
-.scan-room-detail {
+.scan-room-search-empty {
+  padding: 8px;
+  font-size: 11px;
+  color: #555;
+  text-align: center;
+}
+
+/* Actions equipe */
+.scan-room-team-actions {
+  margin-top: 8px;
+  text-align: center;
+}
+
+.scan-room-btn-counters {
+  background: linear-gradient(135deg, #845ef7, #6c3ce0);
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  padding: 6px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.scan-room-btn-counters:hover {
+  opacity: 0.85;
+}
+
+.scan-room-btn-counters:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.scan-room-hint {
+  font-size: 10px;
+  color: #555;
+}
+
+/* Zone counters */
+.scan-room-counters-zone {
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px solid #333;
 }
 
-.scan-room-detail .war-counter-item {
+.scan-room-counters-zone .war-counter-item {
   padding: 6px 0;
+}
+
+.scan-room-team-identified {
+  font-size: 12px;
+  font-weight: 600;
+  color: #00d4ff;
+  margin-bottom: 6px;
+}
+
+.scan-room-counters-error {
+  font-size: 11px;
+  color: #888;
+  text-align: center;
+  padding: 4px;
 }
 
 /* Events Panel */

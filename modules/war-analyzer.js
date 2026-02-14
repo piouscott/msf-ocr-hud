@@ -846,6 +846,162 @@ class WarAnalyzer {
   }
 
   /**
+   * Scoring combine Hue + pHash pour les petites images (scan salle)
+   * Le Hue seul n'est pas assez discriminant car beaucoup de persos MSF
+   * partagent les memes couleurs dominantes (rouge, bleu, violet)
+   * Le pHash capture la structure spatiale du visage pour les departager
+   */
+  findCombinedMatch(captureHue, captureHash, threshold = 70, minGap = 2.0) {
+    const candidates = [];
+    const hueWeight = 0.4;
+    const phashWeight = 0.6;
+
+    for (const [charId, data] of Object.entries(this.portraitsDb)) {
+      const refHue = data.hueCircular || data.hue;
+      if (!refHue) continue;
+
+      // Utiliser hashNoCrop si disponible (meme traitement que le runtime pour petites images)
+      const refHash = data.hashNoCrop || data.hash;
+      if (!refHash) continue;
+
+      const hueSim = this.hueHistogramSimilarity(captureHue, refHue) * 100;
+      const pHashSim = this.hashSimilarity(captureHash, refHash);
+      const combined = hueWeight * hueSim + phashWeight * pHashSim;
+
+      if (combined >= threshold) {
+        candidates.push({
+          name: data.name || charId,
+          charId: charId,
+          similarity: Math.round(combined * 10) / 10,
+          hueSim: Math.round(hueSim * 10) / 10,
+          pHashSim: pHashSim,
+          hash: data.hash
+        });
+      }
+    }
+
+    candidates.sort((a, b) => b.similarity - a.similarity);
+
+    if (candidates.length > 0) {
+      console.log(`[WarAnalyzer] Top ${Math.min(5, candidates.length)} matches (Combined hue+pHash):`);
+      candidates.slice(0, 5).forEach((c, i) => {
+        console.log(`  ${i + 1}. ${c.name}: ${c.similarity}% (hue:${c.hueSim}% phash:${c.pHashSim}%)`);
+      });
+    } else {
+      console.log(`[WarAnalyzer] Aucun candidat Combined >= ${threshold}%`);
+    }
+
+    if (candidates.length >= 2) {
+      const gap = candidates[0].similarity - candidates[1].similarity;
+      if (gap < minGap) {
+        console.log(`[WarAnalyzer] Match ambigu: ecart de ${gap.toFixed(1)}% entre ${candidates[0].name} et ${candidates[1].name}`);
+        const match = candidates[0];
+        match.ambiguous = true;
+        match.alternatives = candidates.slice(1, 3);
+        return match;
+      }
+    }
+
+    if (candidates.length > 0 && candidates[0].similarity >= threshold) {
+      return candidates[0];
+    }
+
+    return null;
+  }
+
+  /**
+   * Charge les portraits appris : bundled (data/learned-portraits.json) + user local (chrome.storage)
+   * Les corrections user overrident les bundled pour le meme charId
+   */
+  async loadLearnedPortraits() {
+    const ext = typeof browser !== "undefined" ? browser : chrome;
+
+    // 1. Charger les portraits bundled (partages avec tous les utilisateurs)
+    let bundled = {};
+    try {
+      const url = ext.runtime.getURL("data/learned-portraits.json");
+      const resp = await fetch(url);
+      const data = await resp.json();
+      bundled = data.portraits || {};
+    } catch (e) { /* fichier absent ou vide = OK */ }
+
+    // 2. Charger les portraits perso (corrections locales de l'utilisateur)
+    let userLocal = {};
+    try {
+      const result = await ext.storage.local.get("learnedPortraits");
+      userLocal = result.learnedPortraits || {};
+    } catch (e) {}
+
+    // 3. Merger : user local overrides bundled
+    this.learnedDb = { ...bundled, ...userLocal };
+    const bundledCount = Object.keys(bundled).length;
+    const userCount = Object.keys(userLocal).length;
+    console.log(`[WarAnalyzer] Portraits appris: ${bundledCount} bundled + ${userCount} perso = ${Object.keys(this.learnedDb).length} total`);
+  }
+
+  /**
+   * Sauvegarde un portrait appris (correction utilisateur)
+   */
+  async saveLearnedPortrait(charId, name, hueHist, hash) {
+    if (!this.learnedDb) this.learnedDb = {};
+
+    this.learnedDb[charId] = {
+      name: name,
+      hue: hueHist,
+      hash: hash,
+      count: (this.learnedDb[charId]?.count || 0) + 1,
+      lastSeen: Date.now()
+    };
+
+    try {
+      const ext = typeof browser !== "undefined" ? browser : chrome;
+      await ext.storage.local.set({ learnedPortraits: this.learnedDb });
+      console.log(`[WarAnalyzer] Portrait appris sauvegarde: ${name} (${charId})`);
+    } catch (e) {
+      console.error("[WarAnalyzer] Erreur sauvegarde portrait appris:", e);
+    }
+  }
+
+  /**
+   * Cherche un match dans la DB apprise (memes conditions de capture = haute fiabilite)
+   */
+  findLearnedMatch(captureHue, captureHash) {
+    if (!this.learnedDb || Object.keys(this.learnedDb).length === 0) return null;
+
+    const candidates = [];
+
+    for (const [charId, data] of Object.entries(this.learnedDb)) {
+      if (!data.hue) continue;
+
+      const hueSim = this.hueHistogramSimilarity(captureHue, data.hue) * 100;
+      const pHashSim = data.hash ? this.hashSimilarity(captureHash, data.hash) : 0;
+      const combined = 0.4 * hueSim + 0.6 * pHashSim;
+
+      if (combined >= 85) {
+        candidates.push({
+          name: data.name,
+          charId: charId,
+          similarity: Math.round(combined * 10) / 10,
+          hash: data.hash,
+          method: "learned"
+        });
+      }
+    }
+
+    candidates.sort((a, b) => b.similarity - a.similarity);
+
+    if (candidates.length > 0 && candidates[0].similarity >= 85) {
+      const gap = candidates.length >= 2 ? candidates[0].similarity - candidates[1].similarity : 100;
+      if (gap >= 2.0) {
+        console.log(`[WarAnalyzer] Learned match: ${candidates[0].name} (${candidates[0].similarity}%)`);
+        return candidates[0];
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Trouve le meilleur match pour un hash dans la base de portraits (legacy pHash)
    * threshold: similarite minimale (defaut 75%)
    * minGap: ecart minimum avec le 2eme match pour accepter (defaut 3%)
@@ -937,22 +1093,29 @@ class WarAnalyzer {
 
         let match = null;
 
-        // Methode principale: histogramme Hue (plus discriminant)
         // Detecter si c'est une petite image (scan salle) pour adapter le matching
         const tempImg = await this.loadImage(dataUrl);
         const isSmallPortrait = tempImg.height < 100;
-        const hueThreshold = isSmallPortrait ? 75 : 90;
 
-        if (hasHueHistograms) {
+        if (isSmallPortrait && hasHueHistograms) {
+          // Petites images (scan salle): scoring combine Hue + pHash
+          // Le Hue seul n'est pas assez discriminant (beaucoup de persos MSF ont les memes couleurs)
           const hueHist = await this.computeHueHistogram(dataUrl);
-          // Pour petites images: utiliser hueCircular de la DB (si disponible)
-          match = this.findPortraitMatchByHue(hueHist, hueThreshold, 1.5, isSmallPortrait);
+          const hash = await this.computePortraitHash(dataUrl);
+          match = this.findCombinedMatch(hueHist, hash, 70, 2.0);
           if (match) {
-            match.method = isSmallPortrait ? "hue-circular" : "hue";
+            match.method = "combined";
+          }
+        } else if (hasHueHistograms) {
+          // Grandes images (barracks): Hue seul suffit
+          const hueHist = await this.computeHueHistogram(dataUrl);
+          match = this.findPortraitMatchByHue(hueHist, 90, 1.5, false);
+          if (match) {
+            match.method = "hue";
           }
         }
 
-        // Fallback: pHash si base sans histogrammes Hue ou pas de match
+        // Fallback: pHash seul si base sans histogrammes Hue ou pas de match
         if (!match) {
           const hash = await this.computePortraitHash(dataUrl);
           console.log(`[WarAnalyzer] Fallback pHash, hash: ${hash}`);
@@ -991,6 +1154,28 @@ class WarAnalyzer {
           hash: null,
           error: e.message
         });
+      }
+    }
+
+    // Deduplication: un meme personnage ne peut pas apparaitre 2 fois dans la meme equipe
+    // Si doublon, garder celui avec le meilleur score et marquer l'autre comme inconnu
+    const seen = new Map(); // charId -> index du meilleur match
+    for (let i = 0; i < identified.length; i++) {
+      const id = identified[i].charId;
+      if (!id) continue;
+      if (seen.has(id)) {
+        const prevIdx = seen.get(id);
+        // Garder le meilleur score, invalider l'autre
+        if (identified[i].similarity > identified[prevIdx].similarity) {
+          console.log(`[WarAnalyzer] Dedup: ${identified[prevIdx].name} en position ${prevIdx + 1} remplace par inconnu (doublon, score inferieur)`);
+          identified[prevIdx] = { name: null, charId: null, similarity: 0, hash: null, dedup: true };
+          seen.set(id, i);
+        } else {
+          console.log(`[WarAnalyzer] Dedup: ${identified[i].name} en position ${i + 1} remplace par inconnu (doublon, score inferieur)`);
+          identified[i] = { name: null, charId: null, similarity: 0, hash: null, dedup: true };
+        }
+      } else {
+        seen.set(id, i);
       }
     }
 

@@ -115,6 +115,69 @@ async function computePortraitHash(imageBuffer) {
 }
 
 /**
+ * Calcule le hash perceptuel SANS crop (pour matcher les petites images scan salle)
+ * Le runtime ne croppe pas les petites images, donc la DB doit avoir un hash comparable
+ */
+async function computePortraitHashNoCrop(imageBuffer) {
+  const hashSize = 8;
+  const sampleSize = 32;
+
+  const img = await loadImage(imageBuffer);
+
+  const canvas = createCanvas(sampleSize, sampleSize);
+  const ctx = canvas.getContext("2d");
+
+  // Pas de crop: image complete (comme le runtime pour les petites images)
+  ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, sampleSize, sampleSize);
+
+  const imageData = ctx.getImageData(0, 0, sampleSize, sampleSize);
+  const pixels = imageData.data;
+
+  const gray = new Float32Array(sampleSize * sampleSize);
+  for (let i = 0; i < gray.length; i++) {
+    const offset = i * 4;
+    gray[i] = 0.299 * pixels[offset] + 0.587 * pixels[offset + 1] + 0.114 * pixels[offset + 2];
+  }
+
+  const resized = new Float32Array(hashSize * hashSize);
+  const blockW = sampleSize / hashSize;
+  const blockH = sampleSize / hashSize;
+
+  for (let y = 0; y < hashSize; y++) {
+    for (let x = 0; x < hashSize; x++) {
+      let sum = 0;
+      let count = 0;
+      const startY = Math.floor(y * blockH);
+      const endY = Math.floor((y + 1) * blockH);
+      const startX = Math.floor(x * blockW);
+      const endX = Math.floor((x + 1) * blockW);
+
+      for (let py = startY; py < endY; py++) {
+        for (let px = startX; px < endX; px++) {
+          sum += gray[py * sampleSize + px];
+          count++;
+        }
+      }
+      resized[y * hashSize + x] = count > 0 ? sum / count : 0;
+    }
+  }
+
+  const sorted = [...resized].sort((a, b) => a - b);
+  const median = sorted[Math.floor(sorted.length / 2)];
+  let binary = "";
+  for (let i = 0; i < resized.length; i++) {
+    binary += resized[i] > median ? "1" : "0";
+  }
+
+  let hex = "";
+  for (let i = 0; i < binary.length; i += 4) {
+    hex += parseInt(binary.substr(i, 4), 2).toString(16);
+  }
+
+  return hex;
+}
+
+/**
  * Convertit RGB en HSV
  */
 function rgbToHsv(r, g, b) {
@@ -294,12 +357,14 @@ async function main() {
     // Calculer le hash et les histogrammes Hue (standard + circulaire)
     try {
       const hash = await computePortraitHash(imageBuffer);
+      const hashNC = await computePortraitHashNoCrop(imageBuffer);
       const hueHist = await computeHueHistogram(imageBuffer);
       const hueCircular = await computeHueHistogramCircular(imageBuffer);
 
       portraits[charId] = {
         name: name,
         hash: hash,
+        hashNoCrop: hashNC,
         hue: hueHist,
         hueCircular: hueCircular
       };

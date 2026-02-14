@@ -212,15 +212,15 @@
         <button id="btn-war-scan-room" class="btn-sync">🏰 Scan Salle</button>
       </div>
 
-      <!-- Onglets Mode -->
-      <div class="war-tabs">
+      <!-- Onglets Mode (masques — on garde uniquement Scan Salle) -->
+      <div class="war-tabs hidden">
         <button id="tab-portrait" class="war-tab active">Scan Portrait</button>
         <button id="tab-manual" class="war-tab">Saisie manuelle</button>
         <button id="tab-stats" class="war-tab">📊 Stats</button>
       </div>
 
-      <!-- Mode Portrait Scan -->
-      <div id="war-portrait-mode">
+      <!-- Mode Portrait Scan (masque) -->
+      <div id="war-portrait-mode" class="hidden">
         <div class="war-form">
           <label class="api-label">Portraits de l'equipe ennemie</label>
           <div id="war-portraits" class="war-portraits-grid">
@@ -253,7 +253,7 @@
         <div id="calibration-status" class="api-help"></div>
       </div>
 
-      <!-- Mode Saisie Manuelle -->
+      <!-- Mode Saisie Manuelle (masque) -->
       <div id="war-manual-mode" class="hidden">
         <div class="war-form">
           <label class="api-label">Noms des personnages (1 par ligne)</label>
@@ -265,8 +265,8 @@
         </div>
       </div>
 
-      <!-- Puissance (commun aux deux modes) -->
-      <div id="war-power-section" class="war-power-row">
+      <!-- Puissance (masque) -->
+      <div id="war-power-section" class="war-power-row hidden">
         <label class="api-label">Puissance ennemi (optionnel)</label>
         <input type="text" id="war-power" class="sync-input" placeholder="Ex: 5000000">
       </div>

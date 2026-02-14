@@ -4190,6 +4190,8 @@ btnWarOcr.addEventListener("click", () => {
 
 btnCloseWar.addEventListener("click", () => {
   warPanel.classList.add("hidden");
+  // Restaurer les panneaux caches par le scan salle
+  if (typeof restoreWarPanelUI === "function") restoreWarPanelUI();
 });
 
 btnWarAnalyze.addEventListener("click", async () => {
@@ -4820,13 +4822,67 @@ function loadImageFromDataUrl(dataUrl) {
   });
 }
 
+// --- Scan Salle : etat global ---
+let scanRoomState = null; // { teams: [{slotNumber, portraits: [{dataUrl, hue, hash, charId, name, learned}]}] }
+let scanRoomCharList = null; // [{charId, name}] pour autocomplete
+
+async function getScanCharacterList() {
+  if (scanRoomCharList) return scanRoomCharList;
+  if (!charactersData) {
+    try {
+      const response = await fetch(ext.runtime.getURL("data/characters-full.json"));
+      charactersData = await response.json();
+    } catch (e) { /* ignore */ }
+  }
+  const chars = charactersData?.characters || charactersData || {};
+
+  // Charger les noms FR depuis ocr-names.json (nameToId contient les mappings FR -> charId)
+  let frNames = {}; // charId -> nom FR
+  try {
+    const ocrRes = await fetch(ext.runtime.getURL("data/ocr-names.json"));
+    const ocrData = await ocrRes.json();
+    if (ocrData.nameToId) {
+      // Inverser: pour chaque nom FR, trouver le charId et garder le plus court (le plus naturel)
+      for (const [name, charId] of Object.entries(ocrData.nameToId)) {
+        const upperCharId = charId.toUpperCase();
+        // Trouver le vrai charId (case-insensitive)
+        const realCharId = Object.keys(chars).find(k => k.toUpperCase() === upperCharId);
+        if (realCharId) {
+          const enName = chars[realCharId]?.name?.toUpperCase();
+          // Ne garder que si c'est different du nom anglais (c'est un alias FR)
+          if (enName && name !== enName) {
+            // Garder le nom FR le plus court pour ce charId (plus naturel)
+            if (!frNames[realCharId] || name.length < frNames[realCharId].length) {
+              // Mettre en title case
+              frNames[realCharId] = name.split(" ").map(w =>
+                w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
+              ).join(" ");
+            }
+          }
+        }
+      }
+    }
+  } catch (e) { /* ignore */ }
+
+  scanRoomCharList = Object.entries(chars)
+    .filter(([id]) => !id.startsWith("PVE_"))
+    .map(([id, data]) => ({
+      charId: id,
+      name: data.name,
+      nameFr: frNames[id] || null,
+      searchText: ((data.name || "") + " " + (frNames[id] || "")).toLowerCase()
+    })).sort((a, b) => a.name.localeCompare(b.name));
+
+  console.log(`[ScanSalle] ${scanRoomCharList.length} persos, ${Object.keys(frNames).length} noms FR`);
+  return scanRoomCharList;
+}
+
 /**
- * Scan de la salle War : capture screenshot, decoupe 4 equipes, identifie tous les portraits
+ * Scan de la salle War : capture, decoupe 4 equipes, identifie via DB apprise puis CDN
  */
 async function handleScanSalle(debugMode = false) {
   showWarResult("Capture de la salle en cours...", "");
 
-  // 1. Capturer le screenshot du tab
   const response = await ext.runtime.sendMessage({ type: "MSF_CAPTURE_TAB" });
   if (!response || response.error || !response.dataUrl) {
     throw new Error(response?.error || "Echec capture ecran");
@@ -4834,136 +4890,124 @@ async function handleScanSalle(debugMode = false) {
 
   showWarResult("Decoupe des 4 equipes...", "");
 
-  // 2. Charger l'image
   const img = await loadImageFromDataUrl(response.dataUrl);
-  console.log(`[ScanSalle] Screenshot: ${img.naturalWidth}x${img.naturalHeight}`);
-
-  // 3. Charger la config zones et extraire les 4 slots
-  const configUrl = ext.runtime.getURL("msf-zones-config.json");
+  const configUrl = ext.runtime.getURL("msf-zones-config.json") + "?t=" + Date.now();
   const cropper = await ZoneCropper.loadConfig(configUrl);
   const slots = cropper.extractAllSlots(img);
 
-  console.log(`[ScanSalle] ${slots.length} slots extraits`);
+  if (debugMode) { displayScanDebug(response.dataUrl, slots, cropper); return; }
 
-  // Mode debug : afficher les zones de decoupe
-  if (debugMode) {
-    displayScanDebug(response.dataUrl, slots, cropper);
-    return;
-  }
+  if (!warAnalyzer) { warAnalyzer = new WarAnalyzer(); await warAnalyzer.init(); }
+  if (!warAnalyzer.learnedDb) await warAnalyzer.loadLearnedPortraits();
 
-  // 4. Initialiser WarAnalyzer
-  if (!warAnalyzer) {
-    warAnalyzer = new WarAnalyzer();
-    await warAnalyzer.init();
-  }
+  // Preparer la liste de persos pour autocomplete
+  await getScanCharacterList();
 
-  // 5. Analyser chaque slot
-  const results = [];
+  showWarResult("Identification des portraits...", "");
+
+  scanRoomState = { teams: [] };
+
   for (const slot of slots) {
-    showWarResult(`Analyse equipe ${slot.slotNumber}/4...`, "");
-    try {
-      const result = await warAnalyzer.analyzeEnemyTeamFromPortraits(slot.portraits, null);
-      results.push({ teamIndex: slot.slotNumber, ...result });
-    } catch (e) {
-      console.error(`[ScanSalle] Erreur equipe ${slot.slotNumber}:`, e);
-      results.push({ teamIndex: slot.slotNumber, identified: false, error: e.message });
+    const team = { slotNumber: slot.slotNumber, portraits: [] };
+
+    for (let i = 0; i < slot.portraits.length; i++) {
+      const dataUrl = slot.portraits[i];
+      const hueHist = await warAnalyzer.computeHueHistogram(dataUrl);
+      const hash = await warAnalyzer.computePortraitHash(dataUrl);
+
+      // DB apprise d'abord (meme rendu = fiable), puis CDN (best effort)
+      let match = warAnalyzer.findLearnedMatch(hueHist, hash);
+      if (!match) {
+        match = warAnalyzer.findCombinedMatch(hueHist, hash, 70, 2.0);
+      }
+
+      team.portraits.push({
+        dataUrl,
+        hue: hueHist,
+        hash: hash,
+        charId: match?.charId || null,
+        name: match?.name || null,
+        similarity: match?.similarity || 0,
+        learned: match?.method === "learned"
+      });
     }
+
+    scanRoomState.teams.push(team);
   }
 
-  // 6. Afficher les resultats
-  displayScanRoomResults(results, slots);
+  renderScanRoomResults();
 }
 
 /**
- * Affiche les resultats du scan salle : 4 cartes depliables avec portraits + counters
+ * Affiche les resultats du scan salle avec portraits editables
  */
-function displayScanRoomResults(results, slots) {
-  const identifiedCount = results.filter(r => r.identified).length;
+function renderScanRoomResults() {
+  if (!scanRoomState) return;
+
+  // Cacher les controles du war panel pour nettoyer l'ecran
+  const warTabs = document.querySelector(".war-tabs");
+  const warPortrait = document.getElementById("war-portrait-mode");
+  const warManual = document.getElementById("war-manual-mode");
+  const warPower = document.getElementById("war-power-section");
+  const warStats = document.getElementById("war-stats-mode");
+  if (warTabs) warTabs.classList.add("hidden");
+  if (warPortrait) warPortrait.classList.add("hidden");
+  if (warManual) warManual.classList.add("hidden");
+  if (warPower) warPower.classList.add("hidden");
+  if (warStats) warStats.classList.add("hidden");
+
+  const learnedCount = warAnalyzer?.learnedDb ? Object.keys(warAnalyzer.learnedDb).length : 0;
 
   let html = `<div class="scan-room-results">`;
-  html += `<div class="scan-room-summary">${identifiedCount}/4 equipes identifiees</div>`;
+  html += `<div class="scan-room-header">`;
+  html += `<div class="scan-room-summary">${learnedCount} perso${learnedCount > 1 ? 's' : ''} appris — cliquer les portraits pour corriger</div>`;
+  if (learnedCount > 0) {
+    html += `<button class="scan-room-btn-export" id="btn-export-learned" title="Copier les portraits appris dans le presse-papier">Exporter</button>`;
+  }
+  html += `</div>`;
 
-  for (let i = 0; i < results.length; i++) {
-    const result = results[i];
-    const slot = slots[i];
-    const cardId = `scan-card-${result.teamIndex}`;
+  for (let t = 0; t < scanRoomState.teams.length; t++) {
+    const team = scanRoomState.teams[t];
+    const identifiedNames = team.portraits.filter(p => p.name).map(p => p.name);
 
-    html += `<div class="scan-room-card" id="${cardId}" data-slot="${result.teamIndex}">`;
+    html += `<div class="scan-room-card" data-team="${t}">`;
+    html += `<div class="scan-room-card-title">Equipe ${team.slotNumber}</div>`;
 
-    // Header : portraits + nom equipe
-    html += `<div class="scan-room-card-header">`;
+    // 5 portraits en ligne
+    html += `<div class="scan-room-portraits-row">`;
+    for (let p = 0; p < team.portraits.length; p++) {
+      const portrait = team.portraits[p];
+      const isLearned = portrait.learned;
+      const isGuessed = portrait.charId && !portrait.learned;
+      const stateClass = isLearned ? "learned" : (isGuessed ? "guessed" : "");
 
-    // Portraits miniatures
-    html += `<div class="scan-room-portraits">`;
-    if (slot && slot.portraits) {
-      for (let j = 0; j < slot.portraits.length; j++) {
-        const portrait = result.portraits ? result.portraits[j] : null;
-        const isIdentified = portrait && portrait.charId;
-        const name = portrait ? (portrait.name || "?") : "?";
-        html += `<img src="${slot.portraits[j]}" class="scan-room-portrait ${isIdentified ? '' : 'unknown'}" title="${name}">`;
-      }
-    }
-    html += `</div>`;
-
-    // Info equipe
-    html += `<div class="scan-room-team-info">`;
-    if (result.identified && result.team) {
-      const teamName = result.team.variantName || result.team.name;
-      html += `<span class="scan-room-team-name">${teamName}</span>`;
-      html += `<span class="scan-room-confidence">Confiance: ${result.matchConfidence}%</span>`;
-    } else {
-      html += `<span class="scan-room-team-name scan-room-unknown">Equipe ${result.teamIndex}</span>`;
-      if (result.characters) {
-        const names = result.characters.filter(n => n && n !== "?");
-        if (names.length > 0) {
-          html += `<span class="scan-room-confidence">${names.join(", ")}</span>`;
-        } else {
-          html += `<span class="scan-room-confidence">Non identifiee</span>`;
-        }
-      }
-    }
-    html += `</div>`;
-    html += `</div>`; // fin header
-
-    // Top 3 counters en mode compact
-    if (result.counters && result.counters.length > 0) {
-      html += `<div class="scan-room-counters">`;
-      result.counters.slice(0, 3).forEach(c => {
-        html += `<span class="scan-room-mini-counter">${c.teamName} ${confidenceToSymbols(c.confidence)}</span>`;
-      });
-      if (result.counters.length > 3) {
-        html += `<span class="scan-room-mini-counter scan-room-more">+${result.counters.length - 3}</span>`;
-      }
+      html += `<div class="scan-room-portrait-slot" data-team="${t}" data-portrait="${p}">`;
+      html += `<img src="${portrait.dataUrl}" class="scan-room-portrait-img ${stateClass}">`;
+      html += `<div class="scan-room-portrait-name ${portrait.name ? '' : 'empty'}">${portrait.name || '?'}</div>`;
       html += `</div>`;
-    } else if (result.identified) {
-      html += `<div class="scan-room-counters"><span class="scan-room-mini-counter">Pas de counters</span></div>`;
     }
+    html += `</div>`;
 
-    // Detail depliable (tous les counters)
-    html += `<div class="scan-room-detail hidden" id="detail-${result.teamIndex}">`;
-    if (result.counters && result.counters.length > 0) {
-      const hasRoster = typeof playerRoster !== "undefined" && playerRoster.size > 0;
-      const defenseName = result.team?.variantName || result.team?.name || "Equipe";
+    // Zone de recherche (cachee, apparait au clic sur un portrait)
+    html += `<div class="scan-room-search hidden" id="search-${t}">`;
+    html += `<div class="scan-room-search-bar">`;
+    html += `<input type="text" class="scan-room-search-input" id="search-input-${t}" placeholder="Rechercher un personnage..." autocomplete="off">`;
+    html += `<button class="scan-room-search-close" data-team="${t}">X</button>`;
+    html += `</div>`;
+    html += `<div class="scan-room-search-results" id="search-results-${t}"></div>`;
+    html += `</div>`;
 
-      result.counters.forEach(c => {
-        const status = typeof canMakeTeam === "function" ? canMakeTeam(c.teamId) : null;
-        const isAvailable = status?.available;
-
-        html += `<div class="war-counter-item ${isAvailable ? 'available' : ''}">
-          <div class="war-counter-header">
-            <span class="war-counter-name">${c.teamName}</span>
-            <div class="war-counter-meta">
-              ${typeof renderStatsBadge === "function" ? renderStatsBadge(c.teamId) : ''}
-              ${hasRoster && typeof renderAvailabilityBadge === "function" ? renderAvailabilityBadge(c.teamId) : ''}
-              <span class="war-counter-confidence">${confidenceToSymbols(c.confidence)}</span>
-              ${c.minPower ? `<span class="war-counter-power">${typeof formatPower === "function" ? formatPower(c.minPower) : c.minPower}+</span>` : ""}
-            </div>
-          </div>
-          ${c.notes ? `<div class="war-counter-actions"><span class="war-counter-notes">${c.notes}</span></div>` : ''}
-        </div>`;
-      });
+    // Actions : bouton counters ou indicateur
+    html += `<div class="scan-room-team-actions">`;
+    if (identifiedNames.length >= 3) {
+      html += `<button class="scan-room-btn-counters" data-team="${t}">Chercher counters</button>`;
+    } else {
+      html += `<span class="scan-room-hint">${identifiedNames.length}/5 identifies</span>`;
     }
-    html += `</div>`; // fin detail
+    html += `</div>`;
+
+    // Zone counters (remplie apres lookup)
+    html += `<div class="scan-room-counters-zone hidden" id="counters-${t}"></div>`;
 
     html += `</div>`; // fin card
   }
@@ -4973,17 +5017,229 @@ function displayScanRoomResults(results, slots) {
   warResult.innerHTML = html;
   warResult.classList.remove("hidden");
 
-  // Ajouter les event listeners pour deplier/replier les cartes
-  document.querySelectorAll(".scan-room-card").forEach(card => {
-    card.addEventListener("click", () => {
-      const slot = card.dataset.slot;
-      const detail = document.getElementById(`detail-${slot}`);
-      if (detail) {
-        detail.classList.toggle("hidden");
-        card.classList.toggle("expanded");
-      }
+  // --- Event listeners ---
+  setupScanRoomListeners();
+}
+
+function setupScanRoomListeners() {
+  // Clic sur portrait : ouvrir recherche
+  document.querySelectorAll(".scan-room-portrait-slot").forEach(slot => {
+    slot.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const t = parseInt(slot.dataset.team);
+      const p = parseInt(slot.dataset.portrait);
+      openPortraitSearch(t, p);
     });
   });
+
+  // Fermer recherche
+  document.querySelectorAll(".scan-room-search-close").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const t = parseInt(btn.dataset.team);
+      closePortraitSearch(t);
+    });
+  });
+
+  // Input recherche
+  document.querySelectorAll(".scan-room-search-input").forEach(input => {
+    input.addEventListener("input", (e) => {
+      const t = parseInt(input.dataset?.team || input.id.replace("search-input-", ""));
+      filterCharacterSearch(t, input.value);
+    });
+  });
+
+  // Bouton counters
+  document.querySelectorAll(".scan-room-btn-counters").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const t = parseInt(btn.dataset.team);
+      lookupTeamCounters(t);
+    });
+  });
+
+  // Bouton export portraits appris
+  const btnExport = document.getElementById("btn-export-learned");
+  if (btnExport) {
+    btnExport.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      try {
+        const result = await ext.storage.local.get("learnedPortraits");
+        const userPortraits = result.learnedPortraits || {};
+        const exportData = {
+          description: "Portraits appris partages - generes depuis les corrections utilisateur",
+          version: 1,
+          generatedAt: new Date().toISOString(),
+          count: Object.keys(userPortraits).length,
+          portraits: userPortraits
+        };
+        await navigator.clipboard.writeText(JSON.stringify(exportData, null, 2));
+        btnExport.textContent = "Copie !";
+        setTimeout(() => { btnExport.textContent = "Exporter"; }, 2000);
+      } catch (err) {
+        btnExport.textContent = "Erreur";
+        setTimeout(() => { btnExport.textContent = "Exporter"; }, 2000);
+      }
+    });
+  }
+}
+
+let activeSearchTeam = -1;
+let activeSearchPortrait = -1;
+
+function openPortraitSearch(teamIdx, portraitIdx) {
+  // Fermer toute recherche ouverte
+  document.querySelectorAll(".scan-room-search").forEach(s => s.classList.add("hidden"));
+
+  activeSearchTeam = teamIdx;
+  activeSearchPortrait = portraitIdx;
+
+  const searchDiv = document.getElementById(`search-${teamIdx}`);
+  const input = document.getElementById(`search-input-${teamIdx}`);
+  if (searchDiv && input) {
+    searchDiv.classList.remove("hidden");
+    input.value = "";
+    input.focus();
+    filterCharacterSearch(teamIdx, "");
+  }
+}
+
+function closePortraitSearch(teamIdx) {
+  const searchDiv = document.getElementById(`search-${teamIdx}`);
+  if (searchDiv) searchDiv.classList.add("hidden");
+  activeSearchTeam = -1;
+  activeSearchPortrait = -1;
+}
+
+function filterCharacterSearch(teamIdx, query) {
+  const resultsDiv = document.getElementById(`search-results-${teamIdx}`);
+  if (!resultsDiv || !scanRoomCharList) return;
+
+  const q = query.trim().toLowerCase();
+  // Recherche dans nom EN + nom FR (searchText contient les deux)
+  const filtered = q.length === 0
+    ? scanRoomCharList.slice(0, 20)
+    : scanRoomCharList.filter(c => c.searchText.includes(q)).slice(0, 15);
+
+  let html = "";
+  for (const c of filtered) {
+    const isLearned = warAnalyzer?.learnedDb?.[c.charId] ? " *" : "";
+    const frLabel = c.nameFr ? `<span class="scan-room-search-fr">${c.nameFr}</span>` : "";
+    html += `<div class="scan-room-search-item" data-char-id="${c.charId}" data-char-name="${c.name}">${c.name}${frLabel}${isLearned}</div>`;
+  }
+  if (filtered.length === 0) {
+    html = `<div class="scan-room-search-empty">Aucun resultat</div>`;
+  }
+
+  resultsDiv.innerHTML = html;
+
+  // Clic sur un resultat
+  resultsDiv.querySelectorAll(".scan-room-search-item").forEach(item => {
+    item.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const charId = item.dataset.charId;
+      const name = item.dataset.charName;
+      selectCharacterForPortrait(activeSearchTeam, activeSearchPortrait, charId, name);
+    });
+  });
+}
+
+async function selectCharacterForPortrait(teamIdx, portraitIdx, charId, name) {
+  if (!scanRoomState || teamIdx < 0 || portraitIdx < 0) return;
+
+  const portrait = scanRoomState.teams[teamIdx].portraits[portraitIdx];
+  portrait.charId = charId;
+  portrait.name = name;
+  portrait.learned = true;
+
+  // Sauvegarder dans la DB apprise pour les prochains scans
+  if (warAnalyzer) {
+    await warAnalyzer.saveLearnedPortrait(charId, name, portrait.hue, portrait.hash);
+  }
+
+  closePortraitSearch(teamIdx);
+
+  // Re-render complet (met a jour noms, indicateurs, bouton counters)
+  renderScanRoomResults();
+}
+
+async function lookupTeamCounters(teamIdx) {
+  if (!scanRoomState || !warAnalyzer) return;
+
+  const team = scanRoomState.teams[teamIdx];
+  const charIds = team.portraits.filter(p => p.charId).map(p => p.charId);
+
+  if (charIds.length < 3) return;
+
+  const btn = document.querySelector(`.scan-room-btn-counters[data-team="${teamIdx}"]`);
+  if (btn) { btn.disabled = true; btn.textContent = "Recherche..."; }
+
+  try {
+    const teamResult = warAnalyzer._identifyTeamFromCharIds(charIds);
+    if (!teamResult || !teamResult.team) {
+      renderTeamCountersResult(teamIdx, null, null, "Equipe non reconnue");
+      return;
+    }
+
+    const power = document.getElementById("war-power")?.value?.trim() || null;
+    const enemyPower = power ? parseInt(power) : null;
+    const countersResult = warAnalyzer.getCountersWithVariants(teamResult.team.id, charIds, enemyPower);
+
+    renderTeamCountersResult(teamIdx, teamResult, countersResult?.counters || []);
+  } catch (e) {
+    console.error(`[ScanSalle] Erreur counters equipe ${teamIdx}:`, e);
+    renderTeamCountersResult(teamIdx, null, null, e.message);
+  }
+}
+
+function renderTeamCountersResult(teamIdx, teamResult, counters, error) {
+  const zone = document.getElementById(`counters-${teamIdx}`);
+  if (!zone) return;
+
+  zone.classList.remove("hidden");
+
+  if (error) {
+    zone.innerHTML = `<div class="scan-room-counters-error">${error}</div>`;
+    return;
+  }
+
+  let html = "";
+
+  if (teamResult?.team) {
+    const teamName = teamResult.team.variantName || teamResult.team.name;
+    const totalMembers = teamResult.team?.memberIds?.length || 5;
+    html += `<div class="scan-room-team-identified">${teamName} (${teamResult.matchCount}/${totalMembers})</div>`;
+  }
+
+  if (counters && counters.length > 0) {
+    const hasRoster = typeof playerRoster !== "undefined" && playerRoster.size > 0;
+
+    counters.forEach(c => {
+      const status = typeof canMakeTeam === "function" ? canMakeTeam(c.teamId) : null;
+      const isAvailable = status?.available;
+
+      html += `<div class="war-counter-item ${isAvailable ? 'available' : ''}">
+        <div class="war-counter-header">
+          <span class="war-counter-name">${c.teamName}</span>
+          <div class="war-counter-meta">
+            ${typeof renderStatsBadge === "function" ? renderStatsBadge(c.teamId) : ''}
+            ${hasRoster && typeof renderAvailabilityBadge === "function" ? renderAvailabilityBadge(c.teamId) : ''}
+            <span class="war-counter-confidence">${confidenceToSymbols(c.confidence)}</span>
+            ${c.minPower ? `<span class="war-counter-power">${typeof formatPower === "function" ? formatPower(c.minPower) : c.minPower}+</span>` : ""}
+          </div>
+        </div>
+        ${c.notes ? `<div class="war-counter-actions"><span class="war-counter-notes">${c.notes}</span></div>` : ''}
+      </div>`;
+    });
+  } else {
+    html += `<div class="scan-room-counters-error">Pas de counters trouves</div>`;
+  }
+
+  zone.innerHTML = html;
+
+  // Re-enable button
+  const btn = document.querySelector(`.scan-room-btn-counters[data-team="${teamIdx}"]`);
+  if (btn) { btn.disabled = false; btn.textContent = "Chercher counters"; }
 }
 
 /**
@@ -5040,6 +5296,13 @@ async function displayScanDebug(screenshotDataUrl, slots, cropper) {
   warResult.classList.remove("hidden");
 }
 
+// Restaure les panneaux war caches par le scan salle
+function restoreWarPanelUI() {
+  // Les anciens modes (tabs, portrait, manual, power) restent masques
+  // On nettoie juste l'etat du scan salle
+  scanRoomState = null;
+}
+
 // Event listener Scan Salle
 document.getElementById("btn-war-scan-room").addEventListener("click", async (e) => {
   const btn = document.getElementById("btn-war-scan-room");
@@ -5052,9 +5315,11 @@ document.getElementById("btn-war-scan-room").addEventListener("click", async (e)
     await handleScanSalle(debugMode);
   } catch (err) {
     console.error("[ScanSalle] Erreur:", err);
+    restoreWarPanelUI();
     showWarResult("Erreur: " + (err?.message || "Erreur inconnue"), "error");
   } finally {
     btn.disabled = false;
     btn.textContent = "\u{1F3F0} Scan Salle";
   }
 });
+
