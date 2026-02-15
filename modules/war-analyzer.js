@@ -941,61 +941,129 @@ class WarAnalyzer {
 
   /**
    * Sauvegarde un portrait appris (correction utilisateur)
+   * Multi-sample : garde jusqu'a 5 captures differentes par perso pour robustesse
    */
   async saveLearnedPortrait(charId, name, hueHist, hash) {
     if (!this.learnedDb) this.learnedDb = {};
 
-    this.learnedDb[charId] = {
-      name: name,
-      hue: hueHist,
-      hash: hash,
-      count: (this.learnedDb[charId]?.count || 0) + 1,
-      lastSeen: Date.now()
-    };
+    // Refuser si pas de features
+    if (!hueHist || !hash) {
+      console.warn(`[WarAnalyzer] Impossible de sauver ${name} (${charId}): features manquantes`);
+      return;
+    }
+
+    let entry = this.learnedDb[charId];
+
+    // Migration ancien format (single sample) vers multi-sample
+    if (entry && !entry.samples) {
+      const oldSamples = (entry.hue && entry.hash) ? [{ hue: entry.hue, hash: entry.hash }] : [];
+      entry = {
+        name: name,
+        samples: oldSamples,
+        count: entry.count || 1,
+        lastSeen: Date.now()
+      };
+      this.learnedDb[charId] = entry;
+    }
+
+    if (!entry) {
+      this.learnedDb[charId] = {
+        name: name,
+        samples: [{ hue: hueHist, hash: hash }],
+        count: 1,
+        lastSeen: Date.now()
+      };
+    } else {
+      entry.name = name;
+      entry.lastSeen = Date.now();
+      entry.count = (entry.count || 0) + 1;
+
+      // Verifier si ce sample est suffisamment different des existants
+      const isDuplicate = (entry.samples || []).some(s => {
+        if (!s.hue || !s.hash) return false;
+        const hueSim = this.hueHistogramSimilarity(hueHist, s.hue) * 100;
+        const pSim = this.hashSimilarity(hash, s.hash);
+        return (0.4 * hueSim + 0.6 * pSim) > 95;
+      });
+
+      if (!isDuplicate) {
+        if (!entry.samples) entry.samples = [];
+        entry.samples.push({ hue: hueHist, hash: hash });
+        if (entry.samples.length > 5) entry.samples.shift();
+        console.log(`[WarAnalyzer] Nouveau sample pour ${name}: ${entry.samples.length} samples`);
+      }
+    }
 
     try {
       const ext = typeof browser !== "undefined" ? browser : chrome;
       await ext.storage.local.set({ learnedPortraits: this.learnedDb });
-      console.log(`[WarAnalyzer] Portrait appris sauvegarde: ${name} (${charId})`);
+      console.log(`[WarAnalyzer] Portrait appris sauvegarde: ${name} (${charId}) — ${this.learnedDb[charId].samples.length} sample(s)`);
     } catch (e) {
       console.error("[WarAnalyzer] Erreur sauvegarde portrait appris:", e);
     }
   }
 
   /**
-   * Cherche un match dans la DB apprise (memes conditions de capture = haute fiabilite)
+   * Cherche un match dans la DB apprise (multi-sample : meilleur score parmi tous les samples)
    */
   findLearnedMatch(captureHue, captureHash) {
     if (!this.learnedDb || Object.keys(this.learnedDb).length === 0) return null;
 
     const candidates = [];
+    const allScores = []; // Debug: tous les scores pour diagnostic
 
     for (const [charId, data] of Object.entries(this.learnedDb)) {
-      if (!data.hue) continue;
+      // Support multi-sample et ancien format
+      const samples = data.samples || (data.hue ? [{ hue: data.hue, hash: data.hash }] : []);
+      if (samples.length === 0) continue;
 
-      const hueSim = this.hueHistogramSimilarity(captureHue, data.hue) * 100;
-      const pHashSim = data.hash ? this.hashSimilarity(captureHash, data.hash) : 0;
-      const combined = 0.4 * hueSim + 0.6 * pHashSim;
+      // Prendre le meilleur score parmi tous les samples
+      let bestCombined = 0;
+      let bestHue = 0, bestPHash = 0;
+      for (const sample of samples) {
+        if (!sample.hue) continue;
+        const hueSim = this.hueHistogramSimilarity(captureHue, sample.hue) * 100;
+        const pHashSim = sample.hash ? this.hashSimilarity(captureHash, sample.hash) : 0;
+        const combined = 0.4 * hueSim + 0.6 * pHashSim;
+        if (combined > bestCombined) {
+          bestCombined = combined;
+          bestHue = hueSim;
+          bestPHash = pHashSim;
+        }
+      }
 
-      if (combined >= 85) {
+      allScores.push({ name: data.name, charId, combined: bestCombined, hue: bestHue, pHash: bestPHash, sampleCount: samples.length });
+
+      if (bestCombined >= 80) {
         candidates.push({
           name: data.name,
           charId: charId,
-          similarity: Math.round(combined * 10) / 10,
-          hash: data.hash,
+          similarity: Math.round(bestCombined * 10) / 10,
           method: "learned"
         });
       }
     }
 
+    // Debug: afficher tous les scores tries
+    allScores.sort((a, b) => b.combined - a.combined);
+    console.log(`[WarAnalyzer] Learned DB: ${allScores.length} perso(s), scores:`);
+    allScores.forEach(s => {
+      const flag = s.combined >= 80 ? "OK" : "--";
+      console.log(`  [${flag}] ${s.name}: ${s.combined.toFixed(1)}% (hue:${s.hue.toFixed(1)}% phash:${s.pHash.toFixed(1)}%) [${s.sampleCount} samples]`);
+    });
+
     candidates.sort((a, b) => b.similarity - a.similarity);
 
-    if (candidates.length > 0 && candidates[0].similarity >= 85) {
+    if (candidates.length > 0 && candidates[0].similarity >= 80) {
       const gap = candidates.length >= 2 ? candidates[0].similarity - candidates[1].similarity : 100;
       if (gap >= 2.0) {
-        console.log(`[WarAnalyzer] Learned match: ${candidates[0].name} (${candidates[0].similarity}%)`);
+        console.log(`[WarAnalyzer] Learned match: ${candidates[0].name} (${candidates[0].similarity}%, gap:${gap.toFixed(1)}%)`);
         return candidates[0];
+      } else {
+        console.log(`[WarAnalyzer] Learned match ambigu: gap=${gap.toFixed(1)}% entre ${candidates[0].name} et ${candidates[1].name}`);
       }
+    } else if (candidates.length === 0) {
+      console.log(`[WarAnalyzer] Aucun learned match >= 80%`);
     }
 
     return null;

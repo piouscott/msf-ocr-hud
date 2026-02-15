@@ -649,16 +649,37 @@ async function handleSyncCounters(url) {
 
 /**
  * Capture l'onglet visible et retourne le dataUrl
+ * En mode fenetre, cherche l'onglet MSF dans une autre fenetre
  */
 async function handleCaptureTab() {
-  const [tab] = await ext.tabs.query({ active: true, currentWindow: true });
+  // D'abord essayer l'onglet actif de la fenetre courante
+  let [tab] = await ext.tabs.query({ active: true, currentWindow: true });
 
-  if (!tab) {
-    throw new Error("Aucun onglet actif");
+  // Si l'onglet actif est le popup lui-meme (mode fenetre), chercher l'onglet MSF
+  if (!tab || tab.url?.startsWith("chrome-extension://") || tab.url?.startsWith("moz-extension://")) {
+    const msfTabs = await ext.tabs.query({ url: ["*://*.marvelstrikeforce.com/*", "*://*.scopelypv.com/*", "*://*.scopely.io/*"] });
+    if (msfTabs.length > 0) {
+      tab = msfTabs[0];
+    } else {
+      // Fallback debug : localhost ou fichiers locaux
+      const debugTabs = await ext.tabs.query({ url: ["http://localhost:*/*", "file:///*msf-ocr-hud/debug/*"] });
+      if (debugTabs.length > 0) {
+        tab = debugTabs[0];
+      }
+    }
   }
 
-  const dataUrl = await ext.tabs.captureVisibleTab(tab.windowId, { format: "png" });
-  return { dataUrl };
+  if (!tab) {
+    throw new Error("Aucun onglet MSF trouve");
+  }
+
+  try {
+    const dataUrl = await ext.tabs.captureVisibleTab(tab.windowId, { format: "png" });
+    return { dataUrl };
+  } catch (e) {
+    // Permission refusee (Firefox mode fenetre) → signaler au popup de fallback file picker
+    throw new Error("CAPTURE_PERMISSION_DENIED");
+  }
 }
 
 /**

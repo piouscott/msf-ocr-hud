@@ -53,6 +53,11 @@ const eventsLoading = document.getElementById("events-loading");
 const eventsError = document.getElementById("events-error");
 const eventsList = document.getElementById("events-list");
 
+// Battleworld panel elements
+const battleworldPanel = document.getElementById("battleworld-panel");
+const btnBattleworld = document.getElementById("btn-battleworld");
+const btnCloseBattleworld = document.getElementById("btn-close-battleworld");
+
 // Sync panel elements
 const syncPanel = document.getElementById("sync-panel");
 const btnCloseSync = document.getElementById("btn-close-sync");
@@ -3484,6 +3489,19 @@ btnManage.addEventListener("click", () => {
 });
 
 // ============================================
+// Panneau Battleworld
+// ============================================
+
+btnBattleworld.addEventListener("click", () => {
+  battleworldPanel.classList.remove("hidden");
+  battleworldPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+btnCloseBattleworld.addEventListener("click", () => {
+  battleworldPanel.classList.add("hidden");
+});
+
+// ============================================
 // Panneau Synchronisation
 // ============================================
 
@@ -4825,6 +4843,7 @@ function loadImageFromDataUrl(dataUrl) {
 // --- Scan Salle : etat global ---
 let scanRoomState = null; // { teams: [{slotNumber, portraits: [{dataUrl, hue, hash, charId, name, learned}]}] }
 let scanRoomCharList = null; // [{charId, name}] pour autocomplete
+let scanRoomTeamList = null; // [{id, name, nameFr, memberIds, searchText}] pour recherche par equipe
 
 async function getScanCharacterList() {
   if (scanRoomCharList) return scanRoomCharList;
@@ -4865,16 +4884,76 @@ async function getScanCharacterList() {
   } catch (e) { /* ignore */ }
 
   scanRoomCharList = Object.entries(chars)
-    .filter(([id]) => !id.startsWith("PVE_"))
+    .filter(([id, data]) => data.status === "playable")
     .map(([id, data]) => ({
       charId: id,
       name: data.name,
+      portrait: data.portrait || null,
       nameFr: frNames[id] || null,
       searchText: ((data.name || "") + " " + (frNames[id] || "")).toLowerCase()
     })).sort((a, b) => a.name.localeCompare(b.name));
 
-  console.log(`[ScanSalle] ${scanRoomCharList.length} persos, ${Object.keys(frNames).length} noms FR`);
+  // Charger les equipes pour recherche par nom d'equipe
+  try {
+    const teamsRes = await fetch(ext.runtime.getURL("data/teams.json"));
+    const teamsData = await teamsRes.json();
+    scanRoomTeamList = (teamsData.teams || []).map(t => ({
+      id: t.id,
+      name: t.name,
+      nameFr: t.nameFr || null,
+      memberIds: t.memberIds || [],
+      searchText: ((t.name || "") + " " + (t.nameFr || "")).toLowerCase()
+    }));
+  } catch (e) { scanRoomTeamList = []; }
+
+  console.log(`[ScanSalle] ${scanRoomCharList.length} persos, ${scanRoomTeamList.length} equipes, ${Object.keys(frNames).length} noms FR`);
   return scanRoomCharList;
+}
+
+/**
+ * Capture l'onglet cible directement depuis le popup (evite les problemes de permissions bg.js)
+ */
+async function captureTargetTab() {
+  // Chercher l'onglet MSF ou debug
+  let tabs = await ext.tabs.query({ url: ["*://*.marvelstrikeforce.com/*", "*://*.scopelypv.com/*", "*://*.scopely.io/*"] });
+  if (tabs.length === 0) {
+    tabs = await ext.tabs.query({ url: ["http://localhost:*/*", "file:///*msf-ocr-hud/debug/*"] });
+  }
+  if (tabs.length === 0) {
+    // Fallback : onglet actif de la derniere fenetre non-extension
+    const allWindows = await ext.windows.getAll({ windowTypes: ["normal"] });
+    for (const win of allWindows) {
+      const winTabs = await ext.tabs.query({ active: true, windowId: win.id });
+      if (winTabs.length > 0 && !winTabs[0].url?.startsWith("moz-extension://") && !winTabs[0].url?.startsWith("chrome-extension://")) {
+        tabs = winTabs;
+        break;
+      }
+    }
+  }
+  if (tabs.length === 0) throw new Error("Aucun onglet cible");
+  const dataUrl = await ext.tabs.captureVisibleTab(tabs[0].windowId, { format: "png" });
+  return dataUrl;
+}
+
+/**
+ * File picker fallback quand captureVisibleTab echoue (Firefox mode fenetre)
+ */
+function pickScreenshotFile() {
+  return new Promise((resolve) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/png,image/jpeg,image/webp";
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (!file) { resolve(null); return; }
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
+    };
+    input.oncancel = () => resolve(null);
+    input.click();
+  });
 }
 
 /**
@@ -4883,19 +4962,33 @@ async function getScanCharacterList() {
 async function handleScanSalle(debugMode = false) {
   showWarResult("Capture de la salle en cours...", "");
 
-  const response = await ext.runtime.sendMessage({ type: "MSF_CAPTURE_TAB" });
-  if (!response || response.error || !response.dataUrl) {
-    throw new Error(response?.error || "Echec capture ecran");
+  let screenshotDataUrl;
+  try {
+    // Essayer capture directe depuis le popup (meilleur contexte permissions)
+    screenshotDataUrl = await captureTargetTab();
+  } catch (e1) {
+    try {
+      // Fallback via background script
+      const response = await ext.runtime.sendMessage({ type: "MSF_CAPTURE_TAB" });
+      if (!response || response.error || !response.dataUrl) throw new Error(response?.error);
+      screenshotDataUrl = response.dataUrl;
+    } catch (e2) {
+      // Dernier recours : file picker
+      showWarResult("Capture impossible — selectionner un screenshot...", "");
+      screenshotDataUrl = await pickScreenshotFile();
+      if (!screenshotDataUrl) throw new Error("Aucun fichier selectionne");
+    }
   }
 
   showWarResult("Decoupe des 4 equipes...", "");
 
-  const img = await loadImageFromDataUrl(response.dataUrl);
+  const img = await loadImageFromDataUrl(screenshotDataUrl);
   const configUrl = ext.runtime.getURL("msf-zones-config.json") + "?t=" + Date.now();
   const cropper = await ZoneCropper.loadConfig(configUrl);
+  console.log(`[ScanSalle] Screenshot: ${img.naturalWidth}x${img.naturalHeight} (ratio ${(img.naturalWidth/img.naturalHeight).toFixed(3)}, ref ${cropper.referenceAspect.toFixed(3)})`);
   const slots = cropper.extractAllSlots(img);
 
-  if (debugMode) { displayScanDebug(response.dataUrl, slots, cropper); return; }
+  if (debugMode) { displayScanDebug(screenshotDataUrl, slots, cropper); return; }
 
   if (!warAnalyzer) { warAnalyzer = new WarAnalyzer(); await warAnalyzer.init(); }
   if (!warAnalyzer.learnedDb) await warAnalyzer.loadLearnedPortraits();
@@ -5047,6 +5140,23 @@ function setupScanRoomListeners() {
       const t = parseInt(input.dataset?.team || input.id.replace("search-input-", ""));
       filterCharacterSearch(t, input.value);
     });
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        const t = parseInt(input.dataset?.team || input.id.replace("search-input-", ""));
+        const resultsDiv = document.getElementById(`search-results-${t}`);
+        const items = resultsDiv?.querySelectorAll(".scan-room-search-item");
+        if (items && items.length === 1) {
+          items[0].click();
+        }
+      }
+      if (e.key === "Tab") {
+        e.preventDefault();
+        const nextPort = findNextUnidentifiedPortrait(activeSearchTeam, activeSearchPortrait);
+        if (nextPort) {
+          openPortraitSearch(nextPort.teamIdx, nextPort.portraitIdx);
+        }
+      }
+    });
   });
 
   // Bouton counters
@@ -5111,23 +5221,65 @@ function closePortraitSearch(teamIdx) {
   activeSearchPortrait = -1;
 }
 
+/**
+ * Trouve le prochain portrait non identifie : d'abord dans la meme equipe, puis les suivantes
+ */
+function findNextUnidentifiedPortrait(teamIdx, portraitIdx) {
+  if (!scanRoomState) return null;
+  // Meme equipe, portraits suivants
+  const team = scanRoomState.teams[teamIdx];
+  if (team) {
+    for (let i = portraitIdx + 1; i < team.portraits.length; i++) {
+      if (!team.portraits[i].charId) return { teamIdx, portraitIdx: i };
+    }
+  }
+  // Equipes suivantes
+  for (let t = teamIdx + 1; t < scanRoomState.teams.length; t++) {
+    const nextTeam = scanRoomState.teams[t];
+    for (let i = 0; i < nextTeam.portraits.length; i++) {
+      if (!nextTeam.portraits[i].charId) return { teamIdx: t, portraitIdx: i };
+    }
+  }
+  return null;
+}
+
 function filterCharacterSearch(teamIdx, query) {
   const resultsDiv = document.getElementById(`search-results-${teamIdx}`);
   if (!resultsDiv || !scanRoomCharList) return;
 
   const q = query.trim().toLowerCase();
-  // Recherche dans nom EN + nom FR (searchText contient les deux)
-  const filtered = q.length === 0
-    ? scanRoomCharList.slice(0, 20)
-    : scanRoomCharList.filter(c => c.searchText.includes(q)).slice(0, 15);
-
   let html = "";
+
+  // Recherche par equipe si query non vide
+  if (q.length > 0 && scanRoomTeamList) {
+    const matchedTeams = scanRoomTeamList.filter(t => t.searchText.includes(q));
+    for (const team of matchedTeams) {
+      html += `<div class="scan-room-search-team-header">${team.name}${team.nameFr && team.nameFr !== team.name ? ` <span class="scan-room-search-fr">${team.nameFr}</span>` : ""}</div>`;
+      for (const memberId of team.memberIds) {
+        const c = scanRoomCharList.find(ch => ch.charId === memberId);
+        if (c) {
+          const portraitImg = c.portrait ? `<img class="scan-room-search-portrait" src="${c.portrait}" loading="lazy" alt="">` : `<div class="scan-room-search-portrait scan-room-search-portrait-empty"></div>`;
+          html += `<div class="scan-room-search-item scan-room-search-team-member" data-char-id="${c.charId}" data-char-name="${c.name}">${portraitImg}<span class="scan-room-search-name">${c.name}</span></div>`;
+        }
+      }
+    }
+    if (matchedTeams.length > 0) {
+      html += `<div class="scan-room-search-separator"></div>`;
+    }
+  }
+
+  // Personnages individuels
+  const filtered = q.length === 0
+    ? scanRoomCharList
+    : scanRoomCharList.filter(c => c.searchText.includes(q));
+
   for (const c of filtered) {
     const isLearned = warAnalyzer?.learnedDb?.[c.charId] ? " *" : "";
     const frLabel = c.nameFr ? `<span class="scan-room-search-fr">${c.nameFr}</span>` : "";
-    html += `<div class="scan-room-search-item" data-char-id="${c.charId}" data-char-name="${c.name}">${c.name}${frLabel}${isLearned}</div>`;
+    const portraitImg = c.portrait ? `<img class="scan-room-search-portrait" src="${c.portrait}" loading="lazy" alt="">` : `<div class="scan-room-search-portrait scan-room-search-portrait-empty"></div>`;
+    html += `<div class="scan-room-search-item" data-char-id="${c.charId}" data-char-name="${c.name}">${portraitImg}<span class="scan-room-search-name">${c.name}${frLabel}${isLearned}</span></div>`;
   }
-  if (filtered.length === 0) {
+  if (filtered.length === 0 && html === "") {
     html = `<div class="scan-room-search-empty">Aucun resultat</div>`;
   }
 
@@ -5154,6 +5306,9 @@ async function selectCharacterForPortrait(teamIdx, portraitIdx, charId, name) {
 
   // Sauvegarder dans la DB apprise pour les prochains scans
   if (warAnalyzer) {
+    if (!portrait.hue || !portrait.hash) {
+      console.warn(`[ScanSalle] ATTENTION: portrait ${charId} sans features! hue=${!!portrait.hue} hash=${!!portrait.hash}`);
+    }
     await warAnalyzer.saveLearnedPortrait(charId, name, portrait.hue, portrait.hash);
   }
 
@@ -5252,19 +5407,27 @@ async function displayScanDebug(screenshotDataUrl, slots, cropper) {
 
   let html = `<div class="scan-debug">`;
   html += `<div style="font-size:12px;color:#845ef7;font-weight:600;margin-bottom:8px;">Mode Debug — Zones de decoupe</div>`;
-  html += `<div style="font-size:11px;color:#888;margin-bottom:8px;">Screenshot: ${imgW}x${imgH}px (captureVisibleTab)</div>`;
+  const gameArea = cropper.getGameArea(imgW, imgH);
+  const ratioInfo = `ratio ${(imgW/imgH).toFixed(3)}, ref ${cropper.referenceAspect.toFixed(3)}`;
+  const corrInfo = (gameArea.x > 0 || gameArea.y > 0) ? ` — correction: offset(${gameArea.x},${gameArea.y}) game(${gameArea.w}x${gameArea.h})` : ` — pas de correction`;
+  html += `<div style="font-size:11px;color:#888;margin-bottom:8px;">Screenshot: ${imgW}x${imgH}px (${ratioInfo}${corrInfo})</div>`;
 
   // Screenshot avec overlay des zones de portrait
   html += `<div style="position:relative;margin-bottom:12px;">`;
   html += `<img id="debug-screenshot" src="${screenshotDataUrl}" style="width:100%;border-radius:4px;border:1px solid #333;display:block;">`;
 
-  // Overlay des zones (en % pour s'adapter a la taille affichee)
+  // Overlay des zones (converties via gameArea pour s'adapter au ratio)
   const colors = ['#ff4444', '#44ff44', '#4444ff', '#ffff44'];
   for (const slot of cropper.slots) {
     const color = colors[(slot.slotNumber - 1) % 4];
     for (let p = 1; p <= 5; p++) {
       const zone = slot.zones[`portrait_${p}`];
-      html += `<div style="position:absolute;left:${zone.x * 100}%;top:${zone.y * 100}%;width:${zone.w * 100}%;height:${zone.h * 100}%;border:2px solid ${color};border-radius:4px;pointer-events:none;box-sizing:border-box;"></div>`;
+      // Convertir coordonnees game-relative en image-relative (%)
+      const left = (zone.x * gameArea.w + gameArea.x) / imgW * 100;
+      const top = (zone.y * gameArea.h + gameArea.y) / imgH * 100;
+      const width = zone.w * gameArea.w / imgW * 100;
+      const height = zone.h * gameArea.h / imgH * 100;
+      html += `<div style="position:absolute;left:${left}%;top:${top}%;width:${width}%;height:${height}%;border:2px solid ${color};border-radius:4px;pointer-events:none;box-sizing:border-box;"></div>`;
     }
   }
   html += `</div>`;

@@ -1293,17 +1293,40 @@ button:active {
 }
 
 .scan-room-search-results {
-  max-height: 150px;
+  max-height: 250px;
   overflow-y: auto;
   margin-top: 4px;
 }
 
 .scan-room-search-item {
-  padding: 5px 8px;
+  padding: 3px 8px;
   font-size: 11px;
   color: #ccc;
   cursor: pointer;
   border-radius: 3px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.scan-room-search-portrait {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid #444;
+}
+
+.scan-room-search-portrait-empty {
+  background: #333;
+}
+
+.scan-room-search-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .scan-room-search-fr {
@@ -1326,6 +1349,70 @@ button:active {
   font-size: 11px;
   color: #555;
   text-align: center;
+}
+
+.scan-room-search-team-header {
+  padding: 4px 8px 2px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #845ef7;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.scan-room-search-team-member {
+  padding-left: 16px;
+}
+
+.scan-room-search-separator {
+  height: 1px;
+  background: #333;
+  margin: 4px 8px;
+}
+
+/* Battleworld panel */
+.bw-section {
+  margin-bottom: 12px;
+}
+.bw-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #845ef7;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #333;
+}
+.bw-team {
+  background: #1a1428;
+  border: 1px solid #2a2040;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-bottom: 4px;
+}
+.bw-team-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.bw-team-name {
+  font-size: 11px;
+  color: #ddd;
+  font-weight: 600;
+}
+.bw-team-dmg {
+  font-size: 10px;
+  color: #22c55e;
+  font-weight: 700;
+  white-space: nowrap;
+  margin-left: 8px;
+}
+.bw-team-note {
+  font-size: 10px;
+  color: #888;
+  font-style: italic;
+  margin-top: 2px;
 }
 
 /* Actions equipe */
