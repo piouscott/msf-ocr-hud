@@ -611,6 +611,33 @@ ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     });
     return true;
   }
+
+  if (msg.type === "MSF_DETECT_LANG") {
+    let lang = null;
+    try {
+      // Chercher la langue dans le localStorage du jeu (Unity PlayerPrefs, etc.)
+      for (const key of Object.keys(localStorage)) {
+        const lk = key.toLowerCase();
+        if (lk.includes("lang") || lk.includes("locale") || lk.includes("language")) {
+          const val = (localStorage.getItem(key) || "").toLowerCase();
+          if (val.includes("en")) { lang = "en"; break; }
+          if (val.includes("fr")) { lang = "fr"; break; }
+        }
+      }
+      // Fallback: langue du navigateur (le jeu MSF utilise generalement cette valeur)
+      if (!lang) {
+        const navLang = (navigator.language || "").toLowerCase();
+        if (navLang.startsWith("fr")) lang = "fr";
+        else if (navLang.startsWith("en")) lang = "en";
+        else lang = "fr";
+      }
+    } catch(e) {
+      lang = "fr";
+    }
+    console.log(`[MSF] Langue detectee: ${lang}`);
+    sendResponse({ lang });
+    return true;
+  }
 });
 
 async function handleExtraction(dataUrl) {

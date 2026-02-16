@@ -36,6 +36,9 @@ const TESTER_CSS = `
   <style>
     /* Mode Tester: cacher les fonctionnalites en developpement */
     #actions { display: none !important; }
+    #btn-war-ocr { display: none !important; }
+    #btn-export-learned-global { display: none !important; }
+    #btn-import-learned-global { display: none !important; }
     #btn-export { display: none !important; }
     #btn-import { display: none !important; }
     #btn-settings { display: none !important; }

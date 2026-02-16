@@ -1411,18 +1411,20 @@
       "name": "INFESTATION",
       "nameFr": "INFESTATION",
       "members": [
-        "Anti-Venom",
-        "Big Time",
-        "Scream",
-        "Web of Pain",
-        "Web of Suffering"
+        "Scorpion",
+        "Spider-Man (Big Time)",
+        "Yellowjacket",
+        "Black Widow",
+        "Swarm",
+        "Ant-Man"
       ],
       "memberIds": [
-        "AntiVenom",
+        "Scorpion",
         "SpiderManBigTime",
-        "Scream",
-        "WebOfPain",
-        "WebOfSuffering"
+        "Yellowjacket",
+        "BlackWidow",
+        "Swarm",
+        "AntMan"
       ],
       "tags": ["infestation"]
     },

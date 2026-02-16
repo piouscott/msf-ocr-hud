@@ -1,11 +1,41 @@
 /**
  * ZoneCropper - Decoupe les zones d'une image selon config normalisee
  * Adapte automatiquement les zones au ratio d'ecran (letterboxing)
+ * Supporte des jeux de coordonnees par langue (EN/FR)
  */
 class ZoneCropper {
   constructor(config) {
-    this.slots = config.slots;
     this.referenceAspect = config.reference?.aspectRatio || (16 / 9);
+
+    // slots peut etre un objet {en: [...], fr: [...]} ou un tableau (ancien format)
+    if (Array.isArray(config.slots)) {
+      // Ancien format : tableau unique, pas de langues
+      this.slotsByLang = { "default": config.slots };
+      this.currentLang = "default";
+      this.defaultLang = "default";
+    } else {
+      // Nouveau format : objet keyed par langue
+      this.slotsByLang = config.slots;
+      // Langue par defaut = premiere cle disponible
+      this.defaultLang = Object.keys(config.slots)[0] || "en";
+      this.currentLang = this.defaultLang;
+    }
+
+    this.slots = this.slotsByLang[this.currentLang];
+  }
+
+  /**
+   * Definit la langue du jeu pour selectionner le bon jeu de coordonnees
+   * @param {string} lang - Code langue ("fr", "en")
+   */
+  setLanguage(lang) {
+    if (lang && this.slotsByLang[lang]) {
+      this.currentLang = lang;
+    } else {
+      this.currentLang = this.defaultLang;
+    }
+    this.slots = this.slotsByLang[this.currentLang];
+    console.log(`[ZoneCropper] Langue "${this.currentLang}" → ${this.slots.length} slots charges`);
   }
 
   /**
@@ -32,21 +62,23 @@ class ZoneCropper {
    */
   getGameArea(imgWidth, imgHeight) {
     const actualAspect = imgWidth / imgHeight;
-    const tolerance = 0.02;
+    // Tolerance large : MSF web remplit toute la fenetre (pas de letterboxing)
+    // et le layout s'adapte proportionnellement entre ~1.85 et ~1.98
+    const tolerance = 0.15;
 
     if (Math.abs(actualAspect - this.referenceAspect) < tolerance) {
       return { x: 0, y: 0, w: imgWidth, h: imgHeight };
     }
 
     if (actualAspect > this.referenceAspect) {
-      // Plus large que 16:9 → bandes noires gauche/droite
+      // Bien plus large que la reference → bandes noires gauche/droite (ultra-wide)
       const gameHeight = imgHeight;
       const gameWidth = Math.round(gameHeight * this.referenceAspect);
       const offsetX = Math.round((imgWidth - gameWidth) / 2);
       console.log(`[ZoneCropper] Ratio ${actualAspect.toFixed(3)} > ref ${this.referenceAspect.toFixed(3)} → bandes laterales, offsetX=${offsetX}px`);
       return { x: offsetX, y: 0, w: gameWidth, h: gameHeight };
     } else {
-      // Plus etroit que 16:9 → bandes noires haut/bas
+      // Bien plus etroit → bandes noires haut/bas
       const gameWidth = imgWidth;
       const gameHeight = Math.round(gameWidth / this.referenceAspect);
       const offsetY = Math.round((imgHeight - gameHeight) / 2);

@@ -1234,6 +1234,17 @@ button:active {
   border-color: #f59e0b;
 }
 
+.scan-room-portrait-img.attack {
+  border-color: #ff4444;
+  opacity: 0.5;
+  cursor: default;
+}
+
+.scan-room-card-attack {
+  opacity: 0.7;
+  border-color: #ff4444 !important;
+}
+
 .scan-room-portrait-name {
   font-size: 9px;
   color: #ccc;
@@ -1370,49 +1381,114 @@ button:active {
   margin: 4px 8px;
 }
 
-/* Battleworld panel */
-.bw-section {
-  margin-bottom: 12px;
-}
-.bw-section-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: #845ef7;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 6px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid #333;
+/* Battleworld panel — MSF style */
+#bw-teams-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 .bw-team {
-  background: #1a1428;
-  border: 1px solid #2a2040;
-  border-radius: 6px;
-  padding: 6px 10px;
-  margin-bottom: 4px;
+  background: linear-gradient(135deg, #1a1030 0%, #0d0a1a 100%);
+  border: 1px solid #3a2860;
+  border-radius: 8px;
+  padding: 10px;
+  position: relative;
+  overflow: hidden;
+}
+.bw-team::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #845ef7, #c084fc, #845ef7, transparent);
 }
 .bw-team-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 8px;
 }
 .bw-team-name {
-  font-size: 11px;
-  color: #ddd;
-  font-weight: 600;
+  font-size: 12px;
+  color: #e8d5b5;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(232, 213, 181, 0.3);
 }
 .bw-team-dmg {
-  font-size: 10px;
+  font-size: 11px;
   color: #22c55e;
   font-weight: 700;
   white-space: nowrap;
   margin-left: 8px;
+  text-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
+}
+.bw-team-portraits {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.bw-portrait {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 34px;
+}
+.bw-portrait img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid #4a3580;
+  background: #0d0a1a;
+  object-fit: cover;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.bw-portrait img:hover {
+  border-color: #c084fc;
+  box-shadow: 0 0 8px rgba(192, 132, 252, 0.5);
+}
+.bw-portrait-name {
+  font-size: 8px;
+  color: #888;
+  text-align: center;
+  margin-top: 2px;
+  line-height: 1.1;
+  max-width: 48px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bw-pick-separator {
+  font-size: 9px;
+  color: #c084fc;
+  font-weight: 600;
+  align-self: center;
+  padding: 0 2px;
+}
+.bw-portrait.excluded img {
+  opacity: 0.3;
+  filter: grayscale(1);
+  border-color: #333;
+}
+.bw-portrait.excluded .bw-portrait-name {
+  color: #555;
+  text-decoration: line-through;
 }
 .bw-team-note {
-  font-size: 10px;
-  color: #888;
+  font-size: 9px;
+  color: #777;
   font-style: italic;
-  margin-top: 2px;
+  margin-top: 6px;
+  text-align: center;
+}
+.bw-rank {
+  font-size: 18px;
+  font-weight: 800;
+  color: #3a2860;
+  position: absolute;
+  right: 8px;
+  bottom: 4px;
+  line-height: 1;
 }
 
 /* Actions equipe */

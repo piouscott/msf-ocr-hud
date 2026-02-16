@@ -50,9 +50,7 @@
       </div>
     </section>
 
-    <section id="actions">
-      <button id="btn-analyze" class="btn-primary">Analyser l'ecran</button>
-      <button id="btn-war-ocr" class="btn-war">War OCR</button>
+    <section id="actions" class="hidden">
     </section>
 
     <section id="tools">
@@ -61,14 +59,18 @@
       <button id="btn-defense" class="btn-small" title="Tester ma défense War">🛡️<span>Défense</span></button>
       <button id="btn-farm" class="btn-small" title="Où farmer les personnages">🌾<span>Farm</span></button>
       <button id="btn-manage" class="btn-small" title="Gérer les counters">⚔️<span>Counters</span></button>
+      <button id="btn-war-ocr" class="btn-small" title="War OCR - Scan Salle">🎯<span>War OCR</span></button>
       <button id="btn-battleworld" class="btn-small" title="Equipes Battleworld">🌍<span>BW</span></button>
       <button id="btn-detach" class="btn-small" title="Ouvrir dans une fenêtre permanente">🪟<span>Fenêtre</span></button>
       <button id="btn-notes" class="btn-small" title="Voir les notes de version">📋<span>Notes</span></button>
       <button id="btn-export" class="btn-small" title="Exporter la config">💾<span>Export</span></button>
       <button id="btn-import" class="btn-small" title="Importer une config">📂<span>Import</span></button>
+      <button id="btn-export-learned-global" class="btn-small" title="Exporter les portraits appris (fichier JSON)">📤<span>Portraits</span></button>
+      <button id="btn-import-learned-global" class="btn-small" title="Importer des portraits appris (fichier JSON)">📥<span>Imp. Port.</span></button>
       <button id="btn-api" class="btn-small" title="Configuration API">🔑<span>API</span></button>
       <button id="btn-settings" class="btn-small" title="Synchronisation counters">🔄<span>Sync</span></button>
       <input type="file" id="import-file" accept=".json" style="display:none">
+      <input type="file" id="import-learned-file" accept=".json" style="display:none">
     </section>
 
     <section id="api-panel" class="hidden">
@@ -211,6 +213,11 @@
 
       <div class="api-actions" style="margin-bottom:8px;">
         <button id="btn-war-scan-room" class="btn-sync">🏰 Scan Salle</button>
+        <select id="scan-lang-override" style="margin-left:8px;padding:2px 6px;background:#1a1a2e;color:#ccc;border:1px solid #333;border-radius:4px;font-size:11px;">
+          <option value="auto">Lang: auto</option>
+          <option value="en">EN</option>
+          <option value="fr">FR</option>
+        </select>
       </div>
 
       <!-- Onglets Mode (masques — on garde uniquement Scan Salle) -->
@@ -289,62 +296,7 @@
         <span>Battleworld</span>
         <button id="btn-close-battleworld" class="btn-close">X</button>
       </div>
-
-      <div class="bw-section">
-        <div class="bw-section-title">Boss</div>
-        <div class="bw-team">
-          <div class="bw-team-header">
-            <span class="bw-team-name">Astral + Mephisto</span>
-            <span class="bw-team-dmg">~220M</span>
-          </div>
-          <div class="bw-team-note">sans Strange ni Moondragon</div>
-        </div>
-        <div class="bw-team">
-          <div class="bw-team-header">
-            <span class="bw-team-name">Brimstone + Knull + Professor X</span>
-            <span class="bw-team-dmg">~130M</span>
-          </div>
-          <div class="bw-team-note">sans Hellcat ni Living Mummy</div>
-        </div>
-        <div class="bw-team">
-          <div class="bw-team-header">
-            <span class="bw-team-name">Fantastic Four (MCU)</span>
-            <span class="bw-team-dmg">~80M</span>
-          </div>
-        </div>
-        <div class="bw-team">
-          <div class="bw-team-header">
-            <span class="bw-team-name">Insidious Six + Green Goblin (Classic)</span>
-            <span class="bw-team-dmg">~80M</span>
-          </div>
-          <div class="bw-team-note">sans Scorpion</div>
-        </div>
-        <div class="bw-team">
-          <div class="bw-team-header">
-            <span class="bw-team-name">Odin + Old Man Logan + Quasar + Songbird + Black Knight</span>
-            <span class="bw-team-dmg">~190M</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="bw-section">
-        <div class="bw-section-title">Equipes</div>
-        <div class="bw-team">
-          <div class="bw-team-header"><span class="bw-team-name">Brimstone</span></div>
-        </div>
-        <div class="bw-team">
-          <div class="bw-team-header"><span class="bw-team-name">Astral</span></div>
-        </div>
-        <div class="bw-team">
-          <div class="bw-team-header"><span class="bw-team-name">Fantastic Four (MCU) + Odin + Mephisto</span></div>
-        </div>
-        <div class="bw-team">
-          <div class="bw-team-header"><span class="bw-team-name">Blue Marvel + Old Man Logan + Red Guardian + Iron Fist + Havok</span></div>
-        </div>
-        <div class="bw-team">
-          <div class="bw-team-header"><span class="bw-team-name">Black Knight + Knull + Omega Red + Emma Frost + Kang</span></div>
-        </div>
-      </div>
+      <div id="bw-teams-container"></div>
     </section>
 
     <section id="sync-panel" class="hidden">

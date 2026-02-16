@@ -622,7 +622,6 @@ class WarAnalyzer {
 
       img.onload = () => {
         clearTimeout(timeout);
-        console.log("[WarAnalyzer] Image chargee:", img.width + "x" + img.height);
 
         const canvas = document.createElement("canvas");
         canvas.width = size;
@@ -630,13 +629,11 @@ class WarAnalyzer {
         const ctx = canvas.getContext("2d");
 
         // Crop: garder seulement les 70% du haut pour eviter le texte de puissance
-        // qui s'affiche en bas du portrait dans le jeu
         // Pour les petites images (< 100px, ex: scan salle), pas de crop car deja croppes
         const isSmall = img.height < 100;
         const cropTopPercent = isSmall ? 1.0 : 0.70;
         const srcHeight = img.height * cropTopPercent;
 
-        console.log(`[WarAnalyzer] Taille source: ${img.width}x${img.height}, crop ${isSmall ? "desactive (petite image)" : "haut 70%"} = ${img.width}x${Math.round(srcHeight)}`);
         ctx.drawImage(img, 0, 0, img.width, srcHeight, 0, 0, size, size);
         const data = ctx.getImageData(0, 0, size, size);
         resolve(data);
@@ -648,7 +645,6 @@ class WarAnalyzer {
         reject(new Error("Echec chargement image"));
       };
 
-      console.log("[WarAnalyzer] Debut chargement image");
       img.src = dataUrl;
     });
   }
@@ -741,11 +737,57 @@ class WarAnalyzer {
       }
     }
 
-    if (isSmall) {
-      console.log(`[WarAnalyzer] Hue histogram (circular mask): ${totalWeight > 0 ? "OK" : "EMPTY"}, pixels utilises: ${Math.round(totalWeight * 100)}%`);
+    if (isSmall && totalWeight === 0) {
+      console.warn(`[WarAnalyzer] Hue histogram vide (circular mask)`);
     }
 
     return hist;
+  }
+
+  /**
+   * Detecte si une image de zone team_full a un filtre rouge ("under attack")
+   * Analyse la dominance rouge dans l'histogramme hue de la zone entiere (pas de masque circulaire)
+   * @param {string} imageDataUrl - Data URL de la zone team_full
+   * @returns {Promise<boolean>} true si filtre rouge detecte
+   */
+  async detectRedFilter(imageDataUrl) {
+    const img = await this.loadImage(imageDataUrl);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, 64, 64);
+
+    const imageData = ctx.getImageData(0, 0, 64, 64);
+    const pixels = imageData.data;
+
+    let redPixels = 0;
+    let totalPixels = 0;
+
+    for (let i = 0; i < pixels.length; i += 4) {
+      const r = pixels[i], g = pixels[i + 1], b = pixels[i + 2];
+      const { h, s, v } = this.rgbToHsv(r, g, b);
+
+      // Ignorer les pixels tres sombres ou desatures
+      if (s < 0.15 || v < 0.15) continue;
+      totalPixels++;
+
+      // Rouge = hue 0-20° ou 340-360° (bins 0-1 et 34-35 sur 36 bins)
+      if (h < 20 || h > 340) {
+        redPixels++;
+      }
+    }
+
+    if (totalPixels === 0) return false;
+
+    const redRatio = redPixels / totalPixels;
+    // Fond normal des cartes war = ~47-65% rouge, filtre "under attack" = ~75-85%
+    const isUnderAttack = redRatio > 0.70;
+
+    console.log(`[WarAnalyzer] Red ratio: ${(redRatio * 100).toFixed(0)}%${isUnderAttack ? ' → UNDER ATTACK' : ''}`);
+
+    return isUnderAttack;
   }
 
   /**
@@ -818,19 +860,10 @@ class WarAnalyzer {
 
     candidates.sort((a, b) => b.similarity - a.similarity);
 
-    if (candidates.length > 0) {
-      console.log(`[WarAnalyzer] Top ${Math.min(5, candidates.length)} matches (Hue):`);
-      candidates.slice(0, 5).forEach((c, i) => {
-        console.log(`  ${i + 1}. ${c.name}: ${c.similarity}%`);
-      });
-    } else {
-      console.log(`[WarAnalyzer] Aucun candidat Hue >= ${threshold}%`);
-    }
-
     if (candidates.length >= 2) {
       const gap = candidates[0].similarity - candidates[1].similarity;
       if (gap < minGap) {
-        console.log(`[WarAnalyzer] Match ambigu: ecart de ${gap.toFixed(1)}% entre ${candidates[0].name} et ${candidates[1].name}`);
+        console.log(`[WarAnalyzer] Hue ambigu: ${candidates[0].name} ${candidates[0].similarity}% vs ${candidates[1].name} ${candidates[1].similarity}%`);
         const match = candidates[0];
         match.ambiguous = true;
         match.alternatives = candidates.slice(1, 3);
@@ -839,6 +872,7 @@ class WarAnalyzer {
     }
 
     if (candidates.length > 0 && candidates[0].similarity >= threshold) {
+      console.log(`[WarAnalyzer] Hue: ${candidates[0].name} ${candidates[0].similarity}%`);
       return candidates[0];
     }
 
@@ -882,19 +916,10 @@ class WarAnalyzer {
 
     candidates.sort((a, b) => b.similarity - a.similarity);
 
-    if (candidates.length > 0) {
-      console.log(`[WarAnalyzer] Top ${Math.min(5, candidates.length)} matches (Combined hue+pHash):`);
-      candidates.slice(0, 5).forEach((c, i) => {
-        console.log(`  ${i + 1}. ${c.name}: ${c.similarity}% (hue:${c.hueSim}% phash:${c.pHashSim}%)`);
-      });
-    } else {
-      console.log(`[WarAnalyzer] Aucun candidat Combined >= ${threshold}%`);
-    }
-
     if (candidates.length >= 2) {
       const gap = candidates[0].similarity - candidates[1].similarity;
       if (gap < minGap) {
-        console.log(`[WarAnalyzer] Match ambigu: ecart de ${gap.toFixed(1)}% entre ${candidates[0].name} et ${candidates[1].name}`);
+        console.log(`[WarAnalyzer] Combined ambigu: ${candidates[0].name} ${candidates[0].similarity}% vs ${candidates[1].name} ${candidates[1].similarity}%`);
         const match = candidates[0];
         match.ambiguous = true;
         match.alternatives = candidates.slice(1, 3);
@@ -903,7 +928,9 @@ class WarAnalyzer {
     }
 
     if (candidates.length > 0 && candidates[0].similarity >= threshold) {
-      return candidates[0];
+      const best = candidates[0];
+      console.log(`[WarAnalyzer] Combined: ${best.name} ${best.similarity}% (hue:${best.hueSim}% phash:${best.pHashSim}%)`);
+      return best;
     }
 
     return null;
@@ -1006,13 +1033,26 @@ class WarAnalyzer {
   /**
    * Cherche un match dans la DB apprise (multi-sample : meilleur score parmi tous les samples)
    */
-  findLearnedMatch(captureHue, captureHash) {
+  /**
+   * @param {Array} captureHue - Histogramme hue du portrait capture
+   * @param {string} captureHash - pHash du portrait capture
+   * @param {Object} [opts] - Options
+   * @param {string[]} [opts.filterCharIds] - Si fourni, ne cherche que dans ces charIds
+   * @param {number} [opts.threshold] - Seuil de similarite (defaut: 80)
+   * @returns {Object|null} { name, charId, similarity, method }
+   */
+  findLearnedMatch(captureHue, captureHash, opts = {}) {
     if (!this.learnedDb || Object.keys(this.learnedDb).length === 0) return null;
+
+    const filterSet = opts.filterCharIds ? new Set(opts.filterCharIds.map(id => id.toUpperCase())) : null;
+    const threshold = opts.threshold || 80;
 
     const candidates = [];
     const allScores = []; // Debug: tous les scores pour diagnostic
 
     for (const [charId, data] of Object.entries(this.learnedDb)) {
+      // Filtrer par charIds si specifie
+      if (filterSet && !filterSet.has(charId.toUpperCase())) continue;
       // Support multi-sample et ancien format
       const samples = data.samples || (data.hue ? [{ hue: data.hue, hash: data.hash }] : []);
       if (samples.length === 0) continue;
@@ -1032,38 +1072,39 @@ class WarAnalyzer {
         }
       }
 
-      allScores.push({ name: data.name, charId, combined: bestCombined, hue: bestHue, pHash: bestPHash, sampleCount: samples.length });
-
-      if (bestCombined >= 80) {
+      if (bestCombined >= threshold) {
         candidates.push({
           name: data.name,
           charId: charId,
           similarity: Math.round(bestCombined * 10) / 10,
+          hueSim: Math.round(bestHue),
+          pHashSim: Math.round(bestPHash),
           method: "learned"
         });
       }
     }
 
-    // Debug: afficher tous les scores tries
-    allScores.sort((a, b) => b.combined - a.combined);
-    console.log(`[WarAnalyzer] Learned DB: ${allScores.length} perso(s), scores:`);
-    allScores.forEach(s => {
-      const flag = s.combined >= 80 ? "OK" : "--";
-      console.log(`  [${flag}] ${s.name}: ${s.combined.toFixed(1)}% (hue:${s.hue.toFixed(1)}% phash:${s.pHash.toFixed(1)}%) [${s.sampleCount} samples]`);
-    });
-
     candidates.sort((a, b) => b.similarity - a.similarity);
 
-    if (candidates.length > 0 && candidates[0].similarity >= 80) {
-      const gap = candidates.length >= 2 ? candidates[0].similarity - candidates[1].similarity : 100;
-      if (gap >= 2.0) {
-        console.log(`[WarAnalyzer] Learned match: ${candidates[0].name} (${candidates[0].similarity}%, gap:${gap.toFixed(1)}%)`);
-        return candidates[0];
+    if (candidates.length > 0 && candidates[0].similarity >= threshold) {
+      const best = candidates[0];
+      const gap = candidates.length >= 2 ? best.similarity - candidates[1].similarity : 100;
+      // Gap requis : 2.0% en general, mais reduit a 0.5% si score >= 93% (haute confiance)
+      const requiredGap = best.similarity >= 93 ? 0.5 : 2.0;
+      if (gap >= requiredGap) {
+        console.log(`[WarAnalyzer] Learned: ${best.name} ${best.similarity}% (hue:${best.hueSim}% phash:${best.pHashSim}%) gap:${gap.toFixed(1)}%`);
+        return best;
       } else {
-        console.log(`[WarAnalyzer] Learned match ambigu: gap=${gap.toFixed(1)}% entre ${candidates[0].name} et ${candidates[1].name}`);
+        const second = candidates[1];
+        console.log(`[WarAnalyzer] Learned ambigu: ${best.name} ${best.similarity}% (hue:${best.hueSim}% phash:${best.pHashSim}%) vs ${second.name} ${second.similarity}% (hue:${second.hueSim}% phash:${second.pHashSim}%) gap:${gap.toFixed(1)}% (requis:${requiredGap}%)`);
+        // Score eleve mais ambigu → retourner comme guess plutot que tomber sur CDN a ~74%
+        // Un learned a 90%+ est bien plus fiable qu'un CDN a 74%
+        if (best.similarity >= 88) {
+          best.ambiguous = true;
+          best.method = "learned-ambiguous";
+          return best;
+        }
       }
-    } else if (candidates.length === 0) {
-      console.log(`[WarAnalyzer] Aucun learned match >= 80%`);
     }
 
     return null;
@@ -1121,22 +1162,19 @@ class WarAnalyzer {
 
     candidates.sort((a, b) => b.similarity - a.similarity);
 
-    if (candidates.length > 0) {
-      console.log(`[WarAnalyzer] Hash capture: ${hash}`);
-      console.log(`[WarAnalyzer] Top ${Math.min(5, candidates.length)} matches (pHash):`);
-      candidates.slice(0, 5).forEach((c, i) => {
-        console.log(`  ${i + 1}. ${c.name}: ${c.similarity}%`);
-      });
-    }
-
     if (candidates.length >= 2) {
       const gap = candidates[0].similarity - candidates[1].similarity;
       if (gap < minGap) {
+        console.log(`[WarAnalyzer] pHash ambigu: ${candidates[0].name} ${candidates[0].similarity}% vs ${candidates[1].name} ${candidates[1].similarity}%`);
         const match = candidates[0];
         match.ambiguous = true;
         match.alternatives = candidates.slice(1, 3);
         return match;
       }
+    }
+
+    if (candidates.length > 0) {
+      console.log(`[WarAnalyzer] pHash: ${candidates[0].name} ${candidates[0].similarity}%`);
     }
 
     return candidates.length > 0 ? candidates[0] : null;
@@ -1151,13 +1189,9 @@ class WarAnalyzer {
     const identified = [];
     const hasHueHistograms = Object.values(this.portraitsDb).some(p => p && p.hue);
 
-    console.log(`[WarAnalyzer] Debut identification de ${portraitDataUrls.length} portraits`);
-    console.log(`[WarAnalyzer] Mode: ${hasHueHistograms ? "Histogramme Hue" : "pHash (legacy)"}`);
-
     for (let i = 0; i < portraitDataUrls.length; i++) {
       const dataUrl = portraitDataUrls[i];
       try {
-        console.log(`[WarAnalyzer] Traitement portrait ${i + 1}/${portraitDataUrls.length}`);
 
         let match = null;
 
@@ -1186,7 +1220,6 @@ class WarAnalyzer {
         // Fallback: pHash seul si base sans histogrammes Hue ou pas de match
         if (!match) {
           const hash = await this.computePortraitHash(dataUrl);
-          console.log(`[WarAnalyzer] Fallback pHash, hash: ${hash}`);
           match = this.findPortraitMatch(hash, 75, 3);
           if (match) {
             match.method = "pHash";
@@ -1194,7 +1227,6 @@ class WarAnalyzer {
         }
 
         if (match) {
-          console.log(`[WarAnalyzer] Match trouve: ${match.name} (${match.similarity}%) via ${match.method}${match.ambiguous ? " [AMBIGU]" : ""}`);
           identified.push({
             name: match.name,
             charId: match.charId,
@@ -1205,7 +1237,6 @@ class WarAnalyzer {
             alternatives: match.alternatives || []
           });
         } else {
-          console.log(`[WarAnalyzer] Aucun match pour portrait ${i + 1}`);
           identified.push({
             name: null,
             charId: null,
