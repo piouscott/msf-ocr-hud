@@ -53,6 +53,33 @@ class ZoneCropper {
   }
 
   /**
+   * Charge la config avec support calibration utilisateur (storage > JSON bundle)
+   * @param {string} url - URL du fichier JSON bundled
+   * @param {Function} storageGetFn - Function(key) => Promise<Object>
+   * @returns {Promise<ZoneCropper>}
+   */
+  static async loadConfigWithStorage(url, storageGetFn) {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Impossible de charger la config: ${response.status}`);
+    const config = await response.json();
+
+    try {
+      const result = await storageGetFn("msfCustomZoneCalibration");
+      const custom = result.msfCustomZoneCalibration;
+      if (custom && custom.slots && custom.slots.custom) {
+        if (!Array.isArray(config.slots)) {
+          config.slots.custom = custom.slots.custom;
+        }
+        console.log("[ZoneCropper] Calibration utilisateur chargee depuis storage");
+      }
+    } catch (e) {
+      // Pas de calibration custom — fallback sur JSON bundle
+    }
+
+    return new ZoneCropper(config);
+  }
+
+  /**
    * Calcule la zone de jeu dans le screenshot en fonction du ratio
    * Le jeu MSF maintient un ratio 16:9 ; si la fenetre a un ratio different,
    * le contenu est centre avec du letterboxing

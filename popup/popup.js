@@ -4978,6 +4978,58 @@ btnWarBarracks.addEventListener("click", async () => {
   }
 })();
 
+// Verifier si une calibration zones custom existe
+(async function checkZoneCalibrationStatus() {
+  try {
+    const result = await storageGet("msfCustomZoneCalibration");
+    const calib = result.msfCustomZoneCalibration;
+    const statusEl = document.getElementById("zone-calib-status");
+    const resetBtn = document.getElementById("btn-reset-calibration");
+    const langSelect = document.getElementById("scan-lang-override");
+
+    if (calib && calib.slots && calib.slots.custom) {
+      const date = calib.savedAt ? new Date(calib.savedAt).toLocaleDateString() : "?";
+      const res = calib.reference?.calibratedAt || "?";
+      if (statusEl) {
+        statusEl.textContent = `Calibration perso active (${date}, ${res})`;
+        statusEl.style.color = "#51cf66";
+      }
+      if (langSelect && !langSelect.querySelector('option[value="custom"]')) {
+        const opt = document.createElement("option");
+        opt.value = "custom";
+        opt.textContent = "Custom";
+        langSelect.appendChild(opt);
+      }
+      if (resetBtn) resetBtn.style.display = "";
+    }
+  } catch (e) {
+    console.log("[Popup] Pas de calibration zones:", e);
+  }
+})();
+
+// Reset calibration zones personnalisees
+document.getElementById("btn-reset-calibration")?.addEventListener("click", async () => {
+  if (!confirm("Supprimer la calibration personnalisee et revenir aux zones par defaut ?")) return;
+  try {
+    await ext.storage.local.remove("msfCustomZoneCalibration");
+    const langSelect = document.getElementById("scan-lang-override");
+    const customOpt = langSelect?.querySelector('option[value="custom"]');
+    if (customOpt) {
+      if (langSelect.value === "custom") langSelect.value = "auto";
+      customOpt.remove();
+    }
+    const statusEl = document.getElementById("zone-calib-status");
+    if (statusEl) {
+      statusEl.textContent = "Calibration supprimee — zones par defaut";
+      statusEl.style.color = "#888";
+    }
+    document.getElementById("btn-reset-calibration").style.display = "none";
+    console.log("[Calibration] Custom zones supprimees");
+  } catch (e) {
+    console.error("[Calibration] Erreur reset:", e);
+  }
+});
+
 // ============================================
 // War Mode - Scan Salle (4 equipes)
 // ============================================
@@ -5211,11 +5263,22 @@ async function handleScanSalle(debugMode = false) {
 
   const img = await loadImageFromDataUrl(screenshotDataUrl);
   const configUrl = ext.runtime.getURL("msf-zones-config.json") + "?t=" + Date.now();
-  const cropper = await ZoneCropper.loadConfig(configUrl);
+  const cropper = await ZoneCropper.loadConfigWithStorage(configUrl, storageGet);
 
   // Detecter la langue du jeu pour ajuster les zones
   const langOverride = document.getElementById("scan-lang-override")?.value;
-  const gameLang = (langOverride && langOverride !== "auto") ? langOverride : await detectGameLanguage();
+  let gameLang;
+  if (langOverride === "custom") {
+    gameLang = "custom";
+  } else if (langOverride && langOverride !== "auto") {
+    gameLang = langOverride;
+  } else {
+    gameLang = await detectGameLanguage();
+    // Si pas de preset pour cette langue mais calibration custom dispo → utiliser custom
+    if (!cropper.slotsByLang[gameLang] && cropper.slotsByLang["custom"]) {
+      gameLang = "custom";
+    }
+  }
   cropper.setLanguage(gameLang);
   console.log(`[ScanSalle] Screenshot: ${img.naturalWidth}x${img.naturalHeight} (ratio ${(img.naturalWidth/img.naturalHeight).toFixed(3)}, ref ${cropper.referenceAspect.toFixed(3)}, lang ${gameLang})`);
 
@@ -5800,8 +5863,12 @@ async function displayScanDebug(screenshotDataUrl, slots, cropper) {
     html += `</div>`;
   }
 
-  // Bouton copier les coordonnees
-  html += `<button id="debug-copy-coords" style="margin-top:8px;padding:4px 12px;background:#845ef7;color:white;border:none;border-radius:4px;cursor:pointer;font-size:11px;">Copier les coordonnees</button>`;
+  // Boutons copier + sauvegarder calibration
+  html += `<div style="display:flex;gap:8px;margin-top:8px;">`;
+  html += `<button id="debug-copy-coords" style="padding:4px 12px;background:#845ef7;color:white;border:none;border-radius:4px;cursor:pointer;font-size:11px;">Copier les coordonnees</button>`;
+  html += `<button id="debug-save-calib" style="padding:4px 12px;background:#51cf66;color:#0a0a14;border:none;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600;">Sauvegarder la calibration</button>`;
+  html += `</div>`;
+  html += `<div id="debug-save-status" style="font-size:10px;color:#666;margin-top:4px;"></div>`;
   html += `<div style="font-size:10px;color:#666;margin-top:8px;">Clique sur le screenshot pour marquer les centres des portraits. Les rectangles colores montrent les zones actuelles.</div>`;
 
   html += `</div>`;
@@ -5848,17 +5915,14 @@ async function displayScanDebug(screenshotDataUrl, slots, cropper) {
     }
   });
 
-  // Bouton copier
-  document.getElementById("debug-copy-coords").addEventListener("click", () => {
-    if (calibPoints.length === 0) { alert("Clique d'abord sur les portraits !"); return; }
-    // Generer la config JSON
+  // Helper : generer les slots config depuis les points cliques
+  function generateSlotsFromPoints(points) {
     const zoneW = 0.05, zoneH = 0.08;
     const slotsConfig = [];
     for (let s = 0; s < 4; s++) {
-      const slotPoints = calibPoints.slice(s * 5, s * 5 + 5);
+      const slotPoints = points.slice(s * 5, s * 5 + 5);
       if (slotPoints.length === 0) continue;
       const zones = {};
-      // team_full = bounding box de tous les portraits avec marge
       const allX = slotPoints.map(p => p.nx);
       const allY = slotPoints.map(p => p.ny);
       const minX = Math.min(...allX) - zoneW / 2 - 0.005;
@@ -5872,11 +5936,56 @@ async function displayScanDebug(screenshotDataUrl, slots, cropper) {
       });
       slotsConfig.push({ slotNumber: s + 1, zones });
     }
+    return slotsConfig;
+  }
+
+  // Bouton copier
+  document.getElementById("debug-copy-coords").addEventListener("click", () => {
+    if (calibPoints.length === 0) { alert("Clique d'abord sur les portraits !"); return; }
+    const slotsConfig = generateSlotsFromPoints(calibPoints);
     const configText = JSON.stringify(slotsConfig, null, 2);
     navigator.clipboard.writeText(configText).then(() => {
       alert("Coordonnees copiees ! Colle-les dans la console ou envoie-les moi.");
     });
     console.log("[Calibration] Nouvelles zones:", configText);
+  });
+
+  // Bouton sauvegarder calibration
+  document.getElementById("debug-save-calib").addEventListener("click", async () => {
+    const saveStatus = document.getElementById("debug-save-status");
+    if (calibPoints.length < 20) {
+      saveStatus.textContent = `${calibPoints.length}/20 points — clique d'abord sur les 20 portraits !`;
+      saveStatus.style.color = "#ff6b6b";
+      return;
+    }
+
+    const slotsConfig = generateSlotsFromPoints(calibPoints);
+    const calibData = {
+      reference: { aspectRatio: cropper.referenceAspect, calibratedAt: `${imgW}x${imgH}` },
+      slots: { custom: slotsConfig },
+      savedAt: new Date().toISOString(),
+      savedForLang: cropper.currentLang
+    };
+
+    try {
+      await storageSet({ msfCustomZoneCalibration: calibData });
+      saveStatus.textContent = "Calibration sauvegardee ! Elle sera utilisee au prochain scan.";
+      saveStatus.style.color = "#51cf66";
+      console.log("[Calibration] Sauvegardee dans storage:", calibData);
+
+      // Ajouter l'option "Custom" au select langue si pas deja presente
+      const langSelect = document.getElementById("scan-lang-override");
+      if (langSelect && !langSelect.querySelector('option[value="custom"]')) {
+        const opt = document.createElement("option");
+        opt.value = "custom";
+        opt.textContent = "Custom";
+        langSelect.appendChild(opt);
+      }
+      if (langSelect) langSelect.value = "custom";
+    } catch (e) {
+      saveStatus.textContent = "Erreur sauvegarde: " + e.message;
+      saveStatus.style.color = "#ff6b6b";
+    }
   });
 }
 
