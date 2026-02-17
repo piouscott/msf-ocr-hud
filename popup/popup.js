@@ -1884,15 +1884,49 @@ async function loadEvents() {
   // Filtrer les événements actifs
   const activeEvents = events.filter(e => e.endTime > now && e.startTime < now);
 
+  // Debug: log tous les types d'events actifs pour identifier les catégories inconnues
+  console.log("[Events] Types actifs:", [...new Set(activeEvents.map(e => e.type))]);
+  console.log("[Events] typeName actifs:", [...new Set(activeEvents.map(e => e.milestone?.typeName).filter(Boolean))]);
+  activeEvents.forEach(e => {
+    if (e.type === "milestone" && e.milestone?.typeName) {
+      console.log(`[Events] "${e.name}" → typeName: "${e.milestone.typeName}", category: "${e.milestone.category || ""}"`);
+    }
+  });
+
   // Séparer par type
   const blitzEvents = activeEvents.filter(e => e.type === "blitz");
-  // Milestones uniquement (les raids sont dans le panel Raids séparé, les Echo Orb sont masqués)
-  const milestoneEvents = activeEvents.filter(e =>
-    e.type === "milestone" && e.milestone?.scoring
-    && !/echo\s*orb|orb\s*echo/i.test(e.name)
-  );
+  // Milestones : exclure Echo Orb, Poste de commandement (commandPost/redStar), et phases déjà complètes à 100%
+  const milestoneEvents = activeEvents.filter(e => {
+    if (e.type !== "milestone" || !e.milestone?.scoring) return false;
+    if (/echo\s*orb|orb\s*echo/i.test(e.name)) return false;
+    // Exclure Poste de commandement (Red Stars, commandPost)
+    const typeName = (e.milestone?.typeName || "").toLowerCase();
+    const category = (e.milestone?.category || "").toLowerCase();
+    if (typeName.includes("commandpost") || typeName.includes("redstar") ||
+        category.includes("commandpost") || category.includes("redstar")) return false;
+    return true;
+  });
 
-  renderAllEvents({ blitz: blitzEvents, milestone: milestoneEvents });
+  // Dédupliquer les milestones par nom : si même nom, garder seulement la phase en cours (pas à 100%)
+  const seenNames = new Map();
+  const dedupedMilestones = [];
+  for (const e of milestoneEvents) {
+    const progress = e.milestone?.progress;
+    const tiers = e.milestone?.tiers;
+    const isComplete = progress && tiers && tiers.length > 0 &&
+      progress.completedTier >= tiers.length;
+
+    if (!seenNames.has(e.name)) {
+      seenNames.set(e.name, dedupedMilestones.length);
+      dedupedMilestones.push(e);
+    } else if (!isComplete) {
+      // Remplacer l'entrée précédente par celle en cours (pas complète)
+      const idx = seenNames.get(e.name);
+      dedupedMilestones[idx] = e;
+    }
+  }
+
+  renderAllEvents({ blitz: blitzEvents, milestone: dedupedMilestones });
   eventsLoading.classList.add("hidden");
   eventsList.classList.remove("hidden");
 
@@ -5894,8 +5928,9 @@ async function displayScanDebug(screenshotDataUrl, slots, cropper) {
     const scaleY = imgH / rect.height;
     const px = (e.clientX - rect.left) * scaleX;
     const py = (e.clientY - rect.top) * scaleY;
-    const nx = px / imgW;
-    const ny = py / imgH;
+    // Normaliser en coordonnées game-area (pas screenshot complète) pour être cohérent avec le ZoneCropper
+    const nx = (px - gameArea.x) / gameArea.w;
+    const ny = (py - gameArea.y) / gameArea.h;
 
     const label = portraitLabels[clickIndex];
     calibPoints.push({ label, px: Math.round(px), py: Math.round(py), nx: +nx.toFixed(4), ny: +ny.toFixed(4) });
@@ -6051,11 +6086,7 @@ document.getElementById("btn-export-learned-global").addEventListener("click", a
   }
 });
 
-// Import portraits appris (bouton toolbar — merge avec la DB existante)
-document.getElementById("btn-import-learned-global").addEventListener("click", () => {
-  document.getElementById("import-learned-file").click();
-});
-
+// Import portraits appris (bouton toolbar — label déclenche le file picker directement)
 document.getElementById("import-learned-file").addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -6132,7 +6163,11 @@ document.getElementById("import-learned-file").addEventListener("change", async 
     if (warAnalyzer) await warAnalyzer.loadLearnedPortraits();
 
     const total = Object.keys(existing).length;
-    btn.innerHTML = `✅<span>${added} ajout${added > 1 ? 's' : ''}, ${merged} merge${merged > 1 ? 's' : ''}</span>`;
+    if (added === 0 && merged === 0) {
+      btn.innerHTML = `⚠️<span>${skipped} ignorés (déjà présents ou mauvais format)</span>`;
+    } else {
+      btn.innerHTML = `✅<span>${added} ajout${added > 1 ? 's' : ''}, ${merged} merge${merged > 1 ? 's' : ''}</span>`;
+    }
     console.log(`[Import] ${added} nouveaux, ${merged} merges, ${skipped} ignores — total: ${total} persos`);
     setTimeout(() => { btn.innerHTML = originalHTML; }, 3000);
   } catch (err) {
