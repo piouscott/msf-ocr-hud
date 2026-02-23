@@ -4,11 +4,13 @@
   <meta charset="utf-8">
   <title>MSF - Gestion Counters</title>
   <link rel="stylesheet" href="popup.css">
+  <script src="../lib/lucide.min.js"></script>
   <style>
     body {
       width: 450px;
       min-height: 580px;
       max-width: 100vw;
+      background: linear-gradient(180deg, #0a0e1a 0%, #1a1a2e 50%, #0a0e1a 100%);
     }
 
     /* Mode fenêtré: layout adaptatif */
@@ -41,52 +43,114 @@
     .back-link {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      margin-bottom: 16px;
-      color: #1a1a2e;
-      background: #00d4ff;
-      padding: 8px 16px;
-      border-radius: 6px;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      color: #00d4ff;
+      background: rgba(0, 212, 255, 0.1);
+      border-radius: 8px;
       cursor: pointer;
-      font-size: 13px;
-      font-weight: 600;
       text-decoration: none;
-      transition: all 0.2s ease;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      flex-shrink: 0;
     }
     .back-link:hover {
-      background: #33ddff;
+      background: rgba(0, 212, 255, 0.2);
+      border-color: #00d4ff;
       transform: translateX(-2px);
+    }
+    .back-link i {
+      width: 20px;
+      height: 20px;
     }
 
     .page-header {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 16px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid #333;
+      background: linear-gradient(135deg, #1e3a5f 0%, #0d1f33 100%);
+      margin: -16px -16px 16px -16px;
+      padding: 16px;
+      border-bottom: 2px solid #00d4ff;
+      position: relative;
+      overflow: hidden;
     }
 
-    .page-header header {
-      flex: 1;
+    .page-header::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M54.627 0l.83.828-1.415 1.415L51.8 0h2.827zM5.373 0l-.83.828L5.96 2.243 8.2 0H5.374zM48.97 0l3.657 3.657-1.414 1.414L46.143 0h2.828zM11.03 0L7.372 3.657 8.787 5.07 13.857 0H11.03zm32.284 0L49.8 6.485 48.384 7.9l-7.9-7.9h2.83zM16.686 0L10.2 6.485 11.616 7.9l7.9-7.9h-2.83zM22.344 0L13.858 8.485 15.272 9.9l9.9-9.9h-2.828zM32 0l-3.486 3.485-1.414-1.414L30.172 0H32z' fill='%2300d4ff' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+      pointer-events: none;
     }
 
     .page-header h1 {
       margin: 0;
-      font-size: 18px;
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      position: relative;
+    }
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .header-title i {
+      width: 22px;
+      height: 22px;
     }
 
     @media (min-width: 500px) {
       .page-header h1 {
         font-size: 22px;
       }
+      .header-title i {
+        width: 24px;
+        height: 24px;
+      }
     }
 
     .team-section {
-      background: #2d2d44;
-      border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 12px;
+      background: linear-gradient(135deg, #252538 0%, #1e1e32 100%);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
+      border: 1px solid #2a2a3e;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .team-section::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #d4af37, transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .team-section:hover {
+      border-color: #d4af37;
+      box-shadow: 0 6px 20px rgba(212, 175, 55, 0.15);
+      transform: translateY(-2px);
+    }
+    .team-section:hover::before {
+      opacity: 1;
     }
 
     .team-header {
@@ -181,13 +245,26 @@
     }
 
     #btn-save {
-      background: #00d4ff;
-      color: #1a1a2e;
+      background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+      color: #0a0e1a;
       border: none;
-      border-radius: 6px;
-      padding: 10px 24px;
-      font-weight: 600;
+      border-radius: 8px;
+      padding: 12px 32px;
+      font-weight: 700;
       cursor: pointer;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+      transition: all 0.3s;
+    }
+    #btn-save:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 212, 255, 0.5);
+      background: linear-gradient(135deg, #33ddff 0%, #00b3e6 100%);
+    }
+    #btn-save:active {
+      transform: translateY(0);
     }
 
     /* Source badges */
@@ -309,17 +386,20 @@
 
     #search-input {
       flex: 1;
-      background: #1a1a2e;
-      border: 1px solid #444;
-      border-radius: 6px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #252538 100%);
+      border: 1px solid #2a2a3e;
+      border-radius: 8px;
       color: #fff;
-      padding: 8px 12px;
+      padding: 10px 16px;
       font-size: 13px;
+      transition: all 0.3s;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.3);
     }
 
     #search-input:focus {
       outline: none;
       border-color: #00d4ff;
+      box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1), inset 0 2px 6px rgba(0, 0, 0, 0.3);
     }
 
     #search-input::placeholder {
@@ -344,11 +424,22 @@
 
     /* Accordéon offensif */
     .offensive-accordion {
-      background: #2d2d44;
-      border-radius: 8px;
-      margin-bottom: 14px;
-      border-left: 3px solid #845ef7;
+      background: linear-gradient(135deg, #2d2744 0%, #1e1e32 100%);
+      border-radius: 12px;
+      margin-bottom: 16px;
+      border: 1px solid #845ef7;
       overflow: hidden;
+      box-shadow: 0 4px 16px rgba(132, 94, 247, 0.2);
+      position: relative;
+    }
+    .offensive-accordion::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(180deg, #845ef7, #c084fc);
     }
     .offensive-header {
       display: flex;
@@ -517,12 +608,16 @@
 </head>
 <body>
   <div id="app">
-    <div class="page-header">
-      <span class="back-link" id="back">← <span data-i18n="back">Retour</span></span>
-      <header>
-        <h1>⚔️ <span data-i18n="title">Gestion Contres</span> 🛡️</h1>
-      </header>
-    </div>
+    <header class="page-header">
+      <h1>
+        <span class="back-link" id="back"><i data-lucide="arrow-left"></i></span>
+        <span class="header-title">
+          <i data-lucide="swords" style="color:#d4af37;"></i>
+          <span data-i18n="title">Gestion Contres</span>
+          <i data-lucide="shield" style="color:#51cf66;"></i>
+        </span>
+      </h1>
+    </header>
 
     <div class="lang-selector">
       <label data-i18n="language">Langue:</label>
@@ -540,8 +635,8 @@
     <!-- Accordéon: Meilleures équipes offensives -->
     <div id="offensive-accordion" class="offensive-accordion">
       <div class="offensive-header" id="offensive-toggle">
-        <span>🗡️ <span data-i18n="bestOffensive">Meilleures équipes offensives</span></span>
-        <span class="offensive-arrow">▼</span>
+        <span><i data-lucide="trophy" style="width:16px;height:16px;color:#ffd43b;"></i> <span data-i18n="bestOffensive">Meilleures équipes offensives</span></span>
+        <span class="offensive-arrow"><i data-lucide="chevron-down" style="width:14px;height:14px;"></i></span>
       </div>
       <div id="offensive-content" class="offensive-content">
         <!-- Généré par JS -->

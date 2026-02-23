@@ -769,4 +769,10 @@ searchInput.addEventListener("keydown", (e) => {
 
   // Load data
   await loadData();
+
+  // Initialize Lucide icons
+  if (typeof lucide !== 'undefined') {
+    lucide.createIcons();
+    console.log('[Manage] Lucide Icons initialized');
+  }
 })();

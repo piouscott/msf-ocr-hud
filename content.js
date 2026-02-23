@@ -83,7 +83,7 @@ class OCREngine {
     this.options = {
       workerPath: options.workerPath || "lib/tesseract/worker.min.js",
       langPath: options.langPath || "lib/tesseract/lang/",
-      corePath: options.corePath || "lib/tesseract/core/tesseract-core-simd.wasm.js",
+      corePath: options.corePath || "lib/tesseract/core/tesseract-core-simd-lstm.wasm.js",
       lang: options.lang || "eng"
     };
   }
@@ -91,17 +91,25 @@ class OCREngine {
   async init() {
     if (this.initialized) return;
 
-    console.log("[OCR] Initialisation du worker...");
-
-    // Tesseract est charge via manifest.json content_scripts
     if (typeof Tesseract === "undefined") {
       throw new Error("Tesseract.js non charge - verifier manifest.json");
     }
 
-    this.worker = await Tesseract.createWorker({
-      workerPath: ext.runtime.getURL(this.options.workerPath),
-      langPath: ext.runtime.getURL(this.options.langPath),
-      corePath: ext.runtime.getURL(this.options.corePath),
+    const lang = this.options.lang;
+    const workerUrl = ext.runtime.getURL(this.options.workerPath);
+    const langUrl = ext.runtime.getURL(this.options.langPath);
+
+    const coreCandidates = [
+      "lib/tesseract/core/tesseract-core-simd-lstm.wasm.js",
+      "lib/tesseract/core/tesseract-core-lstm.wasm.js",
+      "lib/tesseract/core/tesseract-core-simd.wasm.js",
+      "lib/tesseract/core/tesseract-core.wasm.js"
+    ];
+
+    const workerOpts = (coreUrl) => ({
+      workerPath: workerUrl,
+      langPath: langUrl,
+      corePath: coreUrl,
       workerBlobURL: false,
       logger: (m) => {
         if (m.status === "recognizing text") {
@@ -110,17 +118,40 @@ class OCREngine {
       }
     });
 
-    await this.worker.loadLanguage(this.options.lang);
-    await this.worker.initialize(this.options.lang);
+    console.log("[OCR] Init — Tesseract keys:", Object.keys(Tesseract).join(", "));
 
-    // Configurer pour reconnaitre uniquement les chiffres
-    await this.worker.setParameters({
-      tessedit_char_whitelist: "0123456789 ",
-      tessedit_pageseg_mode: "7" // Single line mode
-    });
+    for (const corePath of coreCandidates) {
+      const coreUrl = ext.runtime.getURL(corePath);
+      const coreShort = corePath.split("/").pop();
 
-    this.initialized = true;
-    console.log("[OCR] Worker pret");
+      // Essai v4
+      try {
+        this.worker = await Tesseract.createWorker(lang, 1, workerOpts(coreUrl));
+        this.initialized = true;
+        console.log(`[OCR] Worker pret (v4, ${coreShort})`);
+        return;
+      } catch (e1) {
+        console.warn(`[OCR] v4 + ${coreShort}:`, String(e1));
+      }
+
+      // Essai v2
+      try {
+        this.worker = await Tesseract.createWorker(workerOpts(coreUrl));
+        await this.worker.loadLanguage(lang);
+        await this.worker.initialize(lang);
+        this.initialized = true;
+        console.log(`[OCR] Worker pret (v2, ${coreShort})`);
+        return;
+      } catch (e2) {
+        console.warn(`[OCR] v2 + ${coreShort}:`, String(e2));
+        if (this.worker) {
+          try { await this.worker.terminate(); } catch (_) {}
+          this.worker = null;
+        }
+      }
+    }
+
+    throw new Error("OCR init: aucune combinaison API/core n'a fonctionne");
   }
 
   async recognize(image) {
@@ -132,23 +163,32 @@ class OCREngine {
     return text.trim();
   }
 
-  // Pretraitement simple : agrandir l'image pour meilleure precision
+  // Pretraitement : agrandir + inverser (texte clair → sombre sur fond blanc)
+  // Pas de binarisation fixe — laisser Tesseract appliquer Otsu automatiquement
   preprocessImage(imageDataUrl) {
     return new Promise((resolve) => {
       const img = new Image();
       img.onload = () => {
+        const scale = 4;
         const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-
-        // Agrandir l'image 3x pour meilleure precision OCR
-        const scale = 3;
         canvas.width = img.width * scale;
         canvas.height = img.height * scale;
+        const ctx = canvas.getContext("2d");
 
-        // Dessiner avec lissage pour de meilleurs contours
+        // Agrandir avec lissage
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = "high";
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        // Grayscale + inversion : texte blanc → noir, fond sombre → blanc
+        // Tesseract fonctionne mieux avec texte noir sur fond clair
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const d = imageData.data;
+        for (let i = 0; i < d.length; i += 4) {
+          const gray = Math.round(0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2]);
+          d[i] = d[i+1] = d[i+2] = 255 - gray;
+        }
+        ctx.putImageData(imageData, 0, 0);
 
         resolve(canvas.toDataURL("image/png"));
       };
@@ -157,28 +197,34 @@ class OCREngine {
   }
 
   async extractPower(imageDataUrl) {
-    // Pretraiter l'image avant OCR (agrandissement)
-    const processedImage = await this.preprocessImage(imageDataUrl);
-    const text = await this.recognize(processedImage);
-    console.log("[OCR] Texte brut:", text);
+    const result = await this.extractPowerWithDebug(imageDataUrl);
+    return result.power;
+  }
 
-    const matches = text.match(/[\d,.\s]+/g);
+  async extractPowerWithDebug(imageDataUrl) {
+    const processedImage = await this.preprocessImage(imageDataUrl);
+    const rawText = await this.recognize(processedImage);
+    console.log("[OCR] Texte brut:", JSON.stringify(rawText));
+
+    const matches = rawText.match(/[\d,.\s]+/g);
 
     if (matches) {
       const candidates = matches
         .map(m => m.replace(/[,.\s]/g, ""))
-        .filter(m => /^\d+$/.test(m) && m.length >= 5);
+        .filter(m => /^\d+$/.test(m) && m.length >= 5)
+        .map(m => parseInt(m, 10));
 
       if (candidates.length > 0) {
-        candidates.sort((a, b) => b.length - a.length);
-        const power = parseInt(candidates[0], 10);
-        console.log("[OCR] Puissance extraite:", power);
-        return power;
+        // Trier par valeur decroissante — le power total est toujours le plus grand
+        candidates.sort((a, b) => b - a);
+        const power = candidates[0];
+        console.log("[OCR] Puissance extraite:", power, "(candidates:", candidates.join(", ") + ")");
+        return { power, rawText };
       }
     }
 
     console.log("[OCR] Aucune puissance trouvee");
-    return null;
+    return { power: null, rawText };
   }
 
   async terminate() {
@@ -609,6 +655,39 @@ ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     ext.storage.local.get("msf_barracks_calibration").then(result => {
       sendResponse({ calibration: result.msf_barracks_calibration || null });
     });
+    return true;
+  }
+
+  if (msg.type === "MSF_OCR_POWER") {
+    (async () => {
+      try {
+        if (window.self !== window.top) {
+          sendResponse({ power: null, error: "iframe" });
+          return;
+        }
+        console.log(`[MSF] OCR power recu: image ${msg.imageDataUrl?.length || 0} chars, frame=top`);
+        // Singleton : init une seule fois, reutilise ensuite
+        if (!window._msfOcrEngine) {
+          console.log("[MSF] Creation OCR engine singleton...");
+          window._msfOcrEngine = new OCREngine();
+        }
+        if (!window._msfOcrEngine.initialized) {
+          console.log("[MSF] Init OCR engine (premiere fois, peut prendre ~10s)...");
+          await window._msfOcrEngine.init();
+          console.log("[MSF] OCR engine pret");
+        }
+        const result = await window._msfOcrEngine.extractPowerWithDebug(msg.imageDataUrl);
+        console.log("[MSF] OCR result:", JSON.stringify(result));
+        sendResponse(result);
+      } catch (e) {
+        console.error("[MSF] Erreur OCR power:", e);
+        // Reset singleton en cas d'erreur d'init pour retenter
+        if (window._msfOcrEngine && !window._msfOcrEngine.initialized) {
+          window._msfOcrEngine = null;
+        }
+        sendResponse({ power: null, rawText: null, error: e.message });
+      }
+    })();
     return true;
   }
 

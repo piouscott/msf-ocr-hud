@@ -1,23 +1,23 @@
 /**
  * ZoneCropper - Decoupe les zones d'une image selon config normalisee
  * Adapte automatiquement les zones au ratio d'ecran (letterboxing)
- * Supporte des jeux de coordonnees par langue (EN/FR)
+ * Supporte des jeux de coordonnees par position (Position 1/Position 2/Custom)
  */
 class ZoneCropper {
   constructor(config) {
     this.referenceAspect = config.reference?.aspectRatio || (16 / 9);
 
-    // slots peut etre un objet {en: [...], fr: [...]} ou un tableau (ancien format)
+    // slots peut etre un objet {position1: [...], position2: [...]} ou un tableau (ancien format)
     if (Array.isArray(config.slots)) {
-      // Ancien format : tableau unique, pas de langues
+      // Ancien format : tableau unique
       this.slotsByLang = { "default": config.slots };
       this.currentLang = "default";
       this.defaultLang = "default";
     } else {
-      // Nouveau format : objet keyed par langue
+      // Nouveau format : objet keyed par position
       this.slotsByLang = config.slots;
-      // Langue par defaut = premiere cle disponible
-      this.defaultLang = Object.keys(config.slots)[0] || "en";
+      // Position par defaut = premiere cle disponible
+      this.defaultLang = Object.keys(config.slots)[0] || "position1";
       this.currentLang = this.defaultLang;
     }
 
@@ -25,17 +25,17 @@ class ZoneCropper {
   }
 
   /**
-   * Definit la langue du jeu pour selectionner le bon jeu de coordonnees
-   * @param {string} lang - Code langue ("fr", "en")
+   * Definit la position pour selectionner le bon jeu de coordonnees
+   * @param {string} position - Cle de position ("position1", "position2", "custom")
    */
-  setLanguage(lang) {
-    if (lang && this.slotsByLang[lang]) {
-      this.currentLang = lang;
+  setLanguage(position) {
+    if (position && this.slotsByLang[position]) {
+      this.currentLang = position;
     } else {
       this.currentLang = this.defaultLang;
     }
     this.slots = this.slotsByLang[this.currentLang];
-    console.log(`[ZoneCropper] Langue "${this.currentLang}" → ${this.slots.length} slots charges`);
+    console.log(`[ZoneCropper] Position "${this.currentLang}" → ${this.slots.length} slots charges`);
   }
 
   /**
@@ -80,38 +80,17 @@ class ZoneCropper {
   }
 
   /**
-   * Calcule la zone de jeu dans le screenshot en fonction du ratio
-   * Le jeu MSF maintient un ratio 16:9 ; si la fenetre a un ratio different,
-   * le contenu est centre avec du letterboxing
+   * Calcule la zone de jeu dans le screenshot
+   * MSF web remplit toute la fenetre (pas de letterboxing), donc on utilise
+   * toujours les dimensions completes du screenshot
    * @param {number} imgWidth - Largeur du screenshot
    * @param {number} imgHeight - Hauteur du screenshot
    * @returns {Object} {x, y, w, h} zone de jeu en pixels
    */
   getGameArea(imgWidth, imgHeight) {
     const actualAspect = imgWidth / imgHeight;
-    // Tolerance large : MSF web remplit toute la fenetre (pas de letterboxing)
-    // et le layout s'adapte proportionnellement entre ~1.85 et ~1.98
-    const tolerance = 0.15;
-
-    if (Math.abs(actualAspect - this.referenceAspect) < tolerance) {
-      return { x: 0, y: 0, w: imgWidth, h: imgHeight };
-    }
-
-    if (actualAspect > this.referenceAspect) {
-      // Bien plus large que la reference → bandes noires gauche/droite (ultra-wide)
-      const gameHeight = imgHeight;
-      const gameWidth = Math.round(gameHeight * this.referenceAspect);
-      const offsetX = Math.round((imgWidth - gameWidth) / 2);
-      console.log(`[ZoneCropper] Ratio ${actualAspect.toFixed(3)} > ref ${this.referenceAspect.toFixed(3)} → bandes laterales, offsetX=${offsetX}px`);
-      return { x: offsetX, y: 0, w: gameWidth, h: gameHeight };
-    } else {
-      // Bien plus etroit → bandes noires haut/bas
-      const gameWidth = imgWidth;
-      const gameHeight = Math.round(gameWidth / this.referenceAspect);
-      const offsetY = Math.round((imgHeight - gameHeight) / 2);
-      console.log(`[ZoneCropper] Ratio ${actualAspect.toFixed(3)} < ref ${this.referenceAspect.toFixed(3)} → bandes haut/bas, offsetY=${offsetY}px`);
-      return { x: 0, y: offsetY, w: gameWidth, h: gameHeight };
-    }
+    console.log(`[ZoneCropper] Screenshot ${imgWidth}x${imgHeight} (ratio ${actualAspect.toFixed(3)}, ref ${this.referenceAspect.toFixed(3)})`);
+    return { x: 0, y: 0, w: imgWidth, h: imgHeight };
   }
 
   /**

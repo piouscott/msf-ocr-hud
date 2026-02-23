@@ -10,9 +10,7 @@ const { execSync } = require("child_process");
 const ROOT = path.join(__dirname, "..");
 const OUTPUT = path.join(ROOT, "releases", "tester");
 
-// Fichiers et dossiers a copier (version tester = fonctionnalites stables uniquement)
-// PAS de: lib/tesseract, modules OCR (zone-cropper, ocr-engine, phash, war-analyzer)
-// On garde: inverse-counters.js (necessaire pour Defense panel)
+// Fichiers et dossiers a copier (version tester = fonctionnalites stables + OCR/Scan Salle)
 const FILES_TO_COPY = [
   "manifest.json",
   "bg.js",
@@ -21,30 +19,22 @@ const FILES_TO_COPY = [
   "RELEASE-NOTES.html"
 ];
 
-// Modules a copier dans popup/ pour le tester (evite les chemins relatifs ../)
-const MODULES_TO_INLINE = [
-  "modules/inverse-counters.js"
-];
-
 const DIRS_TO_COPY = [
   "data",
-  "popup"
+  "popup",
+  "lib",
+  "modules"
 ];
 
 // CSS a injecter dans popup.html pour le mode tester
 const TESTER_CSS = `
   <style>
-    /* Mode Tester: cacher les fonctionnalites en developpement */
+    /* Mode Tester: cacher les fonctionnalites encore en developpement */
     #actions { display: none !important; }
-    #btn-war-ocr { display: none !important; }
-    #btn-export-learned-global { display: none !important; }
-    #btn-import-learned-global { display: none !important; }
     #btn-export { display: none !important; }
     #btn-import { display: none !important; }
     #btn-settings { display: none !important; }
     #import-file { display: none !important; }
-    #status { display: none !important; }
-    #results { display: none !important; }
 
     /* Barre de navigation : 2 lignes de 4 boutons */
     #tools {
@@ -115,74 +105,14 @@ function main() {
     }
   }
 
-  // Copier les modules directement dans popup/ (evite les chemins ../)
-  for (const mod of MODULES_TO_INLINE) {
-    const src = path.join(ROOT, mod);
-    const filename = path.basename(mod);
-    const dest = path.join(OUTPUT, "popup", filename);
-    if (fs.existsSync(src)) {
-      fs.copyFileSync(src, dest);
-      console.log(`  Copie: ${mod} -> popup/${filename}`);
-    } else {
-      console.warn(`  ATTENTION: ${mod} introuvable`);
-    }
-  }
+  // manifest.json est copie tel quel (toutes les permissions et refs sont necessaires)
 
-  // Modifier manifest.json pour retirer les refs à lib/tesseract et modules OCR (non inclus dans le tester)
-  const manifestPath = path.join(OUTPUT, "manifest.json");
-  if (fs.existsSync(manifestPath)) {
-    let manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
-
-    // MV3 Chrome/Vivaldi : retirer background.scripts (Firefox only), garder service_worker
-    if (manifest.background && manifest.background.scripts) {
-      delete manifest.background.scripts;
-    }
-
-    // Retirer lib/tesseract/tesseract.min.js des content_scripts
-    if (manifest.content_scripts) {
-      manifest.content_scripts.forEach(cs => {
-        if (cs.js) {
-          cs.js = cs.js.filter(f => !f.includes("lib/tesseract"));
-        }
-      });
-    }
-
-    // Retirer lib/tesseract/* et modules/* des web_accessible_resources
-    if (manifest.web_accessible_resources) {
-      manifest.web_accessible_resources.forEach(war => {
-        if (war.resources) {
-          war.resources = war.resources.filter(r =>
-            !r.includes("lib/tesseract") && !r.includes("modules/")
-          );
-        }
-      });
-    }
-
-    fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
-    console.log("  Modifie: manifest.json (MV3 clean + retire tesseract/modules OCR)");
-  }
-
-  // Modifier popup.html pour le mode tester
+  // Modifier popup.html pour le mode tester (label + CSS pour cacher les boutons non inclus)
   const popupHtmlPath = path.join(OUTPUT, "popup", "popup.html");
   if (fs.existsSync(popupHtmlPath)) {
     let html = fs.readFileSync(popupHtmlPath, "utf-8");
 
-    // Retirer TOUS les scripts ../modules/* et ../lib/*
-    html = html.replace(/\s*<script src="\.\.\/(?:lib|modules)\/[^"]+"><\/script>/g, '');
-    console.log("  Modifie: popup/popup.html (retire scripts externes)");
-
-    // Ajouter les modules inlines juste avant popup.js
-    const inlineScripts = MODULES_TO_INLINE.map(m => {
-      const filename = path.basename(m);
-      return `  <script src="${filename}"></script>`;
-    }).join('\n');
-    html = html.replace(
-      '<script src="popup.js"></script>',
-      inlineScripts + '\n  <script src="popup.js"></script>'
-    );
-    console.log("  Modifie: popup/popup.html (ajout scripts locaux)");
-
-    // Ajouter le label "Version Tester" et le CSS
+    // Ajouter le label "Version Tester"
     html = html.replace(
       "<h1>MSF Counter</h1>",
       `<h1>MSF Counter</h1>\n      <p style="font-size: 11px; color: #888; margin-top: 4px;">Version Tester</p>`

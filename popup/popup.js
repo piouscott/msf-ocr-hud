@@ -1006,18 +1006,19 @@ function getFarmLocationIcon(type) {
 }
 
 /**
- * Convertit le niveau de confiance en symboles visuels (triangles)
- * 95% = ▲▲▲ (20% punch up)
- * 80% = ▲▲ (10% punch up)
- * 65% = ▲ (5% punch up)
- * 50% = ⊜ (even match)
+ * Convertit le niveau de confiance en symboles visuels (etoiles)
+ * 95% = ★★★ (excellent counter)
+ * 80% = ★★ (bon counter)
+ * 65% = ★ (counter correct)
+ * 50% = ☆ (counter moyen)
+ * <50% = ☆ (faible)
  */
 function confidenceToSymbols(confidence) {
-  if (confidence >= 95) return '<span style="color:#51cf66">▲▲▲</span>';
-  if (confidence >= 80) return '<span style="color:#51cf66">▲▲</span>';
-  if (confidence >= 65) return '<span style="color:#51cf66">▲</span>';
-  if (confidence >= 50) return '<span style="color:#fcc419">⊜</span>';
-  return '<span style="color:#ff6b6b">▼</span>';
+  if (confidence >= 95) return '<span style="color:#51cf66" title="Punch up +20%">★★★</span>';
+  if (confidence >= 80) return '<span style="color:#51cf66" title="Punch up +10%">★★</span>';
+  if (confidence >= 65) return '<span style="color:#69db7c" title="Punch up +5%">★</span>';
+  if (confidence >= 50) return '<span style="color:#fcc419" title="Even match">☆</span>';
+  return '<span style="color:#ff6b6b;opacity:0.6" title="Punch down">☆</span>';
 }
 
 // ============================================
@@ -5202,71 +5203,20 @@ function pickScreenshotFile() {
 }
 
 /**
- * Detecte la langue du jeu MSF via plusieurs methodes en cascade :
- * 1. URL du tab MSF (/fr/ ou /en/ dans le path)
- * 2. Content script (localStorage du jeu)
- * 3. Derniere langue detectee (sauvee dans storage)
- * 4. Fallback langue navigateur
- * @returns {Promise<string>} "fr" ou "en"
+ * Retourne la derniere position de zones utilisee, ou "position1" par defaut.
+ * @returns {Promise<string>} "position1" ou "position2"
  */
-async function detectGameLanguage() {
-  let detected = null;
-
+async function detectZonePosition() {
   try {
-    // Chercher l'onglet MSF
-    let tabs = await ext.tabs.query({ url: ["*://*.marvelstrikeforce.com/*", "*://*.scopelypv.com/*", "*://*.scopely.io/*"] });
-    if (tabs.length === 0) {
-      tabs = await ext.tabs.query({ url: ["http://localhost:*/*", "file:///*msf-ocr-hud/debug/*"] });
+    const stored = await ext.storage.local.get("msfZonePosition");
+    if (stored.msfZonePosition) {
+      console.log(`[ScanSalle] Position depuis storage: ${stored.msfZonePosition}`);
+      return stored.msfZonePosition;
     }
+  } catch(e) {}
 
-    if (tabs.length > 0) {
-      // Methode 1 : URL du tab (le plus fiable)
-      const url = tabs[0].url || "";
-      const urlMatch = url.match(/marvelstrikeforce\.com\/(fr|en)\//i);
-      if (urlMatch) {
-        detected = urlMatch[1].toLowerCase();
-        console.log(`[ScanSalle] Langue detectee via URL: ${detected} (${url})`);
-      }
-
-      // Methode 2 : content script (localStorage du jeu)
-      if (!detected) {
-        try {
-          const response = await ext.tabs.sendMessage(tabs[0].id, { type: "MSF_DETECT_LANG" });
-          if (response?.lang) {
-            detected = response.lang;
-            console.log(`[ScanSalle] Langue detectee via content script: ${detected}`);
-          }
-        } catch (e) {
-          console.log("[ScanSalle] Content script non joignable:", e.message);
-        }
-      }
-    }
-  } catch(e) {
-    console.log("[ScanSalle] Detection langue tabs impossible:", e.message);
-  }
-
-  // Methode 3 : derniere langue detectee (utile pour file picker sans tab MSF)
-  if (!detected) {
-    try {
-      const stored = await ext.storage.local.get("msfDetectedLang");
-      if (stored.msfDetectedLang) {
-        detected = stored.msfDetectedLang;
-        console.log(`[ScanSalle] Langue depuis storage: ${detected}`);
-      }
-    } catch(e) {}
-  }
-
-  // Methode 4 : fallback langue navigateur
-  if (!detected) {
-    const navLang = (navigator.language || "").toLowerCase();
-    detected = navLang.startsWith("en") ? "en" : "fr";
-    console.log(`[ScanSalle] Fallback langue navigateur: ${detected}`);
-  }
-
-  // Sauvegarder pour les prochains scans (file picker, etc.)
-  try { ext.storage.local.set({ msfDetectedLang: detected }); } catch(e) {}
-
-  return detected;
+  console.log("[ScanSalle] Fallback position1");
+  return "position1";
 }
 
 /**
@@ -5299,22 +5249,26 @@ async function handleScanSalle(debugMode = false) {
   const configUrl = ext.runtime.getURL("msf-zones-config.json") + "?t=" + Date.now();
   const cropper = await ZoneCropper.loadConfigWithStorage(configUrl, storageGet);
 
-  // Detecter la langue du jeu pour ajuster les zones
-  const langOverride = document.getElementById("scan-lang-override")?.value;
-  let gameLang;
-  if (langOverride === "custom") {
-    gameLang = "custom";
-  } else if (langOverride && langOverride !== "auto") {
-    gameLang = langOverride;
+  // Selectionner la position de zones
+  const posOverride = document.getElementById("scan-lang-override")?.value;
+  let zonePos;
+  if (posOverride === "custom") {
+    zonePos = "custom";
+  } else if (posOverride && posOverride !== "auto") {
+    zonePos = posOverride;
   } else {
-    gameLang = await detectGameLanguage();
-    // Si pas de preset pour cette langue mais calibration custom dispo → utiliser custom
-    if (!cropper.slotsByLang[gameLang] && cropper.slotsByLang["custom"]) {
-      gameLang = "custom";
+    zonePos = await detectZonePosition();
+    // Si pas de preset pour cette position mais calibration custom dispo → utiliser custom
+    if (!cropper.slotsByLang[zonePos] && cropper.slotsByLang["custom"]) {
+      zonePos = "custom";
     }
   }
-  cropper.setLanguage(gameLang);
-  console.log(`[ScanSalle] Screenshot: ${img.naturalWidth}x${img.naturalHeight} (ratio ${(img.naturalWidth/img.naturalHeight).toFixed(3)}, ref ${cropper.referenceAspect.toFixed(3)}, lang ${gameLang})`);
+  cropper.setLanguage(zonePos);
+  // Sauvegarder la position choisie pour les prochains scans
+  if (zonePos !== "custom") {
+    try { ext.storage.local.set({ msfZonePosition: zonePos }); } catch(e) {}
+  }
+  console.log(`[ScanSalle] Screenshot: ${img.naturalWidth}x${img.naturalHeight} (ratio ${(img.naturalWidth/img.naturalHeight).toFixed(3)}, ref ${cropper.referenceAspect.toFixed(3)}, pos ${zonePos})`);
 
   const slots = cropper.extractAllSlots(img);
 
@@ -5328,10 +5282,21 @@ async function handleScanSalle(debugMode = false) {
 
   showWarResult("Identification des portraits...", "");
 
+  // OCR direct dans le popup (Tesseract + OCREngine charges dans popup.html)
+  let ocrEngine = null;
+  try {
+    ocrEngine = new OCREngine();
+    await ocrEngine.init();
+    console.log("[ScanSalle] OCR engine pret (popup direct)");
+  } catch (e) {
+    console.error("[ScanSalle] OCR engine init echoue:", String(e), e);
+    ocrEngine = null;
+  }
+
   scanRoomState = { teams: [] };
 
   for (const slot of slots) {
-    const team = { slotNumber: slot.slotNumber, portraits: [], underAttack: false };
+    const team = { slotNumber: slot.slotNumber, portraits: [], underAttack: false, enemyPower: null };
 
     // Detecter le filtre rouge "under attack" sur la zone team_full
     const isUnderAttack = await warAnalyzer.detectRedFilter(slot.team_full);
@@ -5349,6 +5314,22 @@ async function handleScanSalle(debugMode = false) {
       }
       scanRoomState.teams.push(team);
       continue;
+    }
+
+    // OCR du power ennemi directement dans le popup
+    if (ocrEngine && (slot.team_power || slot.team_full)) {
+      try {
+        const powerStrip = slot.team_power;
+        const powerImage = await cropRightHalf(powerStrip);
+        console.log(`[ScanSalle] E${slot.slotNumber} OCR direct (image ${powerImage.length} chars)...`);
+        const ocrResult = await ocrEngine.extractPowerWithDebug(powerImage);
+        team.enemyPower = ocrResult?.power || null;
+        console.log(`[ScanSalle] E${slot.slotNumber} power OCR: ${team.enemyPower || 'non lu'}${ocrResult?.rawText ? ' (raw: "' + ocrResult.rawText + '")' : ''}`);
+      } catch (e) {
+        console.log(`[ScanSalle] E${slot.slotNumber} OCR echoue:`, String(e));
+      }
+    } else {
+      console.log(`[ScanSalle] E${slot.slotNumber} OCR skip: ocrEngine=${!!ocrEngine}, team_power=${!!slot.team_power}`);
     }
 
     for (let i = 0; i < slot.portraits.length; i++) {
@@ -5422,6 +5403,11 @@ async function handleScanSalle(debugMode = false) {
         console.log(`[ScanSalle] Team-aware: ${oldName} → ${match.name} (${match.similarity}%)`);
       }
     }
+  }
+
+  // Liberer le worker OCR
+  if (ocrEngine) {
+    ocrEngine.terminate().catch(() => {});
   }
 
   renderScanRoomResults();
@@ -5512,9 +5498,11 @@ function renderScanRoomResults() {
     html += `<div class="scan-room-search-results" id="search-results-${t}"></div>`;
     html += `</div>`;
 
-    // Actions : bouton counters ou indicateur
+    // Actions : bouton counters + input power (pre-rempli par OCR, editable)
     html += `<div class="scan-room-team-actions">`;
     if (identifiedNames.length >= 3) {
+      const ocrPower = team.enemyPower ? team.enemyPower.toLocaleString() : "";
+      html += `<input type="text" class="scan-room-power-input" id="power-input-${t}" data-team="${t}" value="${ocrPower}" placeholder="Power ennemi" title="Power ennemi (OCR auto, editable)">`;
       html += `<button class="scan-room-btn-counters" data-team="${t}">Chercher counters</button>`;
     } else {
       html += `<span class="scan-room-hint">${identifiedNames.length}/5 identifie${identifiedNames.length > 1 ? 's' : ''}</span>`;
@@ -5759,6 +5747,115 @@ async function selectCharacterForPortrait(teamIdx, portraitIdx, charId, name) {
   renderScanRoomResults();
 }
 
+// Cache roster pour eviter de relire le storage a chaque counter
+let _rosterMapCache = null;
+
+async function getTeamPowerFromRoster(teamId) {
+  if (!_rosterMapCache) {
+    const stored = await storageGet("msfPlayerRosterFull");
+    const roster = stored.msfPlayerRosterFull;
+    if (!roster || roster.length === 0) return null;
+    _rosterMapCache = {};
+    roster.forEach(c => { _rosterMapCache[(c.id || "").toUpperCase()] = c; });
+  }
+
+  const team = (warAnalyzer?.teamsData || []).find(t => t.id === teamId);
+  if (!team || !team.memberIds) return null;
+
+  let total = 0, found = 0;
+  for (const mid of team.memberIds) {
+    const r = _rosterMapCache[mid.toUpperCase()];
+    if (r && r.power) { total += r.power; found++; }
+  }
+  const result = found >= 3 ? total : null;
+  console.log(`[Punch] ${teamId}: ${found}/${team.memberIds.length} persos, power total = ${result || 'N/A'}`);
+  return result;
+}
+
+/**
+ * Crop la bande du haut d'une image (zone power au-dessus des portraits)
+ * @param {string} dataUrl - Data URL de l'image source (team_full)
+ * @param {number} [topPct=0.15] - Pourcentage du haut a garder (0-1)
+ * @returns {Promise<string>} Data URL de la zone croppee
+ */
+function cropTopStrip(dataUrl, topPct = 0.15) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const cropH = Math.floor(img.height * topPct);
+      canvas.width = img.width;
+      canvas.height = cropH;
+      ctx.drawImage(img, 0, 0, img.width, cropH, 0, 0, img.width, cropH);
+      resolve(canvas.toDataURL("image/png"));
+    };
+    img.src = dataUrl;
+  });
+}
+
+/**
+ * Crop la moitie droite d'une image (zone power sans le numero de slot ni les points)
+ * Le strip power contient : [N° slot] [+XX points] [PUISSANCE]
+ * La puissance est toujours dans la moitie droite
+ */
+function cropRightHalf(dataUrl) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const startX = Math.floor(img.width * 0.45);
+      const cropW = img.width - startX;
+      canvas.width = cropW;
+      canvas.height = img.height;
+      ctx.drawImage(img, startX, 0, cropW, img.height, 0, 0, cropW, img.height);
+      resolve(canvas.toDataURL("image/png"));
+    };
+    img.src = dataUrl;
+  });
+}
+
+/**
+ * Retourne le facteur de punch up selon la confiance du counter
+ * ★★★ (95%+) = peut punch up 20% → facteur 1.20
+ * ★★ (80%+)  = peut punch up 10% → facteur 1.10
+ * ★ (65%+)   = peut punch up 5%  → facteur 1.05
+ * ☆ (50%+)   = even match        → facteur 1.00
+ * ☆ (<50%)   = punch down        → facteur 0.90
+ */
+function confidenceToPunchFactor(confidence) {
+  if (confidence >= 95) return 1.20;
+  if (confidence >= 80) return 1.10;
+  if (confidence >= 65) return 1.05;
+  if (confidence >= 50) return 1.00;
+  return 0.90;
+}
+
+/**
+ * Calcule l'indicateur punch effectif (power joueur * facteur punch vs ennemi)
+ * @param {number} playerPower - Power brut du joueur (roster)
+ * @param {number} enemyPower - Power ennemi (OCR)
+ * @param {number} punchFactor - Facteur punch du counter (ex: 1.20 pour +20%)
+ * @returns {Object|null} {label, color, effectivePct}
+ */
+function getPunchIndicator(playerPower, enemyPower, punchFactor) {
+  if (!playerPower || !enemyPower) return null;
+  const factor = punchFactor || 1.0;
+  const effectivePower = playerPower * factor;
+  const pct = (effectivePower - enemyPower) / enemyPower * 100;
+  const rounded = Math.round(pct);
+  const sign = rounded >= 0 ? "+" : "";
+  const label = `${sign}${rounded}%`;
+  let color;
+  if (pct <= -10)     color = "#ff6b6b";
+  else if (pct < 5)   color = "#ffd43b";
+  else if (pct < 10)  color = "#69db7c";
+  else if (pct < 20)  color = "#51cf66";
+  else                 color = "#40c057";
+  return { label, color, effectivePct: rounded };
+}
+
 async function lookupTeamCounters(teamIdx) {
   if (!scanRoomState || !warAnalyzer) return;
 
@@ -5773,22 +5870,24 @@ async function lookupTeamCounters(teamIdx) {
   try {
     const teamResult = warAnalyzer._identifyTeamFromCharIds(charIds);
     if (!teamResult || !teamResult.team) {
-      renderTeamCountersResult(teamIdx, null, null, "Equipe non reconnue");
+      await renderTeamCountersResult(teamIdx, null, null, "Equipe non reconnue");
       return;
     }
 
-    const power = document.getElementById("war-power")?.value?.trim() || null;
-    const enemyPower = power ? parseInt(power) : null;
+    // Lire le power depuis l'input (peut avoir ete corrige par l'utilisateur)
+    const powerInput = document.getElementById(`power-input-${teamIdx}`);
+    const powerRaw = powerInput?.value?.trim().replace(/[\s,.]/g, "") || "";
+    const enemyPower = /^\d{5,}$/.test(powerRaw) ? parseInt(powerRaw, 10) : (team.enemyPower || null);
     const countersResult = warAnalyzer.getCountersWithVariants(teamResult.team.id, charIds, enemyPower);
 
-    renderTeamCountersResult(teamIdx, teamResult, countersResult?.counters || []);
+    await renderTeamCountersResult(teamIdx, teamResult, countersResult?.counters || [], null, enemyPower);
   } catch (e) {
     console.error(`[ScanSalle] Erreur counters equipe ${teamIdx}:`, e);
-    renderTeamCountersResult(teamIdx, null, null, e.message);
+    await renderTeamCountersResult(teamIdx, null, null, e.message);
   }
 }
 
-function renderTeamCountersResult(teamIdx, teamResult, counters, error) {
+async function renderTeamCountersResult(teamIdx, teamResult, counters, error, enemyPower) {
   const zone = document.getElementById(`counters-${teamIdx}`);
   if (!zone) return;
 
@@ -5804,29 +5903,55 @@ function renderTeamCountersResult(teamIdx, teamResult, counters, error) {
   if (teamResult?.team) {
     const teamName = teamResult.team.nameFr || teamResult.team.variantName || teamResult.team.name;
     const totalMembers = teamResult.team?.memberIds?.length || 5;
-    html += `<div class="scan-room-team-identified">${teamName} (${teamResult.matchCount}/${totalMembers})</div>`;
+    html += `<div class="scan-room-team-identified">${teamName} (${teamResult.matchCount}/${totalMembers})`;
+    if (enemyPower) {
+      html += ` <span style="color:#aaa;font-size:11px;font-weight:normal;">— ${typeof formatPower === "function" ? formatPower(enemyPower) : enemyPower.toLocaleString()}</span>`;
+    }
+    html += `</div>`;
   }
 
   if (counters && counters.length > 0) {
     const hasRoster = typeof playerRoster !== "undefined" && playerRoster.size > 0;
 
-    counters.forEach(c => {
+    for (const c of counters) {
       const status = typeof canMakeTeam === "function" ? canMakeTeam(c.teamId) : null;
       const isAvailable = status?.available;
+
+      // Calcul punch effectif : power joueur * facteur punch du counter vs ennemi
+      let playerPower = null;
+      let powerPunchHtml = "";
+      if (enemyPower) {
+        playerPower = await getTeamPowerFromRoster(c.teamId);
+        if (playerPower) {
+          const punchFactor = confidenceToPunchFactor(c.confidence);
+          const punch = getPunchIndicator(playerPower, enemyPower, punchFactor);
+          const fmtPlayer = typeof formatPower === "function" ? formatPower(playerPower) : playerPower.toLocaleString();
+          const fmtEnemy = typeof formatPower === "function" ? formatPower(enemyPower) : enemyPower.toLocaleString();
+          const punchLabel = punchFactor > 1 ? `Punch x${punchFactor.toFixed(2)}` : "Even";
+          if (punch) {
+            powerPunchHtml = `<span class="war-counter-power" title="${fmtPlayer} × ${punchFactor.toFixed(2)} vs ${fmtEnemy} (${punchLabel})">${fmtPlayer} <span class="war-counter-punch" style="color:${punch.color}">(${punch.label})</span></span>`;
+          } else {
+            powerPunchHtml = `<span class="war-counter-power">${fmtPlayer}</span>`;
+          }
+        }
+      }
+      if (!powerPunchHtml && c.minPower) {
+        powerPunchHtml = `<span class="war-counter-power">${typeof formatPower === "function" ? formatPower(c.minPower) : c.minPower}+</span>`;
+      }
 
       html += `<div class="war-counter-item ${isAvailable ? 'available' : ''}">
         <div class="war-counter-header">
           <span class="war-counter-name">${c.teamName}</span>
           <div class="war-counter-meta">
-            ${typeof renderStatsBadge === "function" ? renderStatsBadge(c.teamId) : ''}
             ${hasRoster && typeof renderAvailabilityBadge === "function" ? renderAvailabilityBadge(c.teamId) : ''}
             <span class="war-counter-confidence">${confidenceToSymbols(c.confidence)}</span>
-            ${c.minPower ? `<span class="war-counter-power">${typeof formatPower === "function" ? formatPower(c.minPower) : c.minPower}+</span>` : ""}
+            ${typeof renderStatsBadge === "function" ? renderStatsBadge(c.teamId) : ''}
+            ${powerPunchHtml}
           </div>
         </div>
         ${c.notes ? `<div class="war-counter-actions"><span class="war-counter-notes">${c.notes}</span></div>` : ''}
       </div>`;
-    });
+    }
   } else {
     html += `<div class="scan-room-counters-error">Pas de counters trouves</div>`;
   }
@@ -5856,8 +5981,21 @@ async function displayScanDebug(screenshotDataUrl, slots, cropper) {
   html += `<div style="font-size:11px;color:#888;margin-bottom:8px;">${langInfo}</div>`;
 
   // Instructions calibration
-  html += `<div style="font-size:11px;color:#00d4ff;margin-bottom:8px;padding:6px;background:#1a1a2e;border-radius:4px;">Clique sur le <b>centre</b> de chaque portrait pour calibrer. Ordre : Equipe 1 (P1-haut-gauche, P2-haut-droite, P3-bas-gauche, P4-bas-centre, P5-bas-droite), puis Equipe 2, etc.</div>`;
+  html += `<div style="font-size:11px;color:#00d4ff;margin-bottom:8px;padding:6px;background:#1a1a2e;border-radius:4px;">Clique sur le <b>centre</b> de chaque portrait pour calibrer. <b>Clic droit</b> = annuler le dernier point.<br>Ordre : Equipe 1 (P1-haut-gauche, P2-haut-droite, P3-bas-gauche, P4-bas-centre, P5-bas-droite), puis Equipe 2, etc.</div>`;
   html += `<div id="debug-click-log" style="font-size:10px;color:#aaa;margin-bottom:8px;font-family:monospace;max-height:120px;overflow-y:auto;"></div>`;
+
+  // Loupe de zoom pour precision
+  html += `<div id="debug-magnifier" style="display:none;position:fixed;width:140px;height:140px;border:2px solid #00d4ff;border-radius:50%;overflow:hidden;pointer-events:none;z-index:9999;box-shadow:0 0 12px rgba(0,212,255,0.4);">`;
+  html += `<div id="debug-mag-inner" style="width:100%;height:100%;background-repeat:no-repeat;"></div>`;
+  // Grille d'alignement (lignes a 25% et 75%)
+  html += `<div style="position:absolute;top:25%;left:0;right:0;height:1px;background:rgba(255,255,255,0.15);"></div>`;
+  html += `<div style="position:absolute;top:75%;left:0;right:0;height:1px;background:rgba(255,255,255,0.15);"></div>`;
+  html += `<div style="position:absolute;left:25%;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.15);"></div>`;
+  html += `<div style="position:absolute;left:75%;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.15);"></div>`;
+  // Reticule central (rouge pour bien voir)
+  html += `<div style="position:absolute;top:50%;left:0;right:0;height:1px;background:rgba(255,70,70,0.7);"></div>`;
+  html += `<div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,70,70,0.7);"></div>`;
+  html += `</div>`;
 
   // Screenshot avec overlay des zones de portrait
   html += `<div id="debug-img-container" style="position:relative;margin-bottom:12px;cursor:crosshair;">`;
@@ -5867,6 +6005,7 @@ async function displayScanDebug(screenshotDataUrl, slots, cropper) {
   const colors = ['#ff4444', '#44ff44', '#4444ff', '#ffff44'];
   for (const slot of cropper.slots) {
     const color = colors[(slot.slotNumber - 1) % 4];
+    // Rectangles portraits
     for (let p = 1; p <= 5; p++) {
       const zone = slot.zones[`portrait_${p}`];
       const left = (zone.x * gameArea.w + gameArea.x) / imgW * 100;
@@ -5874,6 +6013,15 @@ async function displayScanDebug(screenshotDataUrl, slots, cropper) {
       const width = zone.w * gameArea.w / imgW * 100;
       const height = zone.h * gameArea.h / imgH * 100;
       html += `<div class="debug-zone-rect" style="position:absolute;left:${left}%;top:${top}%;width:${width}%;height:${height}%;border:2px solid ${color};border-radius:4px;pointer-events:none;box-sizing:border-box;opacity:0.7;"></div>`;
+    }
+    // Rectangle team_power (cyan pointille)
+    if (slot.zones.team_power) {
+      const pz = slot.zones.team_power;
+      const pl = (pz.x * gameArea.w + gameArea.x) / imgW * 100;
+      const pt = (pz.y * gameArea.h + gameArea.y) / imgH * 100;
+      const pw = pz.w * gameArea.w / imgW * 100;
+      const ph = pz.h * gameArea.h / imgH * 100;
+      html += `<div style="position:absolute;left:${pl}%;top:${pt}%;width:${pw}%;height:${ph}%;border:2px dashed #00ffff;pointer-events:none;box-sizing:border-box;opacity:0.9;font-size:8px;color:#00ffff;display:flex;align-items:center;justify-content:center;">PWR</div>`;
     }
   }
   html += `</div>`;
@@ -5889,6 +6037,22 @@ async function displayScanDebug(screenshotDataUrl, slots, cropper) {
       html += `<div style="font-size:9px;color:#888;">P${i + 1}</div>`;
       html += `</div>`;
     });
+    if (slot.team_power) {
+      html += `<div style="text-align:center;">`;
+      html += `<img src="${slot.team_power}" style="height:28px;border-radius:2px;border:2px solid #00ffff;">`;
+      html += `<div style="font-size:9px;color:#00ffff;">Power</div>`;
+      html += `</div>`;
+      // Afficher le crop droit + champ OCR resultat
+      const croppedPower = await cropRightHalf(slot.team_power);
+      html += `<div style="text-align:center;">`;
+      html += `<img src="${croppedPower}" style="height:28px;border-radius:2px;border:2px solid #ff00ff;">`;
+      html += `<div style="font-size:9px;color:#ff00ff;">OCR crop</div>`;
+      html += `</div>`;
+      html += `<div style="text-align:center;display:flex;flex-direction:column;justify-content:center;">`;
+      html += `<input type="text" id="debug-ocr-${slot.slotNumber}" readonly style="width:90px;font-size:11px;background:#1a1a2e;color:#00ff88;border:1px solid #333;border-radius:3px;padding:2px 4px;text-align:center;" value="..." placeholder="OCR...">`;
+      html += `<div style="font-size:9px;color:#00ff88;">OCR</div>`;
+      html += `</div>`;
+    }
     html += `<div style="text-align:center;">`;
     html += `<img src="${slot.team_full}" style="height:48px;border-radius:4px;border:1px solid #555;">`;
     html += `<div style="font-size:9px;color:#888;">Full</div>`;
@@ -5910,16 +6074,83 @@ async function displayScanDebug(screenshotDataUrl, slots, cropper) {
   warResult.innerHTML = html;
   warResult.classList.remove("hidden");
 
+  // --- OCR debug : lire le power de chaque slot (direct dans le popup) ---
+  (async () => {
+    let debugOcr = null;
+    try {
+      debugOcr = new OCREngine();
+      await debugOcr.init();
+    } catch (e) {
+      console.error("[OCR Debug] Init echoue:", String(e), e);
+      slots.forEach(s => {
+        const el = document.getElementById(`debug-ocr-${s.slotNumber}`);
+        if (el) { el.value = String(e).substring(0, 20); el.style.color = "#ff6b6b"; }
+      });
+      return;
+    }
+
+    for (const slot of slots) {
+      const el = document.getElementById(`debug-ocr-${slot.slotNumber}`);
+      if (!el || !slot.team_power) continue;
+      try {
+        el.value = "OCR...";
+        const cropped = await cropRightHalf(slot.team_power);
+        const result = await debugOcr.extractPowerWithDebug(cropped);
+        el.value = result?.power ? result.power.toLocaleString() : `raw: ${(result?.rawText || "").substring(0, 15)}`;
+        el.style.color = result?.power ? "#00ff88" : "#ff6b6b";
+      } catch (e) {
+        el.value = String(e).substring(0, 20);
+        el.style.color = "#ff6b6b";
+      }
+    }
+
+    debugOcr.terminate().catch(() => {});
+  })();
+
   // --- Click-to-calibrate handler ---
   const container = document.getElementById("debug-img-container");
   const debugImg = document.getElementById("debug-screenshot");
   const clickLog = document.getElementById("debug-click-log");
+  const magnifier = document.getElementById("debug-magnifier");
+  const magInner = document.getElementById("debug-mag-inner");
   const calibPoints = [];
   const portraitLabels = ["E1-P1", "E1-P2", "E1-P3", "E1-P4", "E1-P5",
                           "E2-P1", "E2-P2", "E2-P3", "E2-P4", "E2-P5",
                           "E3-P1", "E3-P2", "E3-P3", "E3-P4", "E3-P5",
                           "E4-P1", "E4-P2", "E4-P3", "E4-P4", "E4-P5"];
   let clickIndex = 0;
+  const ZOOM = 4;
+  const MAG_SIZE = 140;
+
+  // Loupe zoom : suit le curseur sur le screenshot
+  container.addEventListener("mousemove", (e) => {
+    const rect = debugImg.getBoundingClientRect();
+    // Position du curseur relative a l'image affichee
+    const relX = e.clientX - rect.left;
+    const relY = e.clientY - rect.top;
+    if (relX < 0 || relY < 0 || relX > rect.width || relY > rect.height) {
+      magnifier.style.display = "none";
+      return;
+    }
+    magnifier.style.display = "block";
+    // Positionner la loupe a cote du curseur (decalee pour ne pas cacher le point)
+    magnifier.style.left = (e.clientX + 20) + "px";
+    magnifier.style.top = (e.clientY - MAG_SIZE / 2) + "px";
+    // Background = screenshot zoome, centre sur le curseur
+    const bgW = rect.width * ZOOM;
+    const bgH = rect.height * ZOOM;
+    const bgX = -(relX * ZOOM - MAG_SIZE / 2);
+    const bgY = -(relY * ZOOM - MAG_SIZE / 2);
+    magInner.style.backgroundImage = `url(${screenshotDataUrl})`;
+    magInner.style.backgroundSize = `${bgW}px ${bgH}px`;
+    magInner.style.backgroundPosition = `${bgX}px ${bgY}px`;
+  });
+
+  container.addEventListener("mouseleave", () => {
+    magnifier.style.display = "none";
+  });
+
+  const calibMarkers = [];
 
   container.addEventListener("click", (e) => {
     if (clickIndex >= 20) return;
@@ -5928,7 +6159,6 @@ async function displayScanDebug(screenshotDataUrl, slots, cropper) {
     const scaleY = imgH / rect.height;
     const px = (e.clientX - rect.left) * scaleX;
     const py = (e.clientY - rect.top) * scaleY;
-    // Normaliser en coordonnées game-area (pas screenshot complète) pour être cohérent avec le ZoneCropper
     const nx = (px - gameArea.x) / gameArea.w;
     const ny = (py - gameArea.y) / gameArea.h;
 
@@ -5939,15 +6169,32 @@ async function displayScanDebug(screenshotDataUrl, slots, cropper) {
     const marker = document.createElement("div");
     marker.style.cssText = `position:absolute;left:${(px/imgW*100)}%;top:${(py/imgH*100)}%;width:8px;height:8px;background:#fff;border:2px solid #000;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:10;`;
     container.appendChild(marker);
+    calibMarkers.push(marker);
 
     // Log
-    clickLog.innerHTML += `<div><span style="color:#00d4ff;">${label}</span>: x=${nx.toFixed(4)}, y=${ny.toFixed(4)} (${Math.round(px)}, ${Math.round(py)}px)</div>`;
+    clickLog.innerHTML += `<div id="calib-log-${clickIndex}"><span style="color:#00d4ff;">${label}</span>: x=${nx.toFixed(4)}, y=${ny.toFixed(4)} (${Math.round(px)}, ${Math.round(py)}px)</div>`;
     clickLog.scrollTop = clickLog.scrollHeight;
 
     clickIndex++;
     if (clickIndex >= 20) {
-      clickLog.innerHTML += `<div style="color:#44ff44;font-weight:bold;">Calibration complete ! Copie les coordonnees.</div>`;
+      clickLog.innerHTML += `<div style="color:#44ff44;font-weight:bold;">Calibration complete ! Sauvegarde ou copie les coordonnees.</div>`;
     }
+  });
+
+  // Clic droit = annuler le dernier point
+  container.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+    if (clickIndex <= 0) return;
+    clickIndex--;
+    calibPoints.pop();
+    // Retirer le marqueur visuel
+    const lastMarker = calibMarkers.pop();
+    if (lastMarker) lastMarker.remove();
+    // Retirer la derniere ligne de log
+    const lastLog = document.getElementById(`calib-log-${clickIndex}`);
+    if (lastLog) lastLog.remove();
+    clickLog.innerHTML += `<div style="color:#ff6b6b;">← Annule ${portraitLabels[clickIndex]}</div>`;
+    clickLog.scrollTop = clickLog.scrollHeight;
   });
 
   // Helper : generer les slots config depuis les points cliques
@@ -5964,8 +6211,12 @@ async function displayScanDebug(screenshotDataUrl, slots, cropper) {
       const maxX = Math.max(...allX) + zoneW / 2 + 0.005;
       const minY = Math.min(...allY) - zoneH / 2 - 0.005;
       const maxY = Math.max(...allY) + zoneH / 2 + 0.005;
-      zones.team_full = { x: +minX.toFixed(4), y: +minY.toFixed(4), w: +(maxX - minX).toFixed(4), h: +(maxY - minY).toFixed(4) };
-      zones.team_power = { x: +(allX[1] - 0.01).toFixed(4), y: +(allY[0] - zoneH / 2 - 0.02).toFixed(4), w: 0.07, h: 0.025 };
+      // Power: AU-DESSUS des portraits, pleine largeur de la carte
+      const powerH = 0.045;
+      const powerY = minY - powerH; // juste au-dessus de la zone portraits
+      const extendedMinY = powerY;
+      zones.team_full = { x: +minX.toFixed(4), y: +extendedMinY.toFixed(4), w: +(maxX - minX).toFixed(4), h: +(maxY - extendedMinY).toFixed(4) };
+      zones.team_power = { x: +minX.toFixed(4), y: +powerY.toFixed(4), w: +(maxX - minX).toFixed(4), h: powerH };
       slotPoints.forEach((p, i) => {
         zones[`portrait_${i + 1}`] = { x: +(p.nx - zoneW / 2).toFixed(4), y: +(p.ny - zoneH / 2).toFixed(4), w: zoneW, h: zoneH };
       });
@@ -6029,6 +6280,7 @@ function restoreWarPanelUI() {
   // Les anciens modes (tabs, portrait, manual, power) restent masques
   // On nettoie juste l'etat du scan salle
   scanRoomState = null;
+  _rosterMapCache = null; // Reset cache roster
 }
 
 // Event listener Scan Salle
@@ -6176,4 +6428,13 @@ document.getElementById("import-learned-file").addEventListener("change", async 
     setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
   }
 });
+
+// ===== LUCIDE ICONS INITIALIZATION =====
+// Initialise les icônes Lucide après le chargement du DOM
+if (typeof lucide !== 'undefined') {
+  lucide.createIcons();
+  console.log('[Popup] Lucide Icons initialized');
+} else {
+  console.warn('[Popup] Lucide library not loaded');
+}
 

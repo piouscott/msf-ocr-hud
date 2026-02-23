@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>War OCR - Guide d'utilisation complet</title>
+    <style>
+        @page {
+            margin: 2cm;
+            size: A4;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+        }
+
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 0;
+            page-break-after: avoid;
+        }
+
+        h2 {
+            color: #34495e;
+            border-bottom: 2px solid #95a5a6;
+            padding-bottom: 8px;
+            margin-top: 30px;
+            page-break-after: avoid;
+        }
+
+        h3 {
+            color: #555;
+            margin-top: 20px;
+            page-break-after: avoid;
+        }
+
+        h4 {
+            color: #666;
+            margin-top: 15px;
+            page-break-after: avoid;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            page-break-inside: avoid;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #3498db;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 10px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+            overflow-x: auto;
+            page-break-inside: avoid;
+        }
+
+        blockquote {
+            background-color: #e8f4f8;
+            border-left: 4px solid #3498db;
+            padding: 10px 15px;
+            margin: 15px 0;
+            font-style: italic;
+            page-break-inside: avoid;
+        }
+
+        ul, ol {
+            margin: 10px 0;
+            padding-left: 30px;
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        strong {
+            color: #2c3e50;
+        }
+
+        hr {
+            border: none;
+            border-top: 2px solid #ecf0f1;
+            margin: 30px 0;
+        }
+
+        .toc {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            page-break-inside: avoid;
+        }
+
+        .toc h2 {
+            margin-top: 0;
+            border-bottom: none;
+        }
+
+        .toc ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .toc li {
+            margin: 8px 0;
+        }
+
+        .toc a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .toc a:hover {
+            text-decoration: underline;
+        }
+
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            a {
+                color: #000;
+                text-decoration: none;
+            }
+
+            h1, h2, h3, h4 {
+                page-break-after: avoid;
+            }
+
+            table, pre, blockquote {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>War OCR - Guide d'utilisation complet</h1>
+
+    <div class="toc">
+        <h2>Table des matières</h2>
+        <ol>
+            <li><a href="#scan">Scan de salle</a></li>
+            <li><a href="#resultats">Résultats du scan</a></li>
+            <li><a href="#correction">Corriger les portraits</a></li>
+            <li><a href="#counters">Chercher des counters</a></li>
+            <li><a href="#export">Export / Import de portraits</a></li>
+            <li><a href="#position">Sélecteur de position (zones)</a></li>
+            <li><a href="#debug">Mode debug et calibration</a></li>
+            <li><a href="#parametres">Paramètres techniques</a></li>
+        </ol>
+    </div>
+
+    <hr>
+
+    <h2 id="scan">1. Scan de salle</h2>
+
+    <h3>Lancer un scan</h3>
+
+    <ol>
+        <li>Ouvrir le jeu MSF dans un onglet du navigateur et naviguer vers une salle de War</li>
+        <li>Cliquer sur le bouton <strong>War OCR</strong> dans la toolbar de l'extension</li>
+        <li>Cliquer sur <strong>Scan Salle</strong></li>
+    </ol>
+
+    <p>L'extension va :</p>
+    <ul>
+        <li>Capturer l'écran de l'onglet MSF actif</li>
+        <li>Découper les 4 équipes ennemies (5 portraits par équipe)</li>
+        <li>Lancer l'OCR pour lire la puissance de chaque équipe</li>
+        <li>Identifier les personnages via la base de portraits appris puis le CDN</li>
+    </ul>
+
+    <blockquote>
+        <strong>Fallback fichier</strong> : si la capture d'écran échoue (pas d'onglet MSF, permissions manquantes),
+        un sélecteur de fichier s'ouvre pour charger un screenshot PNG/JPEG manuellement.
+    </blockquote>
+
+    <h3>Détection "Under Attack"</h3>
+
+    <p>Si une équipe est en cours d'attaque (filtre rouge visible), elle est automatiquement ignorée
+    pour ne pas corrompre la base de portraits. Les portraits apparaissent en grise avec un indicateur rouge.</p>
+
+    <hr>
+
+    <h2 id="resultats">2. Résultats du scan</h2>
+
+    <p>Après le scan, chaque équipe est affichée dans une carte avec :</p>
+
+    <table>
+        <tr>
+            <th>Élément</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><strong>Portraits</strong></td>
+            <td>5 cercles cliquables par équipe</td>
+        </tr>
+        <tr>
+            <td><strong>Noms</strong></td>
+            <td>Nom du personnage identifié sous chaque portrait</td>
+        </tr>
+        <tr>
+            <td><strong>Puissance</strong></td>
+            <td>Champ éditable pré-rempli par l'OCR</td>
+        </tr>
+        <tr>
+            <td><strong>Bouton Counters</strong></td>
+            <td>Actif dès que 3+ personnages sont identifiés</td>
+        </tr>
+    </table>
+
+    <h3>Code couleur des portraits</h3>
+
+    <table>
+        <tr>
+            <th>Couleur</th>
+            <th>Signification</th>
+        </tr>
+        <tr>
+            <td><strong>Vert</strong></td>
+            <td>Portrait appris (confirmé par l'utilisateur)</td>
+        </tr>
+        <tr>
+            <td><strong>Orange</strong></td>
+            <td>Déduction automatique (pas encore confirmée)</td>
+        </tr>
+        <tr>
+            <td><strong>Gris</strong></td>
+            <td>Inconnu (non identifié)</td>
+        </tr>
+        <tr>
+            <td><strong>Rouge</strong></td>
+            <td>Équipe en cours d'attaque (ignorée)</td>
+        </tr>
+    </table>
+
+    <h3>Re-matching intelligent</h3>
+
+    <p>Après l'identification initiale, si 3+ membres d'une équipe sont reconnus, le système :</p>
+    <ol>
+        <li>Identifie l'équipe (ex: "Absolute Aforce")</li>
+        <li>Re-matche les portraits inconnus ou mal assignés en se limitant aux membres restants de cette équipe</li>
+        <li>Protège les portraits appris avec un score >= 90%</li>
+    </ol>
+
+    <hr>
+
+    <h2 id="correction">3. Corriger les portraits</h2>
+
+    <h3>Clic simple sur un portrait</h3>
+
+    <p>Ouvre une barre de recherche sous l'équipe avec autocomplétion :</p>
+    <ul>
+        <li>Taper le nom du personnage (EN ou FR, insensible aux accents)</li>
+        <li>Taper un nom d'équipe pour voir tous ses membres</li>
+        <li>Cliquer sur le bon personnage pour le sélectionner</li>
+    </ul>
+
+    <p><strong>Raccourcis dans la recherche :</strong></p>
+    <ul>
+        <li><strong>Entrée</strong> : sélectionne automatiquement s'il n'y a qu'un seul résultat</li>
+        <li><strong>Tab</strong> : passe au portrait non-identifié suivant</li>
+    </ul>
+
+    <h3>Double-clic sur un portrait orange</h3>
+
+    <p>Confirme la déduction automatique et l'enregistre dans la base de portraits appris.
+    Le portrait passe de orange à vert.</p>
+
+    <h3>Apprentissage</h3>
+
+    <p>Chaque correction est sauvegardée dans <code>chrome.storage.local</code> (clé <code>learnedPortraits</code>).
+    Les prochains scans reconnaîtront ce personnage automatiquement.
+    Jusqu'à 5 échantillons par personnage sont conservés pour améliorer la robustesse.</p>
+
+    <hr>
+
+    <h2 id="counters">4. Chercher des counters</h2>
+
+    <ol>
+        <li>S'assurer qu'au moins 3 portraits sont identifiés (vert ou orange)</li>
+        <li>Vérifier/ajuster la puissance dans le champ (pré-remplie par OCR)</li>
+        <li>Cliquer sur <strong>Chercher counters</strong></li>
+    </ol>
+
+    <p>Le système :</p>
+    <ul>
+        <li>Identifie l'équipe ennemie parmi les équipes connues</li>
+        <li>Détecte les variantes (avec Odin, Knull, Mephisto, etc.)</li>
+        <li>Affiche les counters avec étoiles de confiance et indicateur punch up/down</li>
+    </ul>
+
+    <h3>Indicateur Punch</h3>
+
+    <table>
+        <tr>
+            <th>Étoiles</th>
+            <th>Confiance</th>
+            <th>Facteur punch</th>
+        </tr>
+        <tr>
+            <td>3 étoiles</td>
+            <td>95%+</td>
+            <td>Punch up 20%</td>
+        </tr>
+        <tr>
+            <td>2 étoiles</td>
+            <td>80%+</td>
+            <td>Punch up 10%</td>
+        </tr>
+        <tr>
+            <td>1 étoile</td>
+            <td>65%+</td>
+            <td>Punch up 5%</td>
+        </tr>
+        <tr>
+            <td>0 étoile</td>
+            <td>50%+</td>
+            <td>Match égal</td>
+        </tr>
+        <tr>
+            <td>-</td>
+            <td>&lt;50%</td>
+            <td>Punch down</td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <h2 id="export">5. Export / Import de portraits</h2>
+
+    <h3>Exporter</h3>
+
+    <p>Bouton <strong>Export Portraits</strong> dans la toolbar du War panel.
+    Génère un fichier JSON contenant tous les portraits appris par l'utilisateur.</p>
+
+    <h3>Importer</h3>
+
+    <p>Bouton <strong>Import Portraits</strong> dans la toolbar du War panel.
+    Charge un fichier JSON de portraits. Les portraits sont fusionnés intelligemment :</p>
+    <ul>
+        <li>Pas de doublons</li>
+        <li>Les corrections existantes sont conservées</li>
+        <li>Permet le partage entre utilisateurs pour enrichir la base commune</li>
+    </ul>
+
+    <hr>
+
+    <h2 id="position">6. Sélecteur de position (zones)</h2>
+
+    <p>Le menu déroulant à côté du bouton "Scan Salle" permet de choisir le jeu de coordonnées
+    utilisé pour découper le screenshot :</p>
+
+    <table>
+        <tr>
+            <th>Option</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><strong>Zones: auto</strong></td>
+            <td>Utilise la dernière position sélectionnée (ou Position 1 par défaut)</td>
+        </tr>
+        <tr>
+            <td><strong>Position 1</strong></td>
+            <td>Premier jeu de coordonnées prédéfini</td>
+        </tr>
+        <tr>
+            <td><strong>Position 2</strong></td>
+            <td>Second jeu de coordonnées prédéfini</td>
+        </tr>
+        <tr>
+            <td><strong>Custom</strong></td>
+            <td>Calibration personnalisée (visible uniquement si une calibration a été sauvegardée)</td>
+        </tr>
+    </table>
+
+    <blockquote>
+        <strong>Pourquoi plusieurs positions ?</strong> La disposition des équipes à l'écran peut varier selon
+        la résolution, le navigateur ou la version du jeu. Si les portraits sont mal découpés,
+        essayer une autre position ou faire une calibration custom.
+    </blockquote>
+
+    <p>La position choisie est sauvegardée automatiquement pour les prochains scans.</p>
+
+    <hr>
+
+    <h2 id="debug">7. Mode debug et calibration</h2>
+
+    <h3>Entrer en mode debug</h3>
+
+    <p><strong>Ctrl + Clic</strong> (ou <strong>Cmd + Clic</strong> sur Mac) sur le bouton <strong>Scan Salle</strong>.</p>
+
+    <h3>Ce que le mode debug affiche</h3>
+
+    <ul>
+        <li>Le screenshot complet avec les zones de découpe superposées en couleur :
+            <ul>
+                <li><strong>Cyan pointillé</strong> : zones <code>team_power</code> (bande de puissance)</li>
+                <li><strong>Jaune</strong> : zones <code>team_full</code> (carte complète de l'équipe)</li>
+                <li><strong>Vert</strong> : zones <code>portrait_1</code> à <code>portrait_5</code></li>
+            </ul>
+        </li>
+        <li>Les portraits extraits pour chaque équipe (miniatures)</li>
+        <li>La zone power croppée + le résultat OCR</li>
+        <li>Un bouton "Relancer OCR" pour retester la lecture de puissance</li>
+    </ul>
+
+    <h3>Calibration personnalisée</h3>
+
+    <p>Si les zones prédéfinis ne correspondent pas à votre écran :</p>
+
+    <h4>Étape 1 : Cliquer les 20 centres de portraits</h4>
+
+    <p>Dans le mode debug, cliquez sur le screenshot dans cet ordre :</p>
+
+    <pre>
+Équipe 1 : P1 P2 (ligne du haut), P3 P4 P5 (ligne du bas)
+Équipe 2 : P1 P2 (ligne du haut), P3 P4 P5 (ligne du bas)
+Équipe 3 : P1 P2 (ligne du haut), P3 P4 P5 (ligne du bas)
+Équipe 4 : P1 P2 (ligne du haut), P3 P4 P5 (ligne du bas)
+    </pre>
+
+    <p><strong>Aide au positionnement :</strong></p>
+    <ul>
+        <li>Une <strong>loupe 4x</strong> suit le curseur pour viser précisément le centre de chaque portrait</li>
+        <li>Un compteur indique le point en cours (ex: "E1P1", "E2P3")</li>
+        <li><strong>Clic droit</strong> pour annuler le dernier point en cas d'erreur</li>
+    </ul>
+
+    <h4>Étape 2 : Sauvegarder</h4>
+
+    <p>Cliquer sur <strong>Sauvegarder la calibration</strong> (nécessite les 20 points).</p>
+
+    <p>Le système :</p>
+    <ul>
+        <li>Calcule les coordonnées normalisées (0-1) à partir des points cliqués</li>
+        <li>Génère les zones <code>team_full</code>, <code>team_power</code>, et <code>portrait_1</code> à <code>portrait_5</code> pour chaque équipe</li>
+        <li>Sauvegarde dans <code>chrome.storage.local</code> (clé <code>msfCustomZoneCalibration</code>)</li>
+        <li>Ajoute automatiquement l'option <strong>Custom</strong> dans le sélecteur de position</li>
+    </ul>
+
+    <h4>Étape 3 : Utiliser</h4>
+
+    <p>L'option <strong>Custom</strong> est automatiquement sélectionnée après sauvegarde.
+    Les prochains scans utiliseront cette calibration.</p>
+
+    <h3>Reset de la calibration</h3>
+
+    <p>Le bouton <strong>Reset zones</strong> (visible uniquement quand une calibration custom existe) :</p>
+    <ul>
+        <li>Supprime la calibration personnalisée du storage</li>
+        <li>Retire l'option "Custom" du sélecteur</li>
+        <li>Revient aux zones prédéfinis (Position 1 ou 2)</li>
+    </ul>
+
+    <hr>
+
+    <h2 id="parametres">8. Paramètres techniques</h2>
+
+    <h3>OCR (lecture de puissance)</h3>
+
+    <table>
+        <tr>
+            <th>Paramètre</th>
+            <th>Valeur</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>Scale</td>
+            <td>4x</td>
+            <td>Agrandissement avant OCR</td>
+        </tr>
+        <tr>
+            <td>Preprocessing</td>
+            <td>Grayscale + inversion</td>
+            <td>Texte blanc sur fond sombre → noir sur blanc</td>
+        </tr>
+        <tr>
+            <td>Crop</td>
+            <td>45% droite</td>
+            <td>Seule la moitié droite du bandeau est lue (le chiffre est à droite)</td>
+        </tr>
+        <tr>
+            <td>Minimum digits</td>
+            <td>5</td>
+            <td>Ignore les nombres &lt; 5 chiffres (bruit)</td>
+        </tr>
+        <tr>
+            <td>Moteur</td>
+            <td>Tesseract.js v4</td>
+            <td>WASM, exécuté dans le popup</td>
+        </tr>
+        <tr>
+            <td>Cores</td>
+            <td>SIMD-LSTM > LSTM > SIMD > basique</td>
+            <td>Fallback automatique</td>
+        </tr>
+    </table>
+
+    <h3>Matching de portraits</h3>
+
+    <table>
+        <tr>
+            <th>Paramètre</th>
+            <th>Valeur</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>Poids Hue</td>
+            <td>40%</td>
+            <td>Histogramme de teinte HSV (discrimination couleur)</td>
+        </tr>
+        <tr>
+            <td>Poids pHash</td>
+            <td>60%</td>
+            <td>Hash perceptuel 8×8 (forme structurelle)</td>
+        </tr>
+        <tr>
+            <td>Seuil appris</td>
+            <td>80%</td>
+            <td>Score minimum pour un match dans la base apprise</td>
+        </tr>
+        <tr>
+            <td>Seuil CDN</td>
+            <td>70%</td>
+            <td>Score minimum pour un match CDN (portraits officiels)</td>
+        </tr>
+        <tr>
+            <td>Gap haut (>= 93%)</td>
+            <td>0.5%</td>
+            <td>Écart minimum entre les 2 meilleurs candidats</td>
+        </tr>
+        <tr>
+            <td>Gap normal (&lt; 93%)</td>
+            <td>2.0%</td>
+            <td>Écart minimum en confiance moyenne</td>
+        </tr>
+        <tr>
+            <td>Ambigü (>= 88%)</td>
+            <td>guess</td>
+            <td>Retourne en orange plutôt que de tomber sur le CDN</td>
+        </tr>
+        <tr>
+            <td>Échantillons max</td>
+            <td>5</td>
+            <td>Nombre max de samples par personnage appris</td>
+        </tr>
+    </table>
+
+    <h3>Détection équipe</h3>
+
+    <table>
+        <tr>
+            <th>Paramètre</th>
+            <th>Valeur</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>Membres minimum</td>
+            <td>3</td>
+            <td>Minimum pour identifier une équipe</td>
+        </tr>
+        <tr>
+            <td>Confiance minimum</td>
+            <td>60%</td>
+            <td>Pourcentage de membres reconnus</td>
+        </tr>
+        <tr>
+            <td>Re-match seuil</td>
+            <td>65%</td>
+            <td>Seuil pour le re-matching des inconnus après détection équipe</td>
+        </tr>
+        <tr>
+            <td>Protection appris</td>
+            <td>90%</td>
+            <td>Les portraits appris >= 90% ne sont pas re-matchés</td>
+        </tr>
+    </table>
+
+    <h3>Détection under attack</h3>
+
+    <table>
+        <tr>
+            <th>Paramètre</th>
+            <th>Valeur</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>Seuil rouge</td>
+            <td>70%</td>
+            <td>Pourcentage de pixels rouges pour considérer l'équipe attaquée</td>
+        </tr>
+        <tr>
+            <td>Zone analysée</td>
+            <td>64×64px</td>
+            <td>Redimensionnement pour analyse rapide</td>
+        </tr>
+        <tr>
+            <td>Teinte rouge</td>
+            <td>0-20 ou 340-360</td>
+            <td>Plage HSV considérée comme rouge</td>
+        </tr>
+    </table>
+
+    <h3>Zones de découpe (msf-zones-config.json)</h3>
+
+    <p>Toutes les coordonnées sont normalisées entre 0 et 1 (relatives à la taille du screenshot).</p>
+
+    <pre>
+Position 1 — Slot 1 exemple :
+  team_full   : x=0.165  y=0.39  w=0.155  h=0.33
+  team_power  : x=0.165  y=0.39  w=0.155  h=0.045  (bandeau haut)
+  portrait_1  : x=0.185  y=0.44  w=0.05   h=0.08   (haut-gauche)
+  portrait_2  : x=0.245  y=0.44  w=0.05   h=0.08   (haut-droite)
+  portrait_3  : x=0.164  y=0.55  w=0.05   h=0.08   (bas-gauche)
+  portrait_4  : x=0.219  y=0.55  w=0.05   h=0.08   (bas-centre)
+  portrait_5  : x=0.272  y=0.55  w=0.05   h=0.08   (bas-droite)
+    </pre>
+
+    <p>Les 4 équipes sont disposées horizontalement de gauche à droite (slots 1 à 4).
+    Chaque équipe a 5 portraits : 2 en haut, 3 en bas.</p>
+
+    <h3>Storage utilisé</h3>
+
+    <table>
+        <tr>
+            <th>Clé</th>
+            <th>Contenu</th>
+        </tr>
+        <tr>
+            <td><code>learnedPortraits</code></td>
+            <td>Base de portraits appris par l'utilisateur</td>
+        </tr>
+        <tr>
+            <td><code>msfCustomZoneCalibration</code></td>
+            <td>Calibration personnalisée des zones</td>
+        </tr>
+        <tr>
+            <td><code>msfZonePosition</code></td>
+            <td>Dernière position utilisée (position1, position2)</td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <p style="text-align: center; color: #95a5a6; margin-top: 40px;">
+        <small>MSF Counter Extension - War OCR Guide - Version 1.3</small>
+    </p>
+</body>
+</html>

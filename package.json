@@ -1,5 +1,8 @@
 {
   "devDependencies": {
     "canvas": "^3.2.1"
+  },
+  "dependencies": {
+    "puppeteer": "^24.37.5"
   }
 }

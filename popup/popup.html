@@ -8,7 +8,11 @@
 <body>
   <div id="app">
     <header>
-      <h1>MSF Counter</h1>
+      <h1>
+        <i data-lucide="swords" style="color:#d4af37;"></i>
+        MSF Counter
+        <i data-lucide="shield" style="color:#51cf66;"></i>
+      </h1>
       <button id="btn-help" class="btn-help" title="Aide / Revoir l'introduction">?</button>
     </header>
 
@@ -54,21 +58,21 @@
     </section>
 
     <section id="tools">
-      <button id="btn-events" class="btn-small" title="Événements en cours">📅<span>Events</span></button>
-      <button id="btn-raids" class="btn-small" title="Milestones liés aux Raids">💀<span>Raids</span></button>
-      <button id="btn-defense" class="btn-small" title="Tester ma défense War">🛡️<span>Défense</span></button>
-      <button id="btn-farm" class="btn-small" title="Où farmer les personnages">🌾<span>Farm</span></button>
-      <button id="btn-manage" class="btn-small" title="Gérer les counters">⚔️<span>Counters</span></button>
-      <button id="btn-war-ocr" class="btn-small" title="War OCR - Scan Salle">🎯<span>War OCR</span></button>
-      <button id="btn-battleworld" class="btn-small" title="Equipes Battleworld">🌍<span>BW</span></button>
-      <button id="btn-detach" class="btn-small" title="Ouvrir dans une fenêtre permanente">🪟<span>Fenêtre</span></button>
-      <button id="btn-notes" class="btn-small" title="Voir les notes de version">📋<span>Notes</span></button>
-      <button id="btn-export" class="btn-small" title="Exporter la config">💾<span>Export</span></button>
-      <button id="btn-import" class="btn-small" title="Importer une config">📂<span>Import</span></button>
-      <button id="btn-export-learned-global" class="btn-small" title="Exporter les portraits appris (fichier JSON)">📤<span>Portraits</span></button>
-      <label for="import-learned-file" id="btn-import-learned-global" class="btn-small" title="Importer des portraits appris (fichier JSON)" style="cursor:pointer;">📥<span>Imp. Port.</span></label>
-      <button id="btn-api" class="btn-small" title="Configuration API">🔑<span>API</span></button>
-      <button id="btn-settings" class="btn-small" title="Synchronisation counters">🔄<span>Sync</span></button>
+      <button id="btn-events" class="btn-small" title="Événements en cours"><i data-lucide="calendar" class="btn-icon"></i><span>Events</span></button>
+      <button id="btn-raids" class="btn-small" title="Milestones liés aux Raids"><i data-lucide="skull" class="btn-icon"></i><span>Raids</span></button>
+      <button id="btn-defense" class="btn-small" title="Tester ma défense War"><i data-lucide="shield" class="btn-icon"></i><span>Défense</span></button>
+      <button id="btn-farm" class="btn-small" title="Où farmer les personnages"><i data-lucide="sprout" class="btn-icon"></i><span>Farm</span></button>
+      <button id="btn-manage" class="btn-small" title="Gérer les counters"><i data-lucide="swords" class="btn-icon"></i><span>Counters</span></button>
+      <button id="btn-war-ocr" class="btn-small" title="War OCR - Scan Salle"><i data-lucide="target" class="btn-icon"></i><span>War OCR</span></button>
+      <button id="btn-battleworld" class="btn-small" title="Equipes Battleworld"><i data-lucide="globe" class="btn-icon"></i><span>BW</span></button>
+      <button id="btn-detach" class="btn-small" title="Ouvrir dans une fenêtre permanente"><i data-lucide="external-link" class="btn-icon"></i><span>Fenêtre</span></button>
+      <button id="btn-notes" class="btn-small" title="Voir les notes de version"><i data-lucide="clipboard" class="btn-icon"></i><span>Notes</span></button>
+      <button id="btn-export" class="btn-small" title="Exporter la config"><i data-lucide="download" class="btn-icon"></i><span>Export</span></button>
+      <button id="btn-import" class="btn-small" title="Importer une config"><i data-lucide="upload" class="btn-icon"></i><span>Import</span></button>
+      <button id="btn-export-learned-global" class="btn-small" title="Exporter les portraits appris (fichier JSON)"><i data-lucide="share" class="btn-icon"></i><span>Portraits</span></button>
+      <label for="import-learned-file" id="btn-import-learned-global" class="btn-small" title="Importer des portraits appris (fichier JSON)" style="cursor:pointer;"><i data-lucide="download-cloud" class="btn-icon"></i><span>Imp. Port.</span></label>
+      <button id="btn-api" class="btn-small" title="Configuration API"><i data-lucide="key" class="btn-icon"></i><span>API</span></button>
+      <button id="btn-settings" class="btn-small" title="Synchronisation counters"><i data-lucide="refresh-cw" class="btn-icon"></i><span>Sync</span></button>
       <input type="file" id="import-file" accept=".json" style="display:none">
       <input type="file" id="import-learned-file" accept=".json" style="display:none">
     </section>
@@ -214,9 +218,9 @@
       <div class="api-actions" style="margin-bottom:8px;">
         <button id="btn-war-scan-room" class="btn-sync">🏰 Scan Salle</button>
         <select id="scan-lang-override" style="margin-left:8px;padding:2px 6px;background:#1a1a2e;color:#ccc;border:1px solid #333;border-radius:4px;font-size:11px;">
-          <option value="auto">Lang: auto</option>
-          <option value="en">EN</option>
-          <option value="fr">FR</option>
+          <option value="auto">Zones: auto</option>
+          <option value="position1">Position 1</option>
+          <option value="position2">Position 2</option>
         </select>
         <button id="btn-reset-calibration" style="margin-left:8px;padding:2px 8px;font-size:10px;background:#ff6b6b;color:#fff;border:none;border-radius:4px;cursor:pointer;display:none;" title="Supprimer la calibration personnalisee">Reset zones</button>
       </div>
@@ -325,6 +329,7 @@
   </div>
 
   <script src="../lib/tesseract/tesseract.min.js"></script>
+  <script src="../lib/lucide.min.js"></script>
   <script src="../modules/zone-cropper.js"></script>
   <script src="../modules/ocr-engine.js"></script>
   <script src="../modules/phash.js"></script>
