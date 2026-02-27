@@ -1273,6 +1273,13 @@ button:active {
   cursor: default;
 }
 
+.scan-room-portrait-img.defeated {
+  border-color: #6b7280;
+  opacity: 0.35;
+  filter: grayscale(0.8);
+  cursor: default;
+}
+
 .scan-room-card-attack {
   opacity: 0.7;
   border-color: #ff4444 !important;

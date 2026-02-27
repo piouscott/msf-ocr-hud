@@ -823,6 +823,55 @@ class WarAnalyzer {
   }
 
   /**
+   * Detecte si un portrait individuel est barre d'une croix rouge (perso elimine)
+   * Analyse la concentration de pixels rouges sur les diagonales vs le reste
+   */
+  async detectDefeatedPortrait(imageDataUrl) {
+    const img = await this._loadImage(imageDataUrl);
+    const canvas = document.createElement("canvas");
+    const size = 64;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0, size, size);
+    const imageData = ctx.getImageData(0, 0, size, size);
+    const data = imageData.data;
+
+    let diagRed = 0, diagTotal = 0;
+    let offRed = 0, offTotal = 0;
+    const bandWidth = size * 0.15;
+
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const idx = (y * size + x) * 4;
+        const r = data[idx], g = data[idx + 1], b = data[idx + 2];
+        const hsv = this.rgbToHsv(r, g, b);
+        if (hsv.s < 0.15 || hsv.v < 0.10) continue;
+
+        const isRed = hsv.h < 25 || hsv.h > 335;
+        const d1 = Math.abs(y - x);
+        const d2 = Math.abs(y - (size - 1 - x));
+        const onDiag = Math.min(d1, d2) < bandWidth;
+
+        if (onDiag) {
+          diagTotal++;
+          if (isRed) diagRed++;
+        } else {
+          offTotal++;
+          if (isRed) offRed++;
+        }
+      }
+    }
+
+    const diagRatio = diagTotal > 0 ? diagRed / diagTotal : 0;
+    const offRatio = offTotal > 0 ? offRed / offTotal : 0;
+    const isDefeated = diagRatio > 0.40 && diagRatio > offRatio * 2.0;
+
+    console.log(`[WarAnalyzer] Defeated check: diag=${(diagRatio * 100).toFixed(0)}% off=${(offRatio * 100).toFixed(0)}%${isDefeated ? ' → DEFEATED' : ''}`);
+    return isDefeated;
+  }
+
+  /**
    * Calcule la similarite entre deux histogrammes Hue (Bhattacharyya)
    */
   hueHistogramSimilarity(hist1, hist2) {

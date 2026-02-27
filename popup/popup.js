@@ -5447,6 +5447,20 @@ async function handleScanSalle(debugMode = false) {
 
     for (let i = 0; i < slot.portraits.length; i++) {
       const dataUrl = slot.portraits[i];
+
+      // Detecter portrait elimine (croix rouge X)
+      const isDefeated = await warAnalyzer.detectDefeatedPortrait(dataUrl);
+      if (isDefeated) {
+        team.portraits.push({
+          dataUrl,
+          hue: null, hash: null,
+          charId: null, name: null,
+          similarity: 0, learned: false,
+          defeated: true
+        });
+        continue;
+      }
+
       const hueHist = await warAnalyzer.computeHueHistogram(dataUrl);
       const hash = await warAnalyzer.computePortraitHash(dataUrl);
 
@@ -5590,14 +5604,15 @@ function renderScanRoomResults() {
     html += `<div class="scan-room-portraits-row">`;
     for (let p = 0; p < team.portraits.length; p++) {
       const portrait = team.portraits[p];
+      const isDefeated = portrait.defeated;
       const isLearned = portrait.learned;
       const isGuessed = portrait.charId && !portrait.learned;
-      const stateClass = isLearned ? "learned" : (isGuessed ? "guessed" : "");
+      const stateClass = isDefeated ? "defeated" : (isLearned ? "learned" : (isGuessed ? "guessed" : ""));
 
       html += `<div class="scan-room-portrait-slot" data-team="${t}" data-portrait="${p}">`;
       html += `<img src="${portrait.dataUrl}" class="scan-room-portrait-img ${stateClass}">`;
-      const fullName = getDisplayName(portrait.charId, portrait.name);
-      html += `<div class="scan-room-portrait-name ${portrait.name ? '' : 'empty'}" title="${fullName}">${fullName}</div>`;
+      const fullName = isDefeated ? "Elimine" : getDisplayName(portrait.charId, portrait.name);
+      html += `<div class="scan-room-portrait-name ${portrait.name || isDefeated ? '' : 'empty'}" title="${fullName}">${fullName}</div>`;
       html += `</div>`;
     }
     html += `</div>`;
