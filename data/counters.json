@@ -969,25 +969,78 @@
     ],
     "hivemind_knull": [
       {
+        "team": "brimstone",
+        "confidence": 95
+      },
+      {
+        "team": "undying",
+        "confidence": 95
+      },
+      {
+        "team": "illuminati",
+        "confidence": 80
+      },
+      {
+        "team": "underworld",
+        "confidence": 80
+      },
+      {
+        "team": "fantasticfourmcu",
+        "confidence": 65
+      },
+      {
         "team": "liberty",
         "confidence": 65
       },
       {
         "team": "undying",
         "confidence": 65,
-        "notes": "+ Odin"
+        "notes": "+ Apocalypse"
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 40
+      },
+      {
+        "team": "secretwarrior",
+        "confidence": 40
+      },
+      {
+        "team": "nightstalker",
+        "confidence": 30
+      }
+    ],
+    "hivemind_knull_superskrull": [
+      {
+        "team": "brimstone",
+        "confidence": 95
+      },
+      {
+        "team": "undying",
+        "confidence": 95
+      },
+      {
+        "team": "liberty",
+        "confidence": 65
       },
       {
         "team": "undying",
         "confidence": 65,
         "notes": "+ Apocalypse"
+      },
+      {
+        "team": "secretwarrior",
+        "confidence": 40
       }
     ],
     "hivemind_knull_mephisto": [
       {
+        "team": "brimstone",
+        "confidence": 95
+      },
+      {
         "team": "undying",
-        "confidence": 65,
-        "notes": "+ Odin"
+        "confidence": 95
       },
       {
         "team": "liberty",
@@ -997,6 +1050,16 @@
         "team": "absoluteaforce",
         "confidence": 65,
         "notes": "Focus Knull from start"
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 65,
+        "notes": "+ Knull, no Vision"
+      },
+      {
+        "team": "mightyavenger",
+        "confidence": 65,
+        "notes": "+ Odin, no Vision"
       }
     ],
     "hivemind_ares": [
@@ -1077,6 +1140,60 @@
         "notes": "+ Kang + 1"
       }
     ],
+    "illuminati": [
+      {
+        "team": "absoluteaforce",
+        "confidence": 95
+      },
+      {
+        "team": "mercsformoney",
+        "confidence": 95
+      },
+      {
+        "team": "undying",
+        "confidence": 95,
+        "notes": "+ 1"
+      },
+      {
+        "team": "gamma",
+        "confidence": 95
+      },
+      {
+        "team": "knowhere",
+        "confidence": 80
+      },
+      {
+        "team": "astral",
+        "confidence": 80
+      },
+      {
+        "team": "outoftime",
+        "confidence": 80
+      },
+      {
+        "team": "superiorsix",
+        "confidence": 80,
+        "notes": "+ Vulture"
+      },
+      {
+        "team": "aforce",
+        "confidence": 80
+      },
+      {
+        "team": "apocalypse",
+        "confidence": 80,
+        "notes": "+ 4"
+      },
+      {
+        "team": "secretdefender",
+        "confidence": 80
+      },
+      {
+        "team": "skrull",
+        "confidence": 80,
+        "notes": "+2 Villain +2 Heroes"
+      }
+    ],
     "illuminati_captainbritain": [
       {
         "team": "absoluteaforce",
@@ -1106,6 +1223,29 @@
       {
         "team": "outoftime",
         "confidence": 80
+      },
+      {
+        "team": "superiorsix",
+        "confidence": 80,
+        "notes": "+ Vulture"
+      },
+      {
+        "team": "aforce",
+        "confidence": 80
+      },
+      {
+        "team": "apocalypse",
+        "confidence": 80,
+        "notes": "+ 4"
+      },
+      {
+        "team": "secretdefender",
+        "confidence": 80
+      },
+      {
+        "team": "skrull",
+        "confidence": 80,
+        "notes": "+2 Villain +2 Heroes"
       }
     ],
     "immortalxmen": [
@@ -2321,6 +2461,32 @@
         "confidence": 65
       }
     ],
+    "winterguard": [
+      {
+        "team": "brimstone",
+        "confidence": 95,
+        "notes": "+ Professor Xavier, no Elsa Bloodstone"
+      },
+      {
+        "team": "fantasticfourmcu",
+        "confidence": 95,
+        "notes": "+ Professor Xavier + Shadow King"
+      },
+      {
+        "team": "xtreme",
+        "confidence": 95,
+        "notes": "+ Professor Xavier + Quasar"
+      },
+      {
+        "team": "winterguard",
+        "confidence": 95,
+        "notes": "+ Cable / Oath / Emma Frost, no Yelena Belova"
+      },
+      {
+        "team": "winterguard",
+        "confidence": 80
+      }
+    ],
     "newmutant": [
       {
         "team": "orchis",
@@ -2371,6 +2537,18 @@
       {
         "team": "astral",
         "confidence": 50
+      },
+      {
+        "team": "nightstalker",
+        "confidence": 40
+      },
+      {
+        "team": "thunderbolt",
+        "confidence": 30
+      },
+      {
+        "team": "vigilante",
+        "confidence": 30
       }
     ],
     "newavenger": [

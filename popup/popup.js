@@ -111,6 +111,31 @@ let warAnalyzer = null;
 // Inverse Counters instance
 let inverseCounters = null;
 
+// Set des personnages actuellement en defense (pour filtrer les counters)
+let defenseCharIds = new Set();
+
+/**
+ * Charge les personnages en defense depuis le storage
+ * A appeler au demarrage et apres chaque tag/untag
+ */
+async function loadDefenseCharIds() {
+  try {
+    const stored = await storageGet(["msfWarSquads", "msfDefenseTagged"]);
+    const squads = stored.msfWarSquads || [];
+    const tagged = stored.msfDefenseTagged || [];
+    defenseCharIds = new Set();
+    for (const idx of tagged) {
+      const squad = squads[idx];
+      if (squad) {
+        squad.forEach(id => { if (id) defenseCharIds.add(id); });
+      }
+    }
+    console.log(`[Defense] ${defenseCharIds.size} personnages en defense`);
+  } catch (e) {
+    console.warn("[Defense] Erreur chargement defense:", e);
+  }
+}
+
 // Defense panel elements
 const defensePanel = document.getElementById("defense-panel");
 const btnDefense = document.getElementById("btn-defense");
@@ -467,12 +492,15 @@ function canMakeTeam(teamId) {
 
   const hasAll = team.memberIds.every(charId => playerRoster.has(charId));
   const hasCount = team.memberIds.filter(charId => playerRoster.has(charId)).length;
+  const inDefense = team.memberIds.filter(charId => defenseCharIds.has(charId));
 
   return {
     available: hasAll,
     hasCount: hasCount,
     totalCount: team.memberIds.length,
-    missing: team.memberIds.filter(charId => !playerRoster.has(charId))
+    missing: team.memberIds.filter(charId => !playerRoster.has(charId)),
+    inDefense: inDefense,
+    blockedByDefense: hasAll && inDefense.length > 0
   };
 }
 
@@ -483,7 +511,14 @@ function renderAvailabilityBadge(teamId) {
   const status = canMakeTeam(teamId);
   if (status === null) return "";
 
-  if (status.available) {
+  if (status.available && status.inDefense.length > 0) {
+    // Equipe dispo mais des membres sont en defense
+    const names = status.inDefense.map(id => {
+      const c = charactersData?.characters?.[id];
+      return c ? c.name : id;
+    }).join(', ');
+    return `<span class="counter-in-defense" title="En défense: ${names}">⚠️ ${status.inDefense.length}🛡</span>`;
+  } else if (status.available) {
     return `<span class="counter-available" title="Vous avez cette équipe">✓</span>`;
   } else if (status.hasCount >= status.totalCount - 1) {
     // Il manque 1 personnage
@@ -1060,6 +1095,7 @@ async function loadTeamsAndCounters() {
 // Charger au demarrage
 loadTeamsAndCounters();
 loadPlayerRoster();
+loadDefenseCharIds();
 
 // ============================================
 // Bouton Analyser
@@ -1439,6 +1475,9 @@ function renderWarSquadCards(warSquads, rosterFull, defenseTagged) {
 
       // Sauvegarder
       await storageSet({ msfDefenseTagged: currentDefenseTagged });
+
+      // Mettre a jour le Set des persos en defense
+      await loadDefenseCharIds();
 
       // Mettre a jour visuellement la carte
       const card = btn.closest(".defense-war-card");
@@ -4264,6 +4303,66 @@ if (btnClearToken) {
   });
 }
 
+/**
+ * Convertit un ID API en nom lisible
+ * "IRON-MAN" → "Iron Man", "CaptainMarvel" → "Captain Marvel"
+ */
+function idToDisplayName(id) {
+  let name = id.replace(/-/g, " ");
+  name = name.replace(/([a-z])([A-Z])/g, "$1 $2");
+  name = name.split(" ").map(w =>
+    w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
+  ).join(" ");
+  return name;
+}
+
+/**
+ * Detecte les personnages du roster absents de characters-full.json
+ * et les ajoute dynamiquement dans charactersData + chrome.storage
+ */
+async function syncNewCharactersFromRoster(rosterFull) {
+  if (!rosterFull || rosterFull.length === 0) return;
+
+  if (!charactersData) {
+    try {
+      const response = await fetch(ext.runtime.getURL("data/characters-full.json"));
+      charactersData = await response.json();
+    } catch (e) { return; }
+  }
+
+  const chars = charactersData.characters || {};
+  const existingIds = new Set(Object.keys(chars).map(k => k.toUpperCase()));
+
+  const stored = await storageGet("msfDynamicCharacters");
+  const dynamic = stored.msfDynamicCharacters || {};
+
+  let newCount = 0;
+  for (const entry of rosterFull) {
+    const rawId = entry.id;
+    if (!rawId) continue;
+    const normalizedId = rawId.replace(/-/g, "");
+
+    if (existingIds.has(rawId.toUpperCase()) || existingIds.has(normalizedId.toUpperCase())) continue;
+    if (dynamic[normalizedId]) continue;
+
+    const displayName = idToDisplayName(rawId);
+    dynamic[normalizedId] = {
+      name: displayName,
+      portrait: null,
+      traits: [],
+      status: "playable"
+    };
+    newCount++;
+  }
+
+  if (newCount > 0) {
+    await storageSet({ msfDynamicCharacters: dynamic });
+    Object.assign(chars, dynamic);
+    scanRoomCharList = null;
+    console.log(`[Sync] ${newCount} nouveaux personnages decouverts depuis le roster`);
+  }
+}
+
 // Bouton Get Squads (+ Roster complet)
 /**
  * Recupere squads + roster depuis l'API et sauvegarde dans le storage.
@@ -4321,6 +4420,9 @@ async function fetchSquadsAndRoster() {
     msfWarSquads: tabs.war,
     msfSquadsUpdatedAt: new Date().toISOString()
   });
+
+  // Detecter nouveaux personnages non connus dans characters-full.json
+  await syncNewCharactersFromRoster(playerRosterFull);
 
   return { tabs, playerRosterIds, playerRosterFull, rosterError: rosterResult.error };
 }
@@ -5088,6 +5190,7 @@ function stripAccents(str) {
 
 // --- Scan Salle : etat global ---
 let scanRoomState = null; // { teams: [{slotNumber, portraits: [{dataUrl, hue, hash, charId, name, learned}]}] }
+const scanCountersData = {}; // Cache pour re-tri: { [teamIdx]: { enriched, hasRoster, enemyPower } }
 let scanRoomCharList = null; // [{charId, name}] pour autocomplete
 let scanRoomTeamList = null; // [{id, name, nameFr, memberIds, searchText}] pour recherche par equipe
 
@@ -5099,6 +5202,16 @@ async function getScanCharacterList() {
       charactersData = await response.json();
     } catch (e) { /* ignore */ }
   }
+
+  // Merger les persos dynamiques decouverts depuis le roster
+  try {
+    const dynStored = await storageGet("msfDynamicCharacters");
+    if (dynStored.msfDynamicCharacters) {
+      const chars = charactersData?.characters || {};
+      Object.assign(chars, dynStored.msfDynamicCharacters);
+    }
+  } catch (e) { /* ignore */ }
+
   const chars = charactersData?.characters || charactersData || {};
 
   // Charger les noms FR depuis ocr-names.json (nameToId contient les mappings FR -> charId)
@@ -5887,6 +6000,87 @@ async function lookupTeamCounters(teamIdx) {
   }
 }
 
+function renderCounterItems(enriched, hasRoster, enemyPower) {
+  let html = "";
+  for (const c of enriched) {
+    const status = typeof canMakeTeam === "function" ? canMakeTeam(c.teamId) : null;
+    const isAvailable = status?.available;
+
+    let powerPunchHtml = "";
+    if (enemyPower && c.playerPower) {
+      const punchFactor = confidenceToPunchFactor(c.confidence);
+      const punch = getPunchIndicator(c.playerPower, enemyPower, punchFactor);
+      const fmtPlayer = typeof formatPower === "function" ? formatPower(c.playerPower) : c.playerPower.toLocaleString();
+      const fmtEnemy = typeof formatPower === "function" ? formatPower(enemyPower) : enemyPower.toLocaleString();
+      const punchLabel = punchFactor > 1 ? `Punch x${punchFactor.toFixed(2)}` : "Even";
+      if (punch) {
+        powerPunchHtml = `<span class="war-counter-power" title="${fmtPlayer} × ${punchFactor.toFixed(2)} vs ${fmtEnemy} (${punchLabel})">${fmtPlayer} <span class="war-counter-punch" style="color:${punch.color}">(${punch.label})</span></span>`;
+      } else {
+        powerPunchHtml = `<span class="war-counter-power">${fmtPlayer}</span>`;
+      }
+    }
+    if (!powerPunchHtml && c.minPower) {
+      powerPunchHtml = `<span class="war-counter-power">${typeof formatPower === "function" ? formatPower(c.minPower) : c.minPower}+</span>`;
+    }
+
+    html += `<div class="war-counter-item ${isAvailable ? 'available' : ''}">
+      <div class="war-counter-header">
+        <span class="war-counter-name">${c.teamName}</span>
+        <div class="war-counter-meta">
+          ${hasRoster && typeof renderAvailabilityBadge === "function" ? renderAvailabilityBadge(c.teamId) : ''}
+          <span class="war-counter-confidence">${confidenceToSymbols(c.confidence)}</span>
+          ${typeof renderStatsBadge === "function" ? renderStatsBadge(c.teamId) : ''}
+          ${powerPunchHtml}
+        </div>
+      </div>
+      ${c.notes ? `<div class="war-counter-actions"><span class="war-counter-notes">${c.notes}</span></div>` : ''}
+    </div>`;
+  }
+  return html;
+}
+
+function sortCounters(enriched, sortKey) {
+  if (sortKey === "stars") {
+    enriched.sort((a, b) => {
+      if (b.confidence !== a.confidence) return b.confidence - a.confidence;
+      const pa = a.punchPct ?? -9999;
+      const pb = b.punchPct ?? -9999;
+      return pb - pa;
+    });
+  } else if (sortKey === "power") {
+    enriched.sort((a, b) => {
+      const pa = a.playerPower ?? 0;
+      const pb = b.playerPower ?? 0;
+      if (pb !== pa) return pb - pa;
+      return b.confidence - a.confidence;
+    });
+  } else { // "punch" (defaut)
+    enriched.sort((a, b) => {
+      const pa = a.punchPct ?? -9999;
+      const pb = b.punchPct ?? -9999;
+      if (pa !== pb) return pb - pa;
+      return b.confidence - a.confidence;
+    });
+  }
+}
+
+function reSortCounters(teamIdx, sortKey) {
+  const data = scanCountersData[teamIdx];
+  if (!data) return;
+
+  sortCounters(data.enriched, sortKey);
+
+  const zone = document.getElementById(`counters-${teamIdx}`);
+  const itemsContainer = zone?.querySelector(".counter-items");
+  if (itemsContainer) {
+    itemsContainer.innerHTML = renderCounterItems(data.enriched, data.hasRoster, data.enemyPower);
+  }
+
+  zone?.querySelectorAll(".counter-sort-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.sort === sortKey);
+  });
+}
+
 async function renderTeamCountersResult(teamIdx, teamResult, counters, error, enemyPower) {
   const zone = document.getElementById(`counters-${teamIdx}`);
   if (!zone) return;
@@ -5913,50 +6107,46 @@ async function renderTeamCountersResult(teamIdx, teamResult, counters, error, en
   if (counters && counters.length > 0) {
     const hasRoster = typeof playerRoster !== "undefined" && playerRoster.size > 0;
 
+    // Pre-calculer power/punch pour chaque counter (pour le tri)
+    const enriched = [];
     for (const c of counters) {
-      const status = typeof canMakeTeam === "function" ? canMakeTeam(c.teamId) : null;
-      const isAvailable = status?.available;
-
-      // Calcul punch effectif : power joueur * facteur punch du counter vs ennemi
       let playerPower = null;
-      let powerPunchHtml = "";
+      let punchPct = null;
       if (enemyPower) {
         playerPower = await getTeamPowerFromRoster(c.teamId);
         if (playerPower) {
           const punchFactor = confidenceToPunchFactor(c.confidence);
-          const punch = getPunchIndicator(playerPower, enemyPower, punchFactor);
-          const fmtPlayer = typeof formatPower === "function" ? formatPower(playerPower) : playerPower.toLocaleString();
-          const fmtEnemy = typeof formatPower === "function" ? formatPower(enemyPower) : enemyPower.toLocaleString();
-          const punchLabel = punchFactor > 1 ? `Punch x${punchFactor.toFixed(2)}` : "Even";
-          if (punch) {
-            powerPunchHtml = `<span class="war-counter-power" title="${fmtPlayer} × ${punchFactor.toFixed(2)} vs ${fmtEnemy} (${punchLabel})">${fmtPlayer} <span class="war-counter-punch" style="color:${punch.color}">(${punch.label})</span></span>`;
-          } else {
-            powerPunchHtml = `<span class="war-counter-power">${fmtPlayer}</span>`;
-          }
+          const effectivePower = playerPower * punchFactor;
+          punchPct = (effectivePower - enemyPower) / enemyPower * 100;
         }
       }
-      if (!powerPunchHtml && c.minPower) {
-        powerPunchHtml = `<span class="war-counter-power">${typeof formatPower === "function" ? formatPower(c.minPower) : c.minPower}+</span>`;
-      }
-
-      html += `<div class="war-counter-item ${isAvailable ? 'available' : ''}">
-        <div class="war-counter-header">
-          <span class="war-counter-name">${c.teamName}</span>
-          <div class="war-counter-meta">
-            ${hasRoster && typeof renderAvailabilityBadge === "function" ? renderAvailabilityBadge(c.teamId) : ''}
-            <span class="war-counter-confidence">${confidenceToSymbols(c.confidence)}</span>
-            ${typeof renderStatsBadge === "function" ? renderStatsBadge(c.teamId) : ''}
-            ${powerPunchHtml}
-          </div>
-        </div>
-        ${c.notes ? `<div class="war-counter-actions"><span class="war-counter-notes">${c.notes}</span></div>` : ''}
-      </div>`;
+      enriched.push({ ...c, playerPower, punchPct });
     }
+
+    // Tri par defaut : % punch desc (meilleur matchup en haut)
+    sortCounters(enriched, "punch");
+
+    // Stocker pour re-tri ulterieur
+    scanCountersData[teamIdx] = { enriched, hasRoster, enemyPower };
+
+    // Barre de tri
+    html += `<div class="counter-sort-bar">Trier : <button class="counter-sort-btn active" data-sort="punch" data-team="${teamIdx}">% Punch</button><button class="counter-sort-btn" data-sort="stars" data-team="${teamIdx}">Etoiles</button><button class="counter-sort-btn" data-sort="power" data-team="${teamIdx}">Power</button></div>`;
+
+    // Items dans un conteneur dedie pour re-tri
+    html += `<div class="counter-items">${renderCounterItems(enriched, hasRoster, enemyPower)}</div>`;
   } else {
     html += `<div class="scan-room-counters-error">Pas de counters trouves</div>`;
   }
 
   zone.innerHTML = html;
+
+  // Event delegation pour boutons de tri
+  zone.querySelectorAll(".counter-sort-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      reSortCounters(parseInt(btn.dataset.team), btn.dataset.sort);
+    });
+  });
 
   // Re-enable button
   const btn = document.querySelector(`.scan-room-btn-counters[data-team="${teamIdx}"]`);

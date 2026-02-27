@@ -2,9 +2,11 @@ cache/
 node_modules/
 debug/
 .claude/
+.idea/
 releases/
 scripts/deploy-tester.ps1
 *.har
+*.log
+nul
 DEPLOY.md
 RELEASE-READY.md
-.claude/settings.local.json

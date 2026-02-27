@@ -467,7 +467,39 @@ class WarAnalyzer {
       };
     });
 
-    return counters.sort((a, b) => b.confidence - a.confidence);
+    // Dedupliquer : garder la meilleure confidence par equipe, fusionner les notes
+    const deduped = new Map();
+    for (const c of counters) {
+      const existing = deduped.get(c.teamId);
+      if (!existing) {
+        deduped.set(c.teamId, { ...c, altNotes: [] });
+      } else {
+        // Garder la meilleure confidence
+        if (c.confidence > existing.confidence) {
+          if (existing.notes) existing.altNotes.push(`(${existing.confidence}%) ${existing.notes}`);
+          existing.confidence = c.confidence;
+          if (c.notes) {
+            existing.altNotes.push(existing.notes);
+            existing.notes = c.notes;
+          }
+        } else if (c.notes && c.notes !== existing.notes) {
+          existing.altNotes.push(`(${c.confidence}%) ${c.notes}`);
+        }
+      }
+    }
+    const result = [...deduped.values()].map(c => {
+      // Fusionner les notes alternatives si elles existent
+      if (c.altNotes && c.altNotes.length > 0) {
+        const allNotes = [c.notes, ...c.altNotes].filter(Boolean);
+        if (allNotes.length > 1) {
+          c.notes = allNotes.join(' | ');
+        }
+      }
+      delete c.altNotes;
+      return c;
+    });
+
+    return result.sort((a, b) => b.confidence - a.confidence);
   }
 
   /**
