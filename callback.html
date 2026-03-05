@@ -164,9 +164,18 @@
         };
         localStorage.setItem('msf_oauth_tokens', JSON.stringify(tokenData));
 
+        // Redirect to Android app if on mobile
+        const deepLink = `msfcompanion://auth/callback?access_token=${encodeURIComponent(tokens.access_token)}&refresh_token=${encodeURIComponent(tokens.refresh_token)}`;
+        const isMobile = /Android/i.test(navigator.userAgent);
+
+        if (isMobile) {
+          window.location.href = deepLink;
+        }
+
         showResult(`
           <p class="success">Connexion reussie !</p>
           <p class="info">Tokens obtenus avec succes.</p>
+          ${isMobile ? '<p class="info">Redirection vers MSF Companion...</p><button onclick="window.location.href=\'' + deepLink + '\'">Ouvrir MSF Companion</button>' : ''}
           <div class="token-box">
             <strong>Access Token:</strong><br>
             ${tokens.access_token.substring(0, 50)}...<br><br>
