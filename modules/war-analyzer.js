@@ -827,7 +827,7 @@ class WarAnalyzer {
    * Analyse la concentration de pixels rouges sur les diagonales vs le reste
    */
   async detectDefeatedPortrait(imageDataUrl) {
-    const img = await this._loadImage(imageDataUrl);
+    const img = await this.loadImage(imageDataUrl);
     const canvas = document.createElement("canvas");
     const size = 64;
     canvas.width = size;

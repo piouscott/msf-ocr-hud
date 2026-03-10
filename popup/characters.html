@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>MSF - Tous les personnages</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0d1117;
+      color: #e8eaed;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      padding: 16px;
+      min-width: 900px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #d4af37, #f5d76e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 22px;
+    }
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .toolbar input {
+      padding: 6px 12px;
+      border: 1px solid #2d3e56;
+      border-radius: 6px;
+      background: #161b22;
+      color: #e8eaed;
+      font-size: 13px;
+      width: 260px;
+    }
+    .toolbar select {
+      padding: 6px 8px;
+      border: 1px solid #2d3e56;
+      border-radius: 6px;
+      background: #161b22;
+      color: #e8eaed;
+      font-size: 13px;
+    }
+    .toolbar button {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #1a6b3c, #2ea043);
+      color: #fff;
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .toolbar button:hover { filter: brightness(1.2); }
+    .toolbar button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .toolbar button.btn-secondary {
+      background: linear-gradient(135deg, #1a2942, #2d3e56);
+    }
+    .status {
+      text-align: center;
+      font-size: 12px;
+      color: #9aa0a6;
+      margin-bottom: 12px;
+    }
+    .status.error { color: #ff6b6b; }
+    .status.success { color: #51cf66; }
+    .stats {
+      text-align: center;
+      font-size: 11px;
+      color: #6b7280;
+      margin-bottom: 12px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 8px;
+    }
+    .char-card {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .char-card:hover {
+      border-color: #d4af37;
+      transform: translateY(-2px);
+    }
+    .char-card.new {
+      border-color: #51cf66;
+      box-shadow: 0 0 8px rgba(81,207,102,0.2);
+    }
+    .char-card img {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: 2px solid #333;
+      object-fit: cover;
+      background: #0d1117;
+    }
+    .char-card.new img { border-color: #51cf66; }
+    .char-name {
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 6px;
+      color: #e8eaed;
+      word-break: break-word;
+    }
+    .char-id {
+      font-size: 10px;
+      color: #6b7280;
+      font-family: monospace;
+    }
+    .char-traits {
+      margin-top: 4px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2px;
+      justify-content: center;
+    }
+    .trait-tag {
+      font-size: 9px;
+      padding: 1px 5px;
+      border-radius: 8px;
+      background: #1a2942;
+      color: #74c0fc;
+    }
+    .char-status {
+      font-size: 9px;
+      margin-top: 3px;
+      color: #9aa0a6;
+    }
+    .char-status.playable { color: #51cf66; }
+    .char-status.unknown { color: #ffd43b; }
+    .hidden { display: none; }
+    .endpoint-log {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 12px;
+      font-family: monospace;
+      font-size: 11px;
+      max-height: 200px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      color: #9aa0a6;
+    }
+    .endpoint-log .ok { color: #51cf66; }
+    .endpoint-log .fail { color: #ff6b6b; }
+    .endpoint-log .info { color: #74c0fc; }
+  </style>
+</head>
+<body>
+  <h1>MSF - Catalogue des Personnages</h1>
+
+  <div class="toolbar">
+    <button id="btn-fetch">Charger depuis l'API</button>
+    <button id="btn-local" class="btn-secondary">Charger le fichier local</button>
+    <input type="text" id="search" placeholder="Rechercher un personnage ou trait...">
+    <select id="filter-status">
+      <option value="">Tous les statuts</option>
+      <option value="playable">Playable</option>
+      <option value="unknown">Unknown</option>
+      <option value="summon">Summon</option>
+      <option value="unplayable">Unplayable</option>
+      <option value="new">Nouveaux (pas dans le fichier local)</option>
+    </select>
+    <button id="btn-export" class="btn-secondary" disabled>Exporter JSON</button>
+  </div>
+
+  <div class="status" id="status">Cliquez sur "Charger depuis l'API" pour explorer les endpoints disponibles</div>
+  <div class="stats hidden" id="stats"></div>
+  <div class="endpoint-log hidden" id="log"></div>
+  <div class="grid" id="grid"></div>
+
+  <script>
+    const ext = typeof browser !== "undefined" ? browser : chrome;
+    const MSF_API_KEY = "17wMKJLRxy3pYDCKG5ciP7VSU45OVumB2biCzzgw";
+
+    let allCharacters = [];
+    let localCharacters = {};
+
+    // Charger le fichier local pour comparaison
+    async function loadLocalCharacters() {
+      try {
+        const res = await fetch(ext.runtime.getURL("data/characters-full.json"));
+        const data = await res.json();
+        localCharacters = data.characters || {};
+        return localCharacters;
+      } catch (e) {
+        console.error("Erreur chargement local:", e);
+        return {};
+      }
+    }
+
+    function log(msg, cls) {
+      const el = document.getElementById("log");
+      el.classList.remove("hidden");
+      el.innerHTML += `<span class="${cls || ''}">${msg}</span>\n`;
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function storageGet(keys) {
+      return new Promise((resolve) => {
+        ext.storage.local.get(keys, (result) => resolve(result || {}));
+      });
+    }
+
+    async function getToken() {
+      return storageGet(["msfApiToken", "msfTokenType"]);
+    }
+
+    async function tryEndpoint(url, headers, label) {
+      log(`→ ${label}: ${url}`, "info");
+      try {
+        const res = await fetch(url, { headers });
+        if (!res.ok) {
+          log(`  ✗ ${res.status} ${res.statusText}`, "fail");
+          return null;
+        }
+        const data = await res.json();
+        const keys = Object.keys(data);
+        const preview = JSON.stringify(data).substring(0, 300);
+        log(`  ✓ ${res.status} — clés: [${keys.join(", ")}]`, "ok");
+        log(`  Preview: ${preview}...`, "");
+        return data;
+      } catch (e) {
+        log(`  ✗ Erreur: ${e.message}`, "fail");
+        return null;
+      }
+    }
+
+    async function fetchFromAPI() {
+      const btn = document.getElementById("btn-fetch");
+      btn.disabled = true;
+      document.getElementById("log").innerHTML = "";
+      document.getElementById("log").classList.remove("hidden");
+      setStatus("Exploration des endpoints API...");
+
+      let stored;
+      try {
+        stored = await getToken();
+        log(`Token type: ${stored.msfTokenType || "non défini"}, Token: ${stored.msfApiToken ? stored.msfApiToken.substring(0, 20) + "..." : "ABSENT"}`, "info");
+      } catch (e) {
+        setStatus("Erreur lecture token: " + e.message, "error");
+        btn.disabled = false;
+        return;
+      }
+      if (!stored.msfApiToken) {
+        setStatus("Token non disponible. Configurez-le dans le panneau API de l'extension.", "error");
+        btn.disabled = false;
+        return;
+      }
+
+      const token = stored.msfApiToken;
+      const tokenType = stored.msfTokenType || "bearer";
+
+      let headers;
+      if (tokenType === "titan") {
+        headers = {
+          "x-titan-token": token,
+          "x-app-version": "9.6.0-hp2",
+          "Accept": "application/json"
+        };
+      } else {
+        headers = {
+          "x-api-key": MSF_API_KEY,
+          "Authorization": token.startsWith("Bearer ") ? token : `Bearer ${token}`,
+          "Accept": "application/json"
+        };
+      }
+
+      await loadLocalCharacters();
+
+      // Tester plusieurs endpoints potentiels
+      const endpoints = tokenType === "titan" ? [
+        ["https://api-prod.marvelstrikeforce.com/services/api/characters", "Titan characters"],
+        ["https://api-prod.marvelstrikeforce.com/services/api/getCharacters", "Titan getCharacters"],
+        ["https://api-prod.marvelstrikeforce.com/services/api/getAllCharacters", "Titan getAllCharacters"],
+        ["https://api-prod.marvelstrikeforce.com/services/api/getPlayerRoster", "Titan roster (fallback)"],
+      ] : [
+        ["https://api.marvelstrikeforce.com/game/v1/characters", "Game characters"],
+        ["https://api.marvelstrikeforce.com/game/v1/characters?limit=500", "Game characters (limit 500)"],
+        ["https://api.marvelstrikeforce.com/player/v1/characters", "Player characters"],
+        ["https://api.marvelstrikeforce.com/game/v1/roster", "Game roster"],
+        ["https://api.marvelstrikeforce.com/game/v1/items", "Game items"],
+        ["https://api.marvelstrikeforce.com/player/v1/roster", "Player roster (fallback)"],
+      ];
+
+      let found = null;
+      for (const [url, label] of endpoints) {
+        const data = await tryEndpoint(url, headers, label);
+        if (data) {
+          // Analyser la reponse pour trouver un tableau de persos
+          const chars = extractCharacters(data, label);
+          if (chars && chars.length > 0) {
+            log(`\n★ ${chars.length} personnages trouvés via "${label}"`, "ok");
+            found = { chars, source: label };
+            // Continuer a tester les autres pour info, mais on a notre source
+            if (chars.length > 100) break; // Bonne source, on s'arrete
+          }
+        }
+      }
+
+      if (found) {
+        allCharacters = found.chars;
+        setStatus(`${found.chars.length} personnages chargés depuis "${found.source}"`, "success");
+        renderCharacters();
+        document.getElementById("btn-export").disabled = false;
+      } else {
+        setStatus("Aucun endpoint n'a retourné de données de personnages exploitables", "error");
+      }
+
+      btn.disabled = false;
+    }
+
+    function extractCharacters(data, source) {
+      // Essayer differents formats de reponse
+      let rawList = null;
+
+      // Format direct: array
+      if (Array.isArray(data)) rawList = data;
+      // Format {data: [...]}
+      else if (Array.isArray(data.data)) rawList = data.data;
+      // Format {data: {roster: [...]}}
+      else if (data.data && Array.isArray(data.data.roster)) rawList = data.data.roster;
+      // Format {characters: [...]}
+      else if (Array.isArray(data.characters)) rawList = data.characters;
+      // Format {characters: {id: {...}}}
+      else if (data.characters && typeof data.characters === "object") {
+        rawList = Object.entries(data.characters).map(([id, v]) => ({ id, ...v }));
+      }
+      // Format {items: [...]}
+      else if (Array.isArray(data.items)) rawList = data.items;
+
+      if (!rawList || rawList.length === 0) return null;
+
+      // Normaliser chaque entree
+      return rawList.map(entry => {
+        const id = entry.id || entry.characterId || entry.charId || "?";
+        const name = entry.name || entry.displayName || idToName(id);
+        const portrait = entry.portrait || entry.portraitUrl || entry.icon || entry.image || null;
+        const traits = entry.traits || entry.tags || entry.factions || [];
+        const status = entry.status || entry.state || (entry.power ? "playable" : "unknown");
+        const power = entry.power || 0;
+        const stars = entry.yellow || entry.activeYellow || entry.stars || 0;
+
+        // Verifier si c'est un nouveau perso (pas dans le fichier local)
+        const normalizedId = id.replace(/-/g, "");
+        const isLocal = localCharacters[id] || localCharacters[normalizedId] ||
+          Object.keys(localCharacters).some(k => k.toUpperCase() === id.toUpperCase() || k.toUpperCase() === normalizedId.toUpperCase());
+
+        return { id, name, portrait, traits: Array.isArray(traits) ? traits : [], status, power, stars, isNew: !isLocal };
+      });
+    }
+
+    function idToName(id) {
+      let name = id.replace(/-/g, " ");
+      name = name.replace(/([a-z])([A-Z])/g, "$1 $2");
+      name = name.replace(/_/g, " ");
+      return name.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+    }
+
+    function setStatus(msg, cls) {
+      const el = document.getElementById("status");
+      el.textContent = msg;
+      el.className = "status" + (cls ? " " + cls : "");
+    }
+
+    function renderCharacters() {
+      const search = document.getElementById("search").value.toLowerCase().trim();
+      const filterStatus = document.getElementById("filter-status").value;
+
+      let filtered = allCharacters;
+
+      if (filterStatus === "new") {
+        filtered = filtered.filter(c => c.isNew);
+      } else if (filterStatus) {
+        filtered = filtered.filter(c => c.status === filterStatus);
+      }
+
+      if (search) {
+        filtered = filtered.filter(c =>
+          c.name.toLowerCase().includes(search) ||
+          c.id.toLowerCase().includes(search) ||
+          c.traits.some(t => t.toLowerCase().includes(search))
+        );
+      }
+
+      // Stats
+      const newCount = allCharacters.filter(c => c.isNew).length;
+      const statsEl = document.getElementById("stats");
+      statsEl.classList.remove("hidden");
+      statsEl.textContent = `Total: ${allCharacters.length} | Affichés: ${filtered.length} | Nouveaux (pas dans le fichier local): ${newCount}`;
+
+      // Rendu
+      const grid = document.getElementById("grid");
+      grid.innerHTML = filtered.map(c => {
+        const portraitHtml = c.portrait
+          ? `<img src="${c.portrait}" alt="${c.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect fill=%22%23333%22 width=%2264%22 height=%2264%22/><text x=%2232%22 y=%2236%22 fill=%22%23888%22 text-anchor=%22middle%22 font-size=%2220%22>?</text></svg>'">`
+          : `<img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect fill=%22%23222%22 width=%2264%22 height=%2264%22/><text x=%2232%22 y=%2236%22 fill=%22%23666%22 text-anchor=%22middle%22 font-size=%2216%22>?</text></svg>">`;
+
+        const traitsHtml = c.traits.slice(0, 5).map(t => `<span class="trait-tag">${t}</span>`).join("");
+
+        return `
+          <div class="char-card ${c.isNew ? 'new' : ''}">
+            ${portraitHtml}
+            <div class="char-name">${c.name}</div>
+            <div class="char-id">${c.id}</div>
+            <div class="char-status ${c.status}">${c.status}${c.power ? ' — ' + Math.round(c.power/1000) + 'k' : ''}</div>
+            <div class="char-traits">${traitsHtml}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function loadLocal() {
+      setStatus("Chargement du fichier local...");
+      const chars = await loadLocalCharacters();
+      allCharacters = Object.entries(chars).map(([id, c]) => ({
+        id,
+        name: c.name || idToName(id),
+        portrait: c.portrait || null,
+        traits: c.traits || [],
+        status: c.status || "unknown",
+        power: 0,
+        stars: 0,
+        isNew: false
+      }));
+      setStatus(`${allCharacters.length} personnages chargés depuis characters-full.json`, "success");
+      renderCharacters();
+      document.getElementById("btn-export").disabled = false;
+    }
+
+    function exportJSON() {
+      const exportData = {
+        description: "MSF Characters - exported from API exploration",
+        exportedAt: new Date().toISOString(),
+        totalCharacters: allCharacters.length,
+        characters: {}
+      };
+      allCharacters.forEach(c => {
+        exportData.characters[c.id.replace(/-/g, "")] = {
+          name: c.name,
+          portrait: c.portrait,
+          traits: c.traits,
+          status: c.status
+        };
+      });
+
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `msf-characters-${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Events
+    document.getElementById("btn-fetch").addEventListener("click", fetchFromAPI);
+    document.getElementById("btn-local").addEventListener("click", loadLocal);
+    document.getElementById("btn-export").addEventListener("click", exportJSON);
+    document.getElementById("search").addEventListener("input", () => { if (allCharacters.length > 0) renderCharacters(); });
+    document.getElementById("filter-status").addEventListener("change", () => { if (allCharacters.length > 0) renderCharacters(); });
+  </script>
+</body>
+</html>

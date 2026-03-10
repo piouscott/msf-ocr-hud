@@ -1,0 +1,90 @@
+{
+  "description": "MSF Raid guides - recommended teams per node",
+  "version": 1,
+  "lastUpdate": "2026-03-10",
+  "source": "Deadpool's Corner",
+  "raids": {
+    "thunderstrike": {
+      "name": "Thunderstrike",
+      "difficulty": "TS / Normal",
+      "nodes": [
+        {
+          "node": "Node 1",
+          "team": "custom",
+          "teamName": "Horsemen Mix",
+          "teamNameFr": "Mix Cavaliers",
+          "members": ["Apocalypse", "Odin", "Knull", "Mephisto", "Professor Xavier"],
+          "memberIds": ["Apocalypse", "Odin", "Knull", "Mephisto", "Xavier"]
+        },
+        {
+          "node": "Node 2",
+          "team": "immortalweapon",
+          "teamName": "Immortal Weapons",
+          "teamNameFr": "Armes Immortelles",
+          "members": ["Iron Fist", "Iron Fist (WWII)", "Lady Bullseye", "Steel Serpent", "Sword Master"],
+          "memberIds": ["IronFist", "IronFistOrson", "LadyBullseye", "SteelSerpent", "SwordMaster"]
+        },
+        {
+          "node": "Node 3 & 4 Boss",
+          "team": "vigilante",
+          "teamName": "Vigilante",
+          "teamNameFr": "Justiciers",
+          "members": ["Daredevil (Modern)", "Elektra", "Hit-Monkey", "Punisher", "Silver Sable"],
+          "memberIds": ["DaredevilModern", "Elektra", "HitMonkey", "Punisher", "SilverSable"]
+        },
+        {
+          "node": "Node 5",
+          "team": "immortalweapon",
+          "teamName": "Immortal Weapons",
+          "teamNameFr": "Armes Immortelles",
+          "members": ["Iron Fist", "Iron Fist (WWII)", "Lady Bullseye", "Steel Serpent", "Sword Master"],
+          "memberIds": ["IronFist", "IronFistOrson", "LadyBullseye", "SteelSerpent", "SwordMaster"]
+        },
+        {
+          "node": "Node 6 Part 1",
+          "team": "custom",
+          "teamName": "Fantastic Four MCU Mix",
+          "teamNameFr": "Mix Quatre Fantastiques MCU",
+          "members": ["Franklin Richards", "Daimon Hellstrom", "Invisible Woman (MCU)", "Quasar", "Mr. Fantastic (MCU)"],
+          "memberIds": ["FranklinRichards", "DaimonHellstrom", "InvisibleWomanMCU", "Quasar", "MrFantasticMCU"]
+        },
+        {
+          "node": "Node 6 Pt2 & 7 Boss",
+          "team": "insidioussix",
+          "teamName": "Insidious Six (mod.)",
+          "teamNameFr": "Insidieux Six (mod.)",
+          "notes": "Sans Shocker, remplace par Blastaar",
+          "notesFr": "Sans Shocker, remplace par Blastaar",
+          "members": ["Hobgoblin", "Scorpion", "Blastaar", "Superior Spider-Man", "Vulture"],
+          "memberIds": ["Hobgoblin", "Scorpion", "Blastaar", "SuperiorSpiderMan", "Vulture"]
+        },
+        {
+          "node": "Node 8",
+          "team": "immortalweapon",
+          "teamName": "Immortal Weapons",
+          "teamNameFr": "Armes Immortelles",
+          "members": ["Iron Fist", "Iron Fist (WWII)", "Lady Bullseye", "Steel Serpent", "Sword Master"],
+          "memberIds": ["IronFist", "IronFistOrson", "LadyBullseye", "SteelSerpent", "SwordMaster"]
+        },
+        {
+          "node": "Node 9",
+          "team": "brimstone",
+          "teamName": "Brimstone (mod.)",
+          "teamNameFr": "Brimstone (mod.)",
+          "notes": "Sans Elsa Bloodstone, remplace par Thunderstrike",
+          "notesFr": "Sans Elsa Bloodstone, remplace par Thunderstrike",
+          "members": ["Daimon Hellstrom", "Thunderstrike", "Hellcat", "Living Mummy", "Strange (Heartless)"],
+          "memberIds": ["DaimonHellstrom", "Thunderstrike", "Hellcat", "LivingMummy", "StrangeSupreme"]
+        },
+        {
+          "node": "Node 10 Boss",
+          "team": "immortalweapon",
+          "teamName": "Immortal Weapons",
+          "teamNameFr": "Armes Immortelles",
+          "members": ["Iron Fist", "Iron Fist (WWII)", "Lady Bullseye", "Steel Serpent", "Sword Master"],
+          "memberIds": ["IronFist", "IronFistOrson", "LadyBullseye", "SteelSerpent", "SwordMaster"]
+        }
+      ]
+    }
+  }
+}

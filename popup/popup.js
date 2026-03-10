@@ -1470,6 +1470,8 @@ function renderWarSquadCards(warSquads, rosterFull, defenseTagged) {
       if (tagIndex >= 0) {
         currentDefenseTagged.splice(tagIndex, 1);
       } else {
+        // Limite a 10 defenses max
+        if (currentDefenseTagged.length >= 10) return;
         currentDefenseTagged.push(idx);
       }
 
@@ -1494,8 +1496,21 @@ function renderWarSquadCards(warSquads, rosterFull, defenseTagged) {
         const count = teamId ? (inverseCounters.getCountersFor(teamId)?.length || 0) : 0;
         confSpan.textContent = count > 0 ? count + " counters" : "";
       }
+
+      updateDefenseCounter();
     });
   });
+
+  // Afficher le compteur initial
+  updateDefenseCounter();
+}
+
+function updateDefenseCounter() {
+  const el = document.getElementById("defense-counter");
+  if (!el) return;
+  const count = currentDefenseTagged.length;
+  el.textContent = `${count}/10 en defense`;
+  el.classList.toggle("full", count >= 10);
 }
 
 defenseTeamSelect.addEventListener("change", () => {
@@ -2024,6 +2039,7 @@ async function loadRaids() {
       raidsLoading.classList.add("hidden");
       raidsError.innerHTML = '<div class="empty-state-cta"><p>Pas de donnees disponibles.</p><button class="btn-open-api">Connecter mon compte</button></div>';
       raidsError.classList.remove("hidden");
+      loadRaidGuide();
       return;
     }
   }
@@ -2043,6 +2059,9 @@ async function loadRaids() {
   } else {
     raidTeamsSection.classList.add("hidden");
   }
+
+  // Charger le guide raid (données statiques)
+  loadRaidGuide();
 }
 
 /**
@@ -2153,6 +2172,94 @@ function renderRaidTeams(raidTeams) {
   });
 
   raidTeamsList.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════
+// RAID GUIDE — équipes recommandées par node (données statiques)
+// ═══════════════════════════════════════════════════════════
+
+let raidGuideData = null;
+
+async function loadRaidGuide() {
+  try {
+    if (!raidGuideData) {
+      const response = await fetch(ext.runtime.getURL("data/raids.json"));
+      raidGuideData = await response.json();
+    }
+    if (!charactersData) {
+      const resp = await fetch(ext.runtime.getURL("data/characters-full.json"));
+      charactersData = await resp.json();
+    }
+
+    const select = document.getElementById("raid-guide-select");
+    const list = document.getElementById("raid-guide-list");
+    if (!select || !list) return;
+
+    // Remplir le select avec les raids disponibles
+    select.innerHTML = "";
+    const raidKeys = Object.keys(raidGuideData.raids);
+    raidKeys.forEach(key => {
+      const raid = raidGuideData.raids[key];
+      const opt = document.createElement("option");
+      opt.value = key;
+      opt.textContent = raid.name + (raid.difficulty ? ` (${raid.difficulty})` : "");
+      select.appendChild(opt);
+    });
+
+    select.addEventListener("change", () => renderRaidGuide(select.value));
+
+    if (raidKeys.length > 0) {
+      renderRaidGuide(raidKeys[0]);
+    }
+  } catch (e) {
+    console.error("[RaidGuide] Erreur chargement:", e);
+  }
+}
+
+function renderRaidGuide(raidKey) {
+  const list = document.getElementById("raid-guide-list");
+  if (!list || !raidGuideData?.raids?.[raidKey]) return;
+
+  const raid = raidGuideData.raids[raidKey];
+  const chars = charactersData?.characters || {};
+
+  let html = "";
+
+  raid.nodes.forEach(node => {
+    const teamLabel = node.teamNameFr || node.teamName;
+    const notes = node.notesFr || node.notes || "";
+
+    // Portraits des membres
+    let portraitsHtml = "";
+    node.memberIds.forEach((id, i) => {
+      const c = chars[id];
+      const name = node.members[i] || id;
+      const portrait = c?.portrait || "";
+      if (portrait) {
+        portraitsHtml += `<div class="rg-member" title="${name}">
+          <img src="${portrait}" alt="${name}" class="rg-portrait">
+          <span class="rg-name">${name}</span>
+        </div>`;
+      } else {
+        portraitsHtml += `<div class="rg-member" title="${name}">
+          <div class="rg-portrait rg-no-img">${name.charAt(0)}</div>
+          <span class="rg-name">${name}</span>
+        </div>`;
+      }
+    });
+
+    html += `
+      <div class="rg-node-card">
+        <div class="rg-node-header">
+          <span class="rg-node-label">${node.node}</span>
+          <span class="rg-team-label">${teamLabel}</span>
+        </div>
+        ${notes ? `<div class="rg-notes">${notes}</div>` : ""}
+        <div class="rg-members">${portraitsHtml}</div>
+      </div>`;
+  });
+
+  list.innerHTML = html;
 }
 
 /**
@@ -2337,13 +2444,13 @@ function renderEventInfo(event) {
   const remaining = event.endTime - (Date.now() / 1000);
   const isUrgent = remaining > 0 && remaining <= 3600; // Moins d'1h
 
-  // Détecter le type Solo/Series depuis milestone.typeName ou milestone.type
+  // Detecter le type Solo/Series depuis milestone.typeName ou milestone.type
   let eventMode = "Solo";
   let isSeries = false;
   if (event.milestone) {
     const typeName = event.milestone.typeName || event.milestone.type || "";
     isSeries = typeName.toLowerCase().includes("series") || typeName.toLowerCase().includes("série");
-    eventMode = typeName || "Solo";
+    eventMode = isSeries ? "Serie" : "Solo";
   }
 
   // Sous-titre (ex: "Spend Campaign Energy")
@@ -2364,17 +2471,34 @@ function renderEventInfo(event) {
   const progress = event.milestone?.progress;
   const tiers = event.milestone?.tiers;
   if (progress && tiers && tiers.length > 0) {
-    const totalTiers = tiers.length;
+    const maxCompletions = event.milestone?.maxCompletions || 1;
+    // Chercher le total de phases dans tous les champs possibles
+    let totalTiers = event.milestone?.totalTiers || event.milestone?.numTiers
+      || event.milestone?.tierCount || event.milestone?.totalPhases
+      || (tiers.length * maxCompletions);
     const completedTier = progress.completedTier || 0;
+    // Si notre calcul est inferieur au tier complété, le total est faux — fallback
+    if (completedTier >= totalTiers) {
+      totalTiers = progress.goalTier || (completedTier + 1);
+      // On ne connait pas le vrai total, on affiche "X+"
+    }
+    const knownTotal = completedTier < totalTiers;
     const currentPoints = progress.points || 0;
-    const nextGoal = progress.goal || (tiers[completedTier] ? tiers[completedTier].endScore : 0);
+    const nextGoal = progress.goal || (tiers[completedTier % tiers.length] ? tiers[completedTier % tiers.length].endScore : 0);
     const pct = nextGoal > 0 ? Math.min(100, Math.round((currentPoints / nextGoal) * 100)) : 0;
+    const offset = progress.completionOffset || 0;
+    // Log debug temporaire
+    console.log(`[Events] "${event.name}" tiers=${tiers.length} maxComp=${maxCompletions} total=${totalTiers} completed=${completedTier} offset=${offset} milestoneKeys=`, Object.keys(event.milestone).join(","));
+
+    const phaseDisplay = knownTotal
+      ? `Phase ${completedTier + offset} / ${totalTiers + offset}`
+      : `Phase ${completedTier + offset}`;
 
     progressHtml = `
       <div class="event-progress">
         <div class="event-progress-info">
           <span class="event-progress-pts">${formatNumber(currentPoints)} pts</span>
-          <span class="event-progress-tier">Phase ${completedTier + (progress.completionOffset || 0)} / ${totalTiers + (progress.completionOffset || 0)}</span>
+          <span class="event-progress-tier">${phaseDisplay}</span>
         </div>
         <div class="event-progress-bar-bg">
           <div class="event-progress-bar" style="width: ${pct}%"></div>
@@ -2411,7 +2535,7 @@ function renderAllEvents({ blitz, milestone }) {
       <div class="events-accordion">
         <div class="events-accordion-header" data-section="blitz">
           <span class="events-accordion-toggle">▼</span>
-          <span class="events-accordion-title">⚔️ Blitz</span>
+          <span class="events-accordion-title">⚔️ Chocs (Blitz)</span>
           <span class="events-accordion-count">${blitz.length}</span>
         </div>
         <div class="events-accordion-content show" id="events-section-blitz">
@@ -2424,7 +2548,7 @@ function renderAllEvents({ blitz, milestone }) {
         <div class="event-card blitz">
           <div class="event-header">
             <span class="event-name">${translateEventName(event.name)}</span>
-            <span class="event-type">Blitz</span>
+            <span class="event-type">Choc</span>
           </div>
           ${renderEventInfo(event)}
           ${filters.length > 0 ? `
@@ -2444,7 +2568,7 @@ function renderAllEvents({ blitz, milestone }) {
       <div class="events-accordion">
         <div class="events-accordion-header" data-section="milestone">
           <span class="events-accordion-toggle">▼</span>
-          <span class="events-accordion-title">🎯 Milestones</span>
+          <span class="events-accordion-title">🎯 Jalons</span>
           <span class="events-accordion-count">${milestone.length}</span>
         </div>
         <div class="events-accordion-content show" id="events-section-milestone">
@@ -2473,8 +2597,9 @@ function renderAllEvents({ blitz, milestone }) {
       const tierCount = event.milestone?.tiers?.length || 0;
       const hasCalc = rows.length > 0;
 
-      // Déterminer le type à afficher
-      const typeLabel = event.milestone?.typeName || "Milestone";
+      // Determiner le type a afficher
+      const rawType = event.milestone?.typeName || "Milestone";
+      const typeLabel = rawType === "Milestone" ? "Jalon" : (rawType.toLowerCase().includes("series") ? "Serie" : rawType);
 
       html += `
         <div class="event-card milestone" data-event-idx="${idx}">
@@ -3426,10 +3551,21 @@ const EVENT_NAME_TRANSLATIONS = {
   "Incursion Raids": "🔥 Raids Incursion",
   "Cosmic Crucible": "Creuset Cosmique",
 
-  // Événements
+  // Evenements
   "Battle in War": "Combat en Guerre",
   "War Season": "Saison de Guerre",
-  "Raid Season": "Saison de Raid"
+  "Raid Season": "Saison de Raid",
+  "Blitz Season": "Saison de Blitz",
+  "Arena Season": "Saison d'Arene",
+  "Crucible Season": "Saison du Creuset",
+
+  // Noms generiques
+  "Father of Realms": "Pere des Royaumes",
+  "Spending Spree": "Frenesie de Depenses",
+  "Power Climb": "Ascension de Puissance",
+  "Gear Up": "Equipement",
+  "Level Up": "Montee de Niveau",
+  "Earn": "Gagner"
 };
 
 /**
@@ -3438,16 +3574,35 @@ const EVENT_NAME_TRANSLATIONS = {
 const EVENT_DESC_TRANSLATIONS = {
   "Win War battles": "Victoires en Guerre",
   "Win Alliance War attacks": "Victoires attaque en Guerre",
-  "Complete Raid nodes": "Noeuds de Raid complétés",
-  "Complete raid nodes": "Noeuds de Raid complétés",
-  "Earn Ability Materials": "Gagner des Matériaux de Capacité",
+  "Complete Raid nodes": "Noeuds de Raid completés",
+  "Complete raid nodes": "Noeuds de Raid completés",
+  "Earn Ability Materials": "Gagner des Materiaux de Capacite",
   "Earn Gear up to Tier 20": "Gagner du Gear (jusqu'au Tier 20)",
   "Earn Crimson Gear": "Gagner du Gear Crimson",
   "Earn Gold": "Gagner de l'Or",
   "Earn Training Modules": "Gagner des Modules d'Entrainement",
-  "Complete Blitz battles": "Combats Blitz complétés",
+  "Complete Blitz battles": "Combats Blitz completés",
   "Collect character shards": "Collecter des fragments de personnage",
-  "Open Orbs": "Ouvrir des Orbes"
+  "Open Orbs": "Ouvrir des Orbes",
+  "Spend Campaign Energy": "Depenser de l'Energie de Campagne",
+  "Spend Arena credits": "Depenser des credits d'Arene",
+  "Spend Blitz credits": "Depenser des credits de Blitz",
+  "Spend Raid credits": "Depenser des credits de Raid",
+  "Spend War credits": "Depenser des credits de Guerre",
+  "Win Arena battles": "Victoires en Arene",
+  "Win Blitz battles": "Victoires en Blitz",
+  "Win Crucible battles": "Victoires en Creuset",
+  "Level Up characters": "Monter des personnages de niveau",
+  "Rank Up characters": "Monter des personnages en rang",
+  "Upgrade character abilities": "Ameliorer les capacites de personnages",
+  "Equip Gear to characters": "Equiper du Gear sur des personnages",
+  "Earn XP": "Gagner de l'XP",
+  "Battle in War with": "Combat en Guerre avec",
+  "Battle in War or Blitz with": "Combat en Guerre ou Blitz avec",
+  "at 5 Yellow Stars": "a 5 Etoiles Jaunes",
+  "at 6 Yellow Stars": "a 6 Etoiles Jaunes",
+  "at 7 Yellow Stars": "a 7 Etoiles Jaunes",
+  "Earn 5-Diamond": "Gagner 5 Diamants"
 };
 
 /**
@@ -3487,6 +3642,805 @@ function translateEventDescription(desc) {
 }
 
 // ============================================
+// Panneau Personnages - Tous les persos du jeu
+// ============================================
+
+const charsPanel = document.getElementById("chars-panel");
+const btnChars = document.getElementById("btn-chars");
+const btnCloseChars = document.getElementById("btn-close-chars");
+const charsSearch = document.getElementById("chars-search");
+const charsFilterTrait = document.getElementById("chars-filter-trait");
+const charsGrid = document.getElementById("chars-grid");
+const charsCount = document.getElementById("chars-count");
+const btnCharsApi = document.getElementById("btn-chars-api");
+const charsStatus = document.getElementById("chars-status");
+
+let allCharsLoaded = [];
+
+btnChars.addEventListener("click", async () => {
+  charsPanel.classList.remove("hidden");
+  charsPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (allCharsLoaded.length === 0) {
+    await loadAllCharacters();
+  }
+});
+
+btnCloseChars.addEventListener("click", () => {
+  charsPanel.classList.add("hidden");
+});
+
+charsSearch.addEventListener("input", renderCharsGrid);
+charsFilterTrait.addEventListener("change", renderCharsGrid);
+
+btnCharsApi.addEventListener("click", async () => {
+  btnCharsApi.disabled = true;
+  setCharsStatus("Chargement depuis l'API...", "");
+  try {
+    // Demander au bg de fetcher et stocker dans msfApiCharacters
+    const result = await ext.runtime.sendMessage({ type: "MSF_GET_CHARACTERS" });
+    console.log("[Chars] API result:", JSON.stringify(result).substring(0, 500));
+
+    if (result && result.error) {
+      setCharsStatus("Erreur: " + result.error, "error");
+      btnCharsApi.disabled = false;
+      return;
+    }
+
+    // Lire les persos depuis le storage (le bg les y a stockés)
+    const stored = await storageGet("msfApiCharacters");
+    const apiChars = stored.msfApiCharacters || [];
+    console.log("[Chars] Lus depuis storage:", apiChars.length);
+
+    const endpointsInfo = `${result?.pages || 0} pages chargées`;
+
+    if (apiChars.length > 0) {
+      // Merger avec les données locales
+      const chars = charactersData?.characters || {};
+      let newCount = 0;
+      for (const c of apiChars) {
+        const normalizedId = (c.id || "").replace(/-/g, "");
+        const existing = chars[c.id] || chars[normalizedId];
+        if (!existing) {
+          chars[normalizedId] = {
+            name: c.name || normalizedId,
+            portrait: c.portrait || null,
+            traits: Array.isArray(c.traits) ? c.traits : [],
+            status: c.status || "playable"
+          };
+          newCount++;
+        } else {
+          if (!existing.portrait && c.portrait) existing.portrait = c.portrait;
+          if ((!existing.traits || existing.traits.length === 0) && c.traits && c.traits.length > 0) existing.traits = c.traits;
+          if (!existing.name && c.name) existing.name = c.name;
+        }
+      }
+
+      // Sauvegarder les nouveaux dans le storage dynamique
+      const dynStored = await storageGet("msfDynamicCharacters");
+      const dynamic = dynStored.msfDynamicCharacters || {};
+      for (const c of apiChars) {
+        const normalizedId = (c.id || "").replace(/-/g, "");
+        if (!charactersData?.characters?.[c.id] && !charactersData?.characters?.[normalizedId]) {
+          dynamic[normalizedId] = {
+            name: c.name || normalizedId,
+            portrait: c.portrait || null,
+            traits: Array.isArray(c.traits) ? c.traits : [],
+            status: c.status || "playable"
+          };
+        }
+      }
+      await storageSet({ msfDynamicCharacters: dynamic });
+
+      // Recharger la grille
+      allCharsLoaded = [];
+      await loadAllCharacters();
+      setCharsStatus(`${apiChars.length} persos depuis l'API (${newCount} nouveaux)\n${endpointsInfo}`, "success");
+    } else {
+      setCharsStatus("Aucun personnage dans le storage après appel API.\n" + endpointsInfo, "error");
+    }
+  } catch (e) {
+    setCharsStatus("Erreur: " + e.message, "error");
+  }
+  btnCharsApi.disabled = false;
+});
+
+function setCharsStatus(msg, cls) {
+  charsStatus.textContent = msg;
+  charsStatus.className = "chars-status" + (cls ? " " + cls : "");
+  charsStatus.classList.remove("hidden");
+}
+
+// IDs du fichier local original (jamais muté, sert de référence pour "isNew")
+let charsLocalFileIds = null;
+
+async function loadAllCharacters() {
+  try {
+    // Charger le fichier local une seule fois pour référence
+    if (!charactersData) {
+      const response = await fetch(ext.runtime.getURL("data/characters-full.json"));
+      charactersData = await response.json();
+    }
+    if (!charsLocalFileIds) {
+      charsLocalFileIds = new Set(Object.keys(charactersData.characters || {}).map(k => k.toUpperCase()));
+    }
+
+    // Copier les persos locaux dans un objet de travail (ne pas muter l'original)
+    const chars = Object.assign({}, charactersData.characters || {});
+
+    // Merger les persos dynamiques (sauvés par le sync roster)
+    try {
+      const dynStored = await storageGet("msfDynamicCharacters");
+      if (dynStored.msfDynamicCharacters) {
+        Object.assign(chars, dynStored.msfDynamicCharacters);
+      }
+    } catch (e) { /* ignore */ }
+
+    // Merger les persos API (sauvés par le bouton API)
+    try {
+      const apiStored = await storageGet("msfApiCharacters");
+      if (apiStored.msfApiCharacters) {
+        for (const c of apiStored.msfApiCharacters) {
+          const normalizedId = (c.id || "").replace(/-/g, "");
+          const existing = chars[c.id] || chars[normalizedId];
+          if (!existing) {
+            chars[normalizedId] = {
+              name: c.name || normalizedId,
+              portrait: c.portrait || null,
+              traits: Array.isArray(c.traits) ? c.traits : [],
+              status: c.status || "playable"
+            };
+          } else {
+            if (!existing.portrait && c.portrait) existing.portrait = c.portrait;
+            if ((!existing.traits || existing.traits.length === 0) && c.traits && c.traits.length > 0) existing.traits = c.traits;
+            if (!existing.name && c.name) existing.name = c.name;
+          }
+        }
+      }
+    } catch (e) { /* ignore */ }
+
+    // Convertir en tableau (exclure NPC/PVE/operators/NUE/war)
+    const excludeStatus = new Set(["unplayable", "operator", "nue", "war"]);
+    allCharsLoaded = Object.entries(chars)
+      .filter(([id, c]) => !excludeStatus.has(c.status) && !id.startsWith("PVE_") && !id.startsWith("NUE"))
+      .map(([id, c]) => ({
+        id,
+        name: c.name || id,
+        portrait: c.portrait || null,
+        traits: c.traits || [],
+        status: c.status || "unknown",
+        isNew: !charsLocalFileIds.has(id.toUpperCase())
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    // Remplir le select de traits avec option "Nouveaux" en premier
+    const allTraits = new Set();
+    allCharsLoaded.forEach(c => c.traits.forEach(t => allTraits.add(t)));
+    const sortedTraits = [...allTraits].sort();
+    const newCount = allCharsLoaded.filter(c => c.isNew).length;
+    const currentFilter = charsFilterTrait.value;
+    charsFilterTrait.innerHTML = '<option value="">Tous les traits</option>' +
+      (newCount > 0 ? `<option value="__new__">Nouveaux (${newCount})</option>` : "") +
+      sortedTraits.map(t => `<option value="${t}">${t}</option>`).join("");
+    charsFilterTrait.value = currentFilter; // préserver le filtre actif
+
+    renderCharsGrid();
+  } catch (e) {
+    console.error("[Chars] Erreur chargement:", e);
+    charsGrid.innerHTML = '<div class="farm-no-results">Erreur de chargement</div>';
+  }
+}
+
+function renderCharsGrid() {
+  const search = charsSearch.value.toLowerCase().trim();
+  const trait = charsFilterTrait.value;
+
+  let filtered = allCharsLoaded;
+  if (search) {
+    const norm = search.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    filtered = filtered.filter(c => {
+      const n = c.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      return n.includes(norm) || c.id.toLowerCase().includes(norm) ||
+        c.traits.some(t => t.toLowerCase().includes(norm));
+    });
+  }
+  if (trait === "__new__") {
+    filtered = filtered.filter(c => c.isNew);
+  } else if (trait) {
+    filtered = filtered.filter(c => c.traits.includes(trait));
+  }
+
+  const newTotal = allCharsLoaded.filter(c => c.isNew).length;
+  charsCount.textContent = `${filtered.length} / ${allCharsLoaded.length}` + (newTotal > 0 ? ` (${newTotal} nouveaux)` : "");
+
+  charsGrid.innerHTML = filtered.map(c => {
+    const portraitHtml = c.portrait
+      ? `<img src="${c.portrait}" alt="${c.name}" loading="lazy">`
+      : `<div class="chars-no-portrait">?</div>`;
+    const traitsHtml = c.traits.slice(0, 6).map(t => `<span class="chars-trait">${t}</span>`).join("");
+    const newBadge = c.isNew ? '<span class="chars-new-badge">NEW</span>' : "";
+    return `<div class="chars-card${c.isNew ? ' new' : ''}">
+      ${newBadge}
+      ${portraitHtml}
+      <div class="chars-name">${c.name}</div>
+      <div class="chars-traits">${traitsHtml}</div>
+    </div>`;
+  }).join("");
+}
+
+// ═══════════════════════════════════════════════════════════
+// CRUCIBLE DEFENSE PANEL
+// ═══════════════════════════════════════════════════════════
+
+const cruciblePanel = document.getElementById("crucible-panel");
+const btnCrucible = document.getElementById("btn-crucible");
+const btnCloseCrucible = document.getElementById("btn-close-crucible");
+const crucibleLoading = document.getElementById("crucible-loading");
+const crucibleError = document.getElementById("crucible-error");
+const crucibleDefenseDiv = document.getElementById("crucible-defense");
+const crucibleAttackDiv = document.getElementById("crucible-attack");
+const crucibleList = document.getElementById("crucible-list");
+const crucibleAttackList = document.getElementById("crucible-attack-list");
+let crucibleCurrentTab = "defense";
+let crucibleAttackLoaded = false;
+
+if (btnCrucible) {
+  btnCrucible.addEventListener("click", () => {
+    cruciblePanel.classList.remove("hidden");
+    cruciblePanel.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (crucibleCurrentTab === "defense") {
+      loadCrucibleDefense();
+    } else {
+      loadCrucibleAttack();
+    }
+  });
+}
+if (btnCloseCrucible) {
+  btnCloseCrucible.addEventListener("click", () => cruciblePanel.classList.add("hidden"));
+}
+
+// Onglets Crucible
+document.querySelectorAll(".crucible-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".crucible-tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    crucibleCurrentTab = tab.dataset.tab;
+
+    if (crucibleCurrentTab === "defense") {
+      crucibleDefenseDiv.classList.remove("hidden");
+      crucibleAttackDiv.classList.add("hidden");
+      loadCrucibleDefense();
+    } else {
+      crucibleDefenseDiv.classList.add("hidden");
+      crucibleAttackDiv.classList.remove("hidden");
+      loadCrucibleAttack();
+    }
+  });
+});
+
+async function loadCrucibleDefense() {
+  crucibleLoading.classList.remove("hidden");
+  crucibleError.classList.add("hidden");
+  crucibleDefenseDiv.classList.add("hidden");
+
+  try {
+    // Charger les donnees personnages pour portraits et noms
+    if (!charactersData) {
+      const resp = await fetch(ext.runtime.getURL("data/characters-full.json"));
+      charactersData = await resp.json();
+    }
+
+    const res = await new Promise((resolve) => {
+      ext.runtime.sendMessage({ type: "MSF_GET_CRUCIBLE_DEFENSE" }, resolve);
+    });
+
+    crucibleLoading.classList.add("hidden");
+
+    if (res.error) throw new Error(res.error);
+
+    console.log("[Crucible] Total entries:", res.data.length);
+    if (Array.isArray(res.data) && res.data.length > 0) {
+      // Log 3 premiers entries complets pour comprendre la structure
+      for (let i = 0; i < Math.min(3, res.data.length); i++) {
+        console.log(`[Crucible] Entry #${i}:`, JSON.stringify(res.data[i], null, 2));
+      }
+    }
+    renderCrucibleDefense(res.data);
+
+  } catch (e) {
+    crucibleLoading.classList.add("hidden");
+    crucibleError.innerHTML = `<div class="empty-state-cta"><p>${e.message}</p></div>`;
+    crucibleError.classList.remove("hidden");
+  }
+}
+
+let crucibleRawData = [];
+
+function renderCrucibleDefense(data) {
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    crucibleList.innerHTML = '<div class="no-counters">Aucune donnee Crucible disponible</div>';
+    crucibleDefenseDiv.classList.remove("hidden");
+    return;
+  }
+
+  crucibleRawData = data;
+
+  // Build character index from charactersData (id -> {name, portrait})
+  const charIndex = {};
+  const chars = charactersData?.characters || {};
+  for (const [id, c] of Object.entries(chars)) {
+    charIndex[id.toLowerCase()] = c;
+  }
+
+  // Resolve team names: squad is string[] like ["BlueMarvel", "FranklinRichards", ...]
+  const teams = inverseCounters?.teams || [];
+  data.forEach(entry => {
+    const memberIds = Array.isArray(entry.squad) ? entry.squad : [];
+    if (typeof matchSquadToTeam === "function" && teams.length > 0) {
+      const match = matchSquadToTeam(memberIds, teams);
+      entry._teamName = match ? match.team.name : "";
+    } else {
+      entry._teamName = "";
+    }
+    // Build searchable names
+    entry._memberNames = memberIds.map(id => {
+      const c = charIndex[id.toLowerCase()];
+      return c ? c.name : id;
+    });
+  });
+
+  // Sort by win rate descending
+  const sorted = [...data].sort((a, b) => {
+    const tA = (a.defends || 0) + (a.defeats || 0);
+    const tB = (b.defends || 0) + (b.defeats || 0);
+    return (tB > 0 ? b.defends / tB : 0) - (tA > 0 ? a.defends / tA : 0);
+  });
+
+  renderCrucibleList(sorted, charIndex);
+}
+
+function renderCrucibleList(entries, charIndex) {
+  let html = `
+    <div class="crucible-toolbar">
+      <input type="text" id="crucible-search" class="crucible-search" placeholder="Rechercher une equipe ou un perso...">
+      <select id="crucible-sort" class="crucible-sort">
+        <option value="winrate">Taux victoire (%)</option>
+        <option value="defends">Nb victoires (W)</option>
+        <option value="defeats">Nb defaites (L)</option>
+        <option value="total">Total combats</option>
+      </select>
+      <select id="crucible-min-fights" class="crucible-sort">
+        <option value="0">Tous</option>
+        <option value="50">50+ combats</option>
+        <option value="100" selected>100+ combats</option>
+        <option value="500">500+ combats</option>
+        <option value="1000">1000+ combats</option>
+      </select>
+    </div>
+    <div class="crucible-count">${entries.length} equipes</div>`;
+
+  html += renderCrucibleCards(entries, charIndex);
+
+  crucibleList.innerHTML = html;
+  crucibleDefenseDiv.classList.remove("hidden");
+
+  const searchInput = document.getElementById("crucible-search");
+  const sortSelect = document.getElementById("crucible-sort");
+  const minFightsSelect = document.getElementById("crucible-min-fights");
+
+  const refresh = () => {
+    const query = searchInput.value.toLowerCase().trim();
+    const sortBy = sortSelect.value;
+    const minFights = parseInt(minFightsSelect.value) || 0;
+
+    let filtered = crucibleRawData;
+
+    // Filtre minimum de combats
+    if (minFights > 0) {
+      filtered = filtered.filter(entry => ((entry.defends || 0) + (entry.defeats || 0)) >= minFights);
+    }
+
+    if (query) {
+      filtered = filtered.filter(entry => {
+        if ((entry._teamName || "").toLowerCase().includes(query)) return true;
+        return (entry._memberNames || []).some(n => n.toLowerCase().includes(query));
+      });
+    }
+
+    filtered = [...filtered].sort((a, b) => {
+      const tA = (a.defends || 0) + (a.defeats || 0);
+      const tB = (b.defends || 0) + (b.defeats || 0);
+      switch (sortBy) {
+        case "winrate": return (tB > 0 ? b.defends / tB : 0) - (tA > 0 ? a.defends / tA : 0);
+        case "defends": return (b.defends || 0) - (a.defends || 0);
+        case "defeats": return (b.defeats || 0) - (a.defeats || 0);
+        case "total": return tB - tA;
+        default: return 0;
+      }
+    });
+
+    const cardsContainer = crucibleList.querySelector(".crucible-cards");
+    const countEl = crucibleList.querySelector(".crucible-count");
+    if (cardsContainer) cardsContainer.innerHTML = renderCrucibleCards(filtered, charIndex);
+    if (countEl) countEl.textContent = `${filtered.length} equipes`;
+  };
+
+  searchInput.addEventListener("input", refresh);
+  sortSelect.addEventListener("change", refresh);
+  minFightsSelect.addEventListener("change", refresh);
+
+  // Appliquer le filtre initial (100+ combats par defaut)
+  refresh();
+}
+
+function renderCrucibleCards(entries, charIndex) {
+  let html = '<div class="crucible-cards">';
+
+  entries.forEach((entry, idx) => {
+    const memberIds = Array.isArray(entry.squad) ? entry.squad : [];
+    const defends = entry.defends || 0;
+    const defeats = entry.defeats || 0;
+    const total = defends + defeats;
+    const winRate = total > 0 ? ((defends / total) * 100).toFixed(1) : "0.0";
+    const teamName = entry._teamName || "";
+
+    // Portraits
+    let membersHtml = '<div class="crucible-members">';
+    memberIds.forEach(id => {
+      const char = charIndex[id.toLowerCase()];
+      const charName = char ? char.name : id.replace(/([A-Z])/g, " $1").trim();
+      const portrait = char?.portrait || "";
+      if (portrait) {
+        membersHtml += `<img src="${portrait}" class="crucible-member-portrait" title="${charName}" alt="${charName}">`;
+      } else {
+        membersHtml += `<div class="crucible-member-placeholder" title="${charName}">${charName.substring(0, 2)}</div>`;
+      }
+    });
+    membersHtml += "</div>";
+
+    // Win rate color
+    const rateNum = parseFloat(winRate);
+    const rateColor = rateNum >= 60 ? "#51cf66" : rateNum >= 40 ? "#fcc419" : "#ff6b6b";
+
+    html += `
+      <div class="crucible-team-card">
+        <div class="crucible-team-header">
+          <span class="crucible-team-rank">${idx + 1}</span>
+          <div class="crucible-team-title">
+            ${teamName ? `<span class="crucible-team-name">${teamName}</span>` : `<span class="crucible-team-name-auto">${(entry._memberNames || memberIds).join(", ")}</span>`}
+          </div>
+          <span class="crucible-team-winrate" style="color:${rateColor};">${winRate}%</span>
+        </div>
+        ${membersHtml}
+        <div class="crucible-team-stats">
+          <span class="crucible-stat-win">${defends} W</span>
+          <span class="crucible-stat-loss">${defeats} L</span>
+          <span class="crucible-stat-total">${total} combats</span>
+        </div>
+      </div>`;
+  });
+
+  html += "</div>";
+  return html;
+}
+
+// --- Crucible Attack ---
+let crucibleAttackRawData = [];
+
+async function loadCrucibleAttack() {
+  if (crucibleAttackLoaded && crucibleAttackRawData.length > 0) return; // deja charge
+
+  crucibleLoading.classList.remove("hidden");
+  crucibleError.classList.add("hidden");
+
+  try {
+    if (!charactersData) {
+      const resp = await fetch(ext.runtime.getURL("data/characters-full.json"));
+      charactersData = await resp.json();
+    }
+
+    const res = await new Promise((resolve) => {
+      ext.runtime.sendMessage({ type: "MSF_GET_CRUCIBLE_ATTACK" }, resolve);
+    });
+
+    crucibleLoading.classList.add("hidden");
+
+    if (res.error) throw new Error(res.error);
+
+    console.log("[Crucible] Attack data:", res.data);
+    if (Array.isArray(res.data) && res.data.length > 0) {
+      console.log("[Crucible] Attack sample:", JSON.stringify(res.data[0], null, 2));
+    }
+
+    crucibleAttackRawData = Array.isArray(res.data) ? res.data : [];
+    crucibleAttackLoaded = true;
+    renderCrucibleAttack(crucibleAttackRawData);
+
+  } catch (e) {
+    crucibleLoading.classList.add("hidden");
+    crucibleError.innerHTML = `<div class="empty-state-cta"><p>${e.message}</p></div>`;
+    crucibleError.classList.remove("hidden");
+  }
+}
+
+function renderCrucibleAttack(data) {
+  const charIndex = {};
+  const chars = charactersData?.characters || {};
+  for (const [id, c] of Object.entries(chars)) {
+    charIndex[id.toLowerCase()] = c;
+  }
+
+  if (!data || data.length === 0) {
+    crucibleAttackList.innerHTML = '<div class="no-counters">Aucune donnee d\'attaque Crucible</div>';
+    return;
+  }
+
+  // Resolve team names
+  const teams = inverseCounters?.teams || [];
+  data.forEach(entry => {
+    const memberIds = Array.isArray(entry.squad) ? entry.squad : (entry.characters || entry.tpiIds || []);
+    entry._squad = memberIds;
+    if (!entry._teamName && typeof matchSquadToTeam === "function" && teams.length > 0) {
+      const match = matchSquadToTeam(memberIds.map(m => typeof m === "string" ? m : (m.id || "")), teams);
+      entry._teamName = match ? match.team.name : "";
+    }
+    entry._memberNames = memberIds.map(id => {
+      const cid = typeof id === "string" ? id : (id.id || "");
+      const c = charIndex[cid.toLowerCase()];
+      return c ? c.name : cid.replace(/([A-Z])/g, " $1").trim();
+    });
+  });
+
+  // Build toolbar + cards
+  let html = `
+    <div class="crucible-toolbar">
+      <input type="text" id="crucible-attack-search" class="crucible-search" placeholder="Rechercher...">
+    </div>
+    <div class="crucible-count crucible-attack-count">${data.length} equipes</div>
+    <div class="crucible-cards crucible-attack-cards">`;
+
+  data.forEach((entry, idx) => {
+    html += renderCrucibleAttackCard(entry, idx, charIndex);
+  });
+  html += "</div>";
+
+  crucibleAttackList.innerHTML = html;
+
+  // Wire search
+  const searchInput = document.getElementById("crucible-attack-search");
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      const query = searchInput.value.toLowerCase().trim();
+      let filtered = data;
+      if (query) {
+        filtered = data.filter(entry =>
+          (entry._teamName || "").toLowerCase().includes(query) ||
+          (entry._memberNames || []).some(n => n.toLowerCase().includes(query))
+        );
+      }
+      const container = crucibleAttackList.querySelector(".crucible-attack-cards");
+      const countEl = crucibleAttackList.querySelector(".crucible-attack-count");
+      if (container) container.innerHTML = filtered.map((e, i) => renderCrucibleAttackCard(e, i, charIndex)).join("");
+      if (countEl) countEl.textContent = `${filtered.length} equipes`;
+    });
+  }
+}
+
+function renderCrucibleAttackCard(entry, idx, charIndex) {
+  const memberIds = entry._squad || entry.squad || [];
+  const teamName = entry._teamName || "";
+
+  // Detect fields — format might differ from defense
+  const defends = entry.defends || entry.wins || 0;
+  const defeats = entry.defeats || entry.losses || 0;
+  const total = defends + defeats;
+  const winRate = total > 0 ? ((defends / total) * 100).toFixed(1) : null;
+  const score = entry.score || entry.rank || null;
+
+  let membersHtml = '<div class="crucible-members">';
+  memberIds.forEach(id => {
+    const cid = typeof id === "string" ? id : (id.id || id.characterId || "");
+    const char = charIndex[cid.toLowerCase()];
+    const charName = char ? char.name : cid.replace(/([A-Z])/g, " $1").trim();
+    const portrait = char?.portrait || "";
+    if (portrait) {
+      membersHtml += `<img src="${portrait}" class="crucible-member-portrait" title="${charName}">`;
+    } else {
+      membersHtml += `<div class="crucible-member-placeholder" title="${charName}">${charName.substring(0, 2)}</div>`;
+    }
+  });
+  membersHtml += "</div>";
+
+  const rateColor = winRate ? (parseFloat(winRate) >= 60 ? "#51cf66" : parseFloat(winRate) >= 40 ? "#fcc419" : "#ff6b6b") : "#888";
+
+  let statsHtml = "";
+  if (winRate) {
+    statsHtml = `<div class="crucible-team-stats">
+      <span class="crucible-stat-win">${defends} W</span>
+      <span class="crucible-stat-loss">${defeats} L</span>
+      <span class="crucible-stat-total">${total} combats</span>
+    </div>`;
+  } else if (score != null) {
+    statsHtml = `<div class="crucible-team-stats"><span>Score: ${score}</span></div>`;
+  }
+
+  return `
+    <div class="crucible-team-card" style="border-left-color:#00d4ff;">
+      <div class="crucible-team-header">
+        <span class="crucible-team-rank" style="background:#00d4ff;">${idx + 1}</span>
+        <div class="crucible-team-title">
+          ${teamName ? `<span class="crucible-team-name">${teamName}</span>` : `<span class="crucible-team-name-auto">${(entry._memberNames || []).join(", ")}</span>`}
+        </div>
+        ${winRate ? `<span class="crucible-team-winrate" style="color:${rateColor};">${winRate}%</span>` : ""}
+      </div>
+      ${membersHtml}
+      ${statsHtml}
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// ALLIANCE PANEL
+// ═══════════════════════════════════════════════════════════
+
+const alliancePanel = document.getElementById("alliance-panel");
+const btnAlliance = document.getElementById("btn-alliance");
+const btnCloseAlliance = document.getElementById("btn-close-alliance");
+const allianceLoading = document.getElementById("alliance-loading");
+const allianceError = document.getElementById("alliance-error");
+const allianceCardDiv = document.getElementById("alliance-card");
+const allianceMembersDiv = document.getElementById("alliance-members");
+const allianceMembersList = document.getElementById("alliance-members-list");
+const allianceSortSelect = document.getElementById("alliance-sort");
+
+let allianceData = { card: null, members: [] };
+
+btnAlliance.addEventListener("click", async () => {
+  alliancePanel.classList.remove("hidden");
+  alliancePanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (!allianceData.card) {
+    await loadAlliance();
+  }
+});
+
+btnCloseAlliance.addEventListener("click", () => {
+  alliancePanel.classList.add("hidden");
+});
+
+allianceSortSelect.addEventListener("change", () => {
+  renderAllianceMembers(allianceData.members);
+});
+
+async function loadAlliance() {
+  allianceLoading.classList.remove("hidden");
+  allianceError.classList.add("hidden");
+  allianceCardDiv.classList.add("hidden");
+  allianceMembersDiv.classList.add("hidden");
+
+  try {
+    // Charger card + members en parallele
+    const [cardRes, membersRes] = await Promise.all([
+      ext.runtime.sendMessage({ type: "MSF_GET_ALLIANCE_CARD" }),
+      ext.runtime.sendMessage({ type: "MSF_GET_ALLIANCE_MEMBERS" })
+    ]);
+
+    allianceLoading.classList.add("hidden");
+
+    if (cardRes.error) throw new Error(cardRes.error);
+    if (membersRes.error) throw new Error(membersRes.error);
+
+    allianceData.card = cardRes.data;
+    allianceData.members = Array.isArray(membersRes.data) ? membersRes.data : [];
+    console.log("[Alliance] Card:", JSON.stringify(allianceData.card, null, 2));
+    if (allianceData.members.length > 0) console.log("[Alliance] Member sample:", JSON.stringify(allianceData.members[0], null, 2));
+
+    renderAllianceCard(allianceData.card);
+    renderAllianceMembers(allianceData.members);
+
+  } catch (e) {
+    allianceLoading.classList.add("hidden");
+    allianceError.innerHTML = `<div class="empty-state-cta"><p>${e.message}</p><button class="btn-open-api">Connecter mon compte</button></div>`;
+    allianceError.classList.remove("hidden");
+    // Wire le bouton API
+    allianceError.querySelector(".btn-open-api")?.addEventListener("click", () => {
+      alliancePanel.classList.add("hidden");
+      document.getElementById("api-panel")?.classList.remove("hidden");
+      document.getElementById("api-panel")?.scrollIntoView({ behavior: "smooth" });
+    });
+  }
+}
+
+function renderAllianceCard(card) {
+  if (!card) return;
+
+  const level = card.level?.current || card.level || "?";
+  const league = card.warLeague?.name || "?";
+  const trophies = card.warTrophies ?? "?";
+  const zone = card.warZone || "?";
+  const zoneLabel = { 1: "1h GMT", 2: "7h GMT", 3: "13h GMT", 4: "19h GMT" }[zone] || zone;
+
+  let html = `
+    <div class="alliance-card-info">
+      ${card.icon ? `<img src="${card.icon}" class="alliance-icon" alt="">` : ""}
+      <div class="alliance-card-details">
+        <div class="alliance-name">${card.name || "Alliance"}</div>
+        <div class="alliance-meta">Niveau ${level} · ${card.type === "private" ? "Privee" : "Publique"}</div>
+        ${card.description ? `<div class="alliance-desc">${card.description}</div>` : ""}
+      </div>
+    </div>
+    <div class="alliance-stats">
+      <div class="alliance-stat"><span class="alliance-stat-value">${league}</span><span class="alliance-stat-label">Ligue War</span></div>
+      <div class="alliance-stat"><span class="alliance-stat-value">${formatNumber(trophies)}</span><span class="alliance-stat-label">Trophees</span></div>
+      <div class="alliance-stat"><span class="alliance-stat-value">Zone ${zone}</span><span class="alliance-stat-label">${zoneLabel}</span></div>
+    </div>`;
+
+  allianceCardDiv.innerHTML = html;
+  allianceCardDiv.classList.remove("hidden");
+}
+
+function getMemberLevel(card) {
+  if (!card) return 0;
+  if (typeof card.level === "number") return card.level;
+  if (card.level?.current) return card.level.current;
+  if (card.level?.completedTier) return card.level.completedTier;
+  if (card.completedTier) return card.completedTier;
+  return 0;
+}
+
+function renderAllianceMembers(members) {
+  if (!members || members.length === 0) {
+    allianceMembersList.innerHTML = '<div class="no-counters">Aucun membre trouve</div>';
+    allianceMembersDiv.classList.remove("hidden");
+    return;
+  }
+
+  const sortBy = allianceSortSelect.value;
+
+  const sorted = [...members].sort((a, b) => {
+    const ca = a.card || {};
+    const cb = b.card || {};
+    switch (sortBy) {
+      case "tcp": return (cb.tcp || 0) - (ca.tcp || 0);
+      case "stp": return (cb.stp || 0) - (ca.stp || 0);
+      case "level": return (getMemberLevel(cb) - getMemberLevel(ca));
+      case "name": return (ca.name || "").localeCompare(cb.name || "");
+      case "collected": return (cb.charactersCollected || 0) - (ca.charactersCollected || 0);
+      case "mvp": return (cb.warMvp || 0) - (ca.warMvp || 0);
+      default: return (cb.tcp || 0) - (ca.tcp || 0);
+    }
+  });
+
+  const rankColors = { leader: "#fcc419", captain: "#845ef7", member: "#8b949e" };
+  const rankLabels = { leader: "Leader", captain: "Capitaine", member: "Membre" };
+
+  let html = `<div class="alliance-member-count">${sorted.length} membres</div>`;
+
+  sorted.forEach((m, i) => {
+    const c = m.card || {};
+    const rank = m.rank || "member";
+    const rankColor = rankColors[rank] || "#8b949e";
+    const level = c.level?.current || c.level?.completedTier || c.level || c.completedTier || "?";
+
+    html += `
+      <div class="alliance-member-row">
+        <div class="alliance-member-rank" style="color:${rankColor};">${i + 1}</div>
+        <div class="alliance-member-info">
+          <div class="alliance-member-name">
+            ${c.name || "???"}
+            <span class="alliance-member-badge" style="background:${rankColor}22;color:${rankColor};">${rankLabels[rank] || rank}</span>
+          </div>
+          <div class="alliance-member-meta">Nv.${level} · ${formatNumber(c.tcp || 0)} TCP · ${formatNumber(c.stp || 0)} STP</div>
+        </div>
+        <div class="alliance-member-extra">
+          <span title="Personnages collectes">${c.charactersCollected || 0} persos</span>
+          ${c.warMvp ? `<span title="War MVP">MVP x${c.warMvp}</span>` : ""}
+        </div>
+      </div>`;
+  });
+
+  allianceMembersList.innerHTML = html;
+  allianceMembersDiv.classList.remove("hidden");
+}
+
+// ============================================
 // Bouton Exporter
 // ============================================
 
@@ -3494,11 +4448,15 @@ btnExport.addEventListener("click", async () => {
   try {
     const stored = await storageGet(["msfZonesConfig", "msfPortraits"]);
 
+    const defStored = await storageGet(["msfDefenseTagged", "msfBackground"]);
+
     const exportData = {
-      version: 1,
+      version: 2,
       exportDate: new Date().toISOString(),
       zones: stored.msfZonesConfig || null,
-      portraits: stored.msfPortraits || {}
+      portraits: stored.msfPortraits || {},
+      defenseTagged: defStored.msfDefenseTagged || [],
+      background: defStored.msfBackground || ""
     };
 
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
@@ -3543,9 +4501,19 @@ importFile.addEventListener("change", async (e) => {
       await storageSet({ msfPortraits: merged });
     }
 
+    if (data.defenseTagged && Array.isArray(data.defenseTagged)) {
+      await storageSet({ msfDefenseTagged: data.defenseTagged });
+    }
+
+    if (data.background) {
+      await storageSet({ msfBackground: data.background });
+      applyBackground(data.background);
+    }
+
     const zoneCount = data.zones ? data.zones.slots.length : 0;
     const portraitCount = data.portraits ? Object.keys(data.portraits).length : 0;
-    setStatus(`Importe: ${zoneCount} slots, ${portraitCount} portraits`, "success");
+    const defCount = data.defenseTagged ? data.defenseTagged.length : 0;
+    setStatus(`Importe: ${zoneCount} slots, ${portraitCount} portraits${defCount ? ", " + defCount + " defenses" : ""}`, "success");
 
     // Reset le file input
     importFile.value = "";
@@ -4302,6 +5270,7 @@ if (btnClearToken) {
     }
   });
 }
+
 
 /**
  * Convertit un ID API en nom lisible
@@ -6633,6 +7602,101 @@ document.getElementById("import-learned-file").addEventListener("change", async 
     setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
   }
 });
+
+// ===== BACKGROUND PICKER =====
+const BG_IMAGES = [
+  "AdamWarlock-mobile.jpg",
+  "AgentVenom-mobile.jpg",
+  "Annihilus-mobile.jpg",
+  "AnnihilusV2-mobile.jpg",
+  "BlackBolt-mobile.jpg",
+  "Blade-mobile.jpg",
+  "Blastaar-mobile.jpg",
+  "CaptainAmericaWW2-mobile.jpg",
+  "CaptainMarvel-mobile.jpg",
+  "Cyclops-mobile.jpg",
+  "Darkstar-mobile.jpg",
+  "Deadpool-PoolParty-mobile.jpg",
+  "JeffTheLandShark-mobile.jpg",
+  "Odin-mobile.jpg",
+  "Pandapool-mobile.jpg",
+  "RedSkull-mobile.jpg",
+  "SpiderManNoir-mobile.jpg",
+  "SquirrelGirl-mobile.jpg",
+  "ZombieScarletWitch-mobile.jpg"
+];
+
+function bgImageUrl(filename) {
+  return ext.runtime.getURL(`data/backgrounds/${filename}`);
+}
+
+function bgLabelFromFilename(name) {
+  return name.replace("-mobile.jpg", "").replace(/([A-Z])/g, " $1").replace(/- /g, " ").trim();
+}
+
+function applyBackground(filename) {
+  if (!filename) {
+    document.body.classList.remove("has-bg-image");
+    document.body.style.removeProperty("--bg-image");
+    return;
+  }
+  const url = bgImageUrl(filename);
+  document.body.classList.add("has-bg-image");
+  document.body.style.setProperty("--bg-image", `url('${url}')`);
+}
+
+// Load saved background on startup
+(async function initBackground() {
+  const { msfBackground } = await storageGet("msfBackground");
+  if (msfBackground) applyBackground(msfBackground);
+})();
+
+// Background picker UI
+(function initBgPicker() {
+  const btnOpen = document.getElementById("btn-bg-picker");
+  const overlay = document.getElementById("bg-picker-overlay");
+  const btnClose = document.getElementById("btn-bg-picker-close");
+  const grid = document.getElementById("bg-picker-grid");
+  if (!btnOpen || !overlay || !grid) return;
+
+  btnOpen.addEventListener("click", async () => {
+    const { msfBackground } = await storageGet("msfBackground");
+    grid.innerHTML = "";
+
+    // "None" option
+    const noneItem = document.createElement("div");
+    noneItem.className = "bg-picker-item bg-none" + (!msfBackground ? " active" : "");
+    noneItem.innerHTML = `<i data-lucide="x"></i><span>Aucun</span>`;
+    noneItem.addEventListener("click", async () => {
+      await storageSet({ msfBackground: "" });
+      applyBackground(null);
+      overlay.classList.add("hidden");
+    });
+    grid.appendChild(noneItem);
+
+    // Image options
+    for (const file of BG_IMAGES) {
+      const item = document.createElement("div");
+      item.className = "bg-picker-item" + (msfBackground === file ? " active" : "");
+      item.innerHTML = `<img src="${bgImageUrl(file)}" loading="lazy" alt="${bgLabelFromFilename(file)}"><div class="bg-picker-label">${bgLabelFromFilename(file)}</div>`;
+      item.addEventListener("click", async () => {
+        await storageSet({ msfBackground: file });
+        applyBackground(file);
+        overlay.classList.add("hidden");
+      });
+      grid.appendChild(item);
+    }
+
+    overlay.classList.remove("hidden");
+    // Re-init Lucide for the X icon in "none" tile
+    if (typeof lucide !== "undefined") lucide.createIcons({ attrs: { class: "" } });
+  });
+
+  btnClose.addEventListener("click", () => overlay.classList.add("hidden"));
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) overlay.classList.add("hidden");
+  });
+})();
 
 // ===== LUCIDE ICONS INITIALIZATION =====
 // Initialise les icônes Lucide après le chargement du DOM

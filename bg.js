@@ -324,6 +324,14 @@ ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true;
   }
 
+  // Récupérer tous les personnages du jeu depuis l'API
+  if (msg.type === "MSF_GET_CHARACTERS") {
+    handleGetCharacters().then(sendResponse).catch(e => {
+      sendResponse({ error: e.message });
+    });
+    return true;
+  }
+
   // Debug: vérifier le token capturé
   if (msg.type === "MSF_CHECK_TOKEN") {
     ext.storage.local.get(["msfApiToken", "msfTokenCapturedAt", "msfTokenAutoCapture", "msfTokenType", "msfTokenExpiresAt", "msfRefreshToken"]).then(stored => {
@@ -379,6 +387,118 @@ ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   // Récupérer les events en cours
   if (msg.type === "MSF_GET_EVENTS") {
     handleGetEvents().then(sendResponse).catch(e => {
+      sendResponse({ error: e.message });
+    });
+    return true;
+  }
+
+  if (msg.type === "MSF_GET_ALLIANCE_CARD") {
+    handleAllianceRequest("/player/v1/alliance/card").then(sendResponse).catch(e => {
+      sendResponse({ error: e.message });
+    });
+    return true;
+  }
+
+  if (msg.type === "MSF_GET_ALLIANCE_MEMBERS") {
+    handleAllianceRequest("/player/v1/alliance/members").then(sendResponse).catch(e => {
+      sendResponse({ error: e.message });
+    });
+    return true;
+  }
+
+  // Crucible defense stats (requires auth)
+  if (msg.type === "MSF_GET_CRUCIBLE_DEFENSE") {
+    handlePlayerRequest("/game/v1/analysis/crucible/defense").then(sendResponse).catch(e => {
+      sendResponse({ error: e.message });
+    });
+    return true;
+  }
+
+  // Crucible attack stats — try offense endpoint, fallback to teamOrder/crucible
+  if (msg.type === "MSF_GET_CRUCIBLE_ATTACK") {
+    (async () => {
+      try {
+        const res = await handlePlayerRequest("/game/v1/analysis/crucible/offense");
+        sendResponse(res);
+      } catch (e) {
+        console.log("[BG] crucible/offense failed:", e.message, "— trying teamOrder/crucible...");
+        try {
+          const res = await handlePlayerRequest("/game/v1/analysis/teamOrder/crucible");
+          sendResponse(res);
+        } catch (e2) {
+          console.log("[BG] teamOrder/crucible failed:", e2.message, "— trying gameRequest...");
+          try {
+            const res = await handleGameRequest("/game/v1/analysis/teamOrder/crucible");
+            sendResponse(res);
+          } catch (e3) {
+            sendResponse({ error: e3.message });
+          }
+        }
+      }
+    })();
+    return true;
+  }
+
+  // Player offers
+  if (msg.type === "MSF_GET_OFFERS") {
+    handlePlayerRequest("/player/v1/offers").then(sendResponse).catch(e => {
+      sendResponse({ error: e.message });
+    });
+    return true;
+  }
+
+  // Time Heists (all)
+  if (msg.type === "MSF_GET_TIME_HEISTS") {
+    handleGameRequest("/game/v1/timeHeists").then(sendResponse).catch(e => {
+      sendResponse({ error: e.message });
+    });
+    return true;
+  }
+
+  // Time Heist detail
+  if (msg.type === "MSF_GET_TIME_HEIST") {
+    handleGameRequest(`/game/v1/timeHeists/${msg.itemId}`).then(sendResponse).catch(e => {
+      sendResponse({ error: e.message });
+    });
+    return true;
+  }
+
+  // Time Heist player TCP
+  if (msg.type === "MSF_GET_TIME_HEIST_TCP") {
+    handlePlayerRequest(`/player/v1/timeHeists/${msg.itemId}/tcp`).then(sendResponse).catch(e => {
+      sendResponse({ error: e.message });
+    });
+    return true;
+  }
+
+  // Calendar rewards
+  if (msg.type === "MSF_GET_CALENDAR_REWARDS") {
+    handleGameRequest(`/game/v1/calendarRewards/${msg.itemId}`).then(sendResponse).catch(e => {
+      sendResponse({ error: e.message });
+    });
+    return true;
+  }
+
+  // Upgrade tokens (all)
+  if (msg.type === "MSF_GET_UPGRADE_TOKENS") {
+    handleGameRequest("/game/v1/upgradeTokens").then(sendResponse).catch(e => {
+      sendResponse({ error: e.message });
+    });
+    return true;
+  }
+
+  // Upgrade token detail
+  if (msg.type === "MSF_GET_UPGRADE_TOKEN") {
+    handleGameRequest(`/game/v1/upgradeTokens/${msg.templateId}`).then(sendResponse).catch(e => {
+      sendResponse({ error: e.message });
+    });
+    return true;
+  }
+
+  // Team order analysis (crucible, war, raids, etc.)
+  if (msg.type === "MSF_GET_TEAM_ORDER") {
+    const tab = msg.tabId ? `/${msg.tabId}` : "";
+    handleGameRequest(`/game/v1/analysis/teamOrder${tab}`).then(sendResponse).catch(e => {
       sendResponse({ error: e.message });
     });
     return true;
@@ -834,4 +954,199 @@ async function handleGetRoster() {
     rosterFull: rosterData, // Avec power, stars, etc.
     count: characterIds.length
   };
+}
+
+/**
+ * Requete generique pour les endpoints player (necessite Bearer token)
+ */
+async function handlePlayerRequest(endpoint) {
+  const token = await getValidToken();
+  const authHeader = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+
+  const url = `https://api.marvelstrikeforce.com${endpoint}`;
+  const headers = {
+    "x-api-key": MSF_OAUTH.apiKey,
+    "Authorization": authHeader,
+    "Accept": "application/json"
+  };
+
+  console.log(`[BG] Player API: ${endpoint}...`);
+  const response = await fetch(url, { headers });
+
+  if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      throw new Error(`Acces refuse (${response.status}). Verifiez vos permissions OAuth.`);
+    }
+    throw new Error(`Erreur API: ${response.status}`);
+  }
+
+  const json = await response.json();
+  console.log(`[BG] Player API ${endpoint}:`, json);
+  return { success: true, data: json.data || json };
+}
+
+/**
+ * Requete generique pour les endpoints game (x-api-key seul, pas besoin de Bearer)
+ */
+async function handleGameRequest(endpoint) {
+  const url = `https://api.marvelstrikeforce.com${endpoint}`;
+  const headers = {
+    "x-api-key": MSF_OAUTH.apiKey,
+    "Accept": "application/json"
+  };
+
+  console.log(`[BG] Game API: ${endpoint}...`);
+  const response = await fetch(url, { headers });
+
+  if (!response.ok) {
+    throw new Error(`Erreur API: ${response.status}`);
+  }
+
+  const json = await response.json();
+  console.log(`[BG] Game API ${endpoint}:`, json);
+  return { success: true, data: json.data || json };
+}
+
+// Alias pour compatibilite
+const handleAllianceRequest = handlePlayerRequest;
+
+/**
+ * Récupère tous les personnages du jeu depuis l'API
+ * Teste plusieurs endpoints et retourne le premier qui fonctionne
+ */
+async function handleGetCharacters() {
+  const stored = await ext.storage.local.get(["msfApiToken", "msfTokenType", "msfRefreshToken", "msfAppVersion"]);
+
+  if (!stored.msfApiToken) {
+    throw new Error("Token non disponible");
+  }
+
+  const appVersion = stored.msfAppVersion || "9.6.0-hp2";
+  const results = [];
+
+  // Endpoints à tester selon le type de token
+  if (stored.msfTokenType === "titan") {
+    const headers = {
+      "x-titan-token": stored.msfApiToken,
+      "x-app-version": appVersion,
+      "Accept": "application/json"
+    };
+
+    const endpoints = [
+      "https://api-prod.marvelstrikeforce.com/services/api/characters",
+      "https://api-prod.marvelstrikeforce.com/services/api/getCharacters",
+      "https://api-prod.marvelstrikeforce.com/services/api/getAllCharacters",
+      "https://api-prod.marvelstrikeforce.com/services/api/getGameData"
+    ];
+
+    for (const url of endpoints) {
+      try {
+        const res = await fetch(url, { headers });
+        if (res.ok) {
+          const data = await res.json();
+          results.push({ url, data, status: res.status });
+          console.log(`[BG] Characters endpoint OK: ${url}`);
+        } else {
+          results.push({ url, error: `${res.status} ${res.statusText}`, status: res.status });
+        }
+      } catch (e) {
+        results.push({ url, error: e.message });
+      }
+    }
+  } else {
+    const token = await getValidToken();
+    const headers = {
+      "x-api-key": MSF_OAUTH.apiKey,
+      "Authorization": `Bearer ${token}`,
+      "Accept": "application/json"
+    };
+
+    // Requête paginée sur /game/v1/characters (réponse trop grosse en une fois)
+    const baseUrl = "https://api.marvelstrikeforce.com/game/v1/characters";
+    const perPage = 100;
+    let page = 1;
+    let allChars = [];
+    let totalExpected = null;
+
+    while (true) {
+      const url = `${baseUrl}?page=${page}&perPage=${perPage}`;
+      try {
+        const res = await fetch(url, { headers });
+        if (!res.ok) {
+          results.push({ url, error: `${res.status}`, status: res.status });
+          break;
+        }
+        const data = await res.json();
+        results.push({ url, status: res.status });
+
+        if (data.meta && data.meta.perTotal) {
+          totalExpected = data.meta.perTotal;
+        }
+
+        const chars = extractCharacterList(data);
+        if (chars && chars.length > 0) {
+          allChars = allChars.concat(chars);
+          console.log(`[BG] Page ${page}: ${chars.length} persos (total: ${allChars.length})`);
+        }
+
+        // Pas de données supplémentaires
+        if (!chars || chars.length < perPage) break;
+        page++;
+        if (page > 10) break; // sécurité
+      } catch (e) {
+        results.push({ url, error: e.message });
+        break;
+      }
+    }
+
+    if (allChars.length > 0) {
+      characters = allChars;
+      source = baseUrl;
+    }
+  }
+
+  const endpointsSummary = results.map(r => ({
+    url: r.url, status: r.status, error: r.error
+  }));
+
+  // Stocker dans chrome.storage
+  if (characters && characters.length > 0) {
+    await ext.storage.local.set({ msfApiCharacters: characters });
+    console.log(`[BG] ${characters.length} personnages stockés dans msfApiCharacters`);
+  }
+
+  return {
+    success: !!characters,
+    source,
+    count: characters ? characters.length : 0,
+    pages: results.length,
+    endpoints: endpointsSummary
+  };
+}
+
+/**
+ * Extrait une liste de personnages depuis une réponse API quelconque
+ */
+function extractCharacterList(data) {
+  let rawList = null;
+
+  if (Array.isArray(data)) rawList = data;
+  else if (Array.isArray(data.data)) rawList = data.data;
+  else if (data.data && Array.isArray(data.data.roster)) rawList = data.data.roster;
+  else if (data.data && Array.isArray(data.data.characters)) rawList = data.data.characters;
+  else if (Array.isArray(data.characters)) rawList = data.characters;
+  else if (data.characters && typeof data.characters === "object") {
+    rawList = Object.entries(data.characters).map(([id, v]) => ({ id, ...v }));
+  }
+  else if (Array.isArray(data.items)) rawList = data.items;
+
+  if (!rawList || rawList.length === 0) return null;
+
+  return rawList.map(entry => ({
+    id: entry.id || entry.characterId || entry.charId || "?",
+    name: entry.name || entry.displayName || null,
+    portrait: entry.portrait || entry.portraitUrl || entry.icon || entry.image || null,
+    traits: entry.traits || entry.tags || entry.factions || [],
+    status: entry.status || entry.state || "unknown"
+  }));
 }

@@ -14,7 +14,19 @@
         <i data-lucide="shield" style="color:#51cf66;"></i>
       </h1>
       <button id="btn-help" class="btn-help" title="Aide / Revoir l'introduction">?</button>
+      <button id="btn-bg-picker" class="btn-bg-picker" title="Changer le fond d'écran"><i data-lucide="image" style="width:14px;height:14px;"></i></button>
     </header>
+
+    <!-- Background picker overlay -->
+    <div id="bg-picker-overlay" class="bg-picker-overlay hidden">
+      <div class="bg-picker-panel">
+        <div class="bg-picker-header">
+          <span>Fond d'écran</span>
+          <button id="btn-bg-picker-close" class="btn-close">X</button>
+        </div>
+        <div id="bg-picker-grid" class="bg-picker-grid"></div>
+      </div>
+    </div>
 
     <section id="welcome-banner" class="hidden">
       <div class="wizard-progress">
@@ -71,6 +83,9 @@
       <button id="btn-import" class="btn-small" title="Importer une config"><i data-lucide="upload" class="btn-icon"></i><span>Import</span></button>
       <button id="btn-export-learned-global" class="btn-small" title="Exporter les portraits appris (fichier JSON)"><i data-lucide="share" class="btn-icon"></i><span>Portraits</span></button>
       <label for="import-learned-file" id="btn-import-learned-global" class="btn-small" title="Importer des portraits appris (fichier JSON)" style="cursor:pointer;"><i data-lucide="download-cloud" class="btn-icon"></i><span>Imp. Port.</span></label>
+      <button id="btn-chars" class="btn-small" title="Tous les personnages du jeu"><i data-lucide="users" class="btn-icon"></i><span>Persos</span></button>
+      <button id="btn-crucible" class="btn-small" title="Méta défense Crucible"><i data-lucide="trophy" class="btn-icon"></i><span>Crucible</span></button>
+      <button id="btn-alliance" class="btn-small" title="Infos et membres de l'alliance"><i data-lucide="shield" class="btn-icon"></i><span>Alliance</span></button>
       <button id="btn-api" class="btn-small" title="Configuration API"><i data-lucide="key" class="btn-icon"></i><span>API</span></button>
       <button id="btn-settings" class="btn-small" title="Synchronisation counters"><i data-lucide="refresh-cw" class="btn-icon"></i><span>Sync</span></button>
       <input type="file" id="import-file" accept=".json" style="display:none">
@@ -153,6 +168,14 @@
         <div class="events-section-title">Personnages / Équipes pour les Raids</div>
         <div id="raid-teams-list" class="raid-teams-list"></div>
       </div>
+      <div id="raid-guide-section">
+        <div class="events-section-title" style="margin-top:12px;">
+          Guide Raids
+          <select id="raid-guide-select" style="margin-left:8px;font-size:11px;background:#16162a;color:#fff;border:1px solid #2d3e56;border-radius:4px;padding:2px 6px;">
+          </select>
+        </div>
+        <div id="raid-guide-list" class="raid-guide-list"></div>
+      </div>
     </section>
 
     <section id="defense-panel" class="hidden">
@@ -163,6 +186,7 @@
       <div id="defense-war-squads" class="defense-war-squads hidden">
         <div class="defense-section-title">
           <span>Mes equipes War</span>
+          <span id="defense-counter" class="defense-counter"></span>
           <button id="btn-refresh-squads" class="btn-refresh-squads" title="Rafraichir depuis le jeu">&#x1F504;</button>
         </div>
         <div id="defense-war-list" class="defense-war-list"></div>
@@ -206,6 +230,66 @@
       </div>
       <div id="farm-roster-mode" class="hidden">
         <div id="farm-roster-results" class="farm-advisor-results"></div>
+      </div>
+    </section>
+
+    <section id="chars-panel" class="hidden">
+      <div class="sync-header">
+        <span>Tous les personnages</span>
+        <button id="btn-close-chars" class="btn-close">X</button>
+      </div>
+      <div class="chars-toolbar">
+        <input type="text" id="chars-search" class="sync-input" placeholder="Rechercher un personnage ou trait...">
+        <select id="chars-filter-trait" class="chars-select">
+          <option value="">Tous les traits</option>
+        </select>
+        <button id="btn-chars-api" class="btn-test" title="Synchroniser depuis l'API MSF">🔄 API</button>
+        <span id="chars-count" class="chars-count"></span>
+      </div>
+      <div id="chars-status" class="chars-status hidden"></div>
+      <div id="chars-grid" class="chars-grid"></div>
+    </section>
+
+    <section id="crucible-panel" class="hidden">
+      <div class="sync-header">
+        <span>Crucible — Méta</span>
+        <button id="btn-close-crucible" class="btn-close">X</button>
+      </div>
+      <div class="crucible-tabs">
+        <button class="crucible-tab active" data-tab="defense">Defense</button>
+        <button class="crucible-tab" data-tab="attack">Attaque</button>
+      </div>
+      <div id="crucible-loading" class="events-loading hidden">Chargement...</div>
+      <div id="crucible-error" class="events-error hidden"></div>
+      <div id="crucible-defense" class="crucible-tab-content">
+        <div id="crucible-list"></div>
+      </div>
+      <div id="crucible-attack" class="crucible-tab-content hidden">
+        <div id="crucible-attack-list"></div>
+      </div>
+    </section>
+
+    <section id="alliance-panel" class="hidden">
+      <div class="sync-header">
+        <span>Alliance</span>
+        <button id="btn-close-alliance" class="btn-close">X</button>
+      </div>
+      <div id="alliance-loading" class="events-loading hidden">Chargement...</div>
+      <div id="alliance-error" class="events-error hidden"></div>
+      <div id="alliance-card" class="hidden"></div>
+      <div id="alliance-members" class="hidden">
+        <div class="events-section-title" style="margin-top:12px;">
+          Membres
+          <select id="alliance-sort" style="margin-left:8px;font-size:11px;background:#16162a;color:#fff;border:1px solid #2d3e56;border-radius:4px;padding:2px 6px;">
+            <option value="tcp">TCP</option>
+            <option value="stp">STP</option>
+            <option value="level">Niveau</option>
+            <option value="name">Nom</option>
+            <option value="collected">Persos</option>
+            <option value="mvp">War MVP</option>
+          </select>
+        </div>
+        <div id="alliance-members-list"></div>
       </div>
     </section>
 

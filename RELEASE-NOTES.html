@@ -88,9 +88,51 @@
   <a href="popup/popup.html" class="btn-back">← Retour</a>
   <h1>MSF Counter - Notes de Version</h1>
 
-  <h2>Version 1.3</h2>
+  <h2>Version 1.4</h2>
 
-  <h3>Fonctionnalites Principales</h3>
+  <h3>Nouveautes</h3>
+
+  <div class="section">
+    <h4>Panneau Personnages</h4>
+    <ul>
+      <li><strong>Catalogue complet</strong> : tous les personnages du jeu avec portraits, traits et recherche</li>
+      <li><strong>Sync API</strong> : charger les personnages depuis l'API MSF (pagination auto, 487+ persos)</li>
+      <li><strong>Filtre Nouveaux</strong> : badge vert sur les personnages non encore dans le fichier local</li>
+      <li><strong>Filtre par trait</strong> : filtrer par equipe, origine, classe, etc.</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h4>Guide Raids</h4>
+    <ul>
+      <li><strong>Guide Thunderstrike</strong> : equipes recommandees par node (10 nodes)</li>
+      <li><strong>Portraits des membres</strong> pour chaque equipe</li>
+      <li><strong>Notes de substitution</strong> quand un perso est remplace</li>
+      <li>Format extensible pour ajouter d'autres raids</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h4>Panneau Alliance</h4>
+    <ul>
+      <li><strong>Infos alliance</strong> : nom, niveau, trophees, puissance totale</li>
+      <li><strong>Liste des membres</strong> avec role, niveau, TCP et derniere connexion</li>
+      <li><strong>Resultats War</strong> : historique des guerres d'alliance</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h4>Ameliorations</h4>
+    <ul>
+      <li><strong>Lucide Icons</strong> : nouvelle iconographie moderne dans toute la toolbar</li>
+      <li><strong>Phase milestone</strong> : correction affichage (10/2 → 10/13) pour les events cycliques</li>
+      <li><strong>Scan Salle</strong> : detection portraits vaincus (croix rouge), fix <code>loadImage</code></li>
+      <li><strong>Deploiement GitHub Releases</strong> : script automatise avec scan de securite</li>
+      <li><strong>Tri counters</strong> : par confiance decroissante + sync dynamique des personnages</li>
+    </ul>
+  </div>
+
+  <h3>Fonctionnalites Existantes</h3>
 
   <div class="section">
     <h4>Events &amp; Milestones</h4>
@@ -168,12 +210,27 @@
       <li><strong>Mode fenetre</strong> detachable pour garder l'extension visible</li>
       <li><strong>Multi-langue</strong> (FR/EN)</li>
       <li>Theme sombre adapte au jeu</li>
+      <li><strong>Lucide Icons</strong> dans toute la toolbar</li>
     </ul>
   </div>
 
   <hr>
 
   <h2>Changelog</h2>
+
+  <div class="section">
+    <span class="version-tag">v1.4</span>
+    <ul>
+      <li>Panneau Personnages : catalogue complet avec sync API + filtre nouveaux</li>
+      <li>Guide Raids : equipes recommandees Thunderstrike par node avec portraits</li>
+      <li>Panneau Alliance : infos, membres, resultats War via API</li>
+      <li>Lucide Icons : modernisation de l'interface</li>
+      <li>Fix phases milestones cycliques (ex: 10/13 au lieu de 10/2)</li>
+      <li>Fix scan salle : detection portraits vaincus + loadImage</li>
+      <li>Tri counters par confiance + sync dynamique personnages</li>
+      <li>Script deploy GitHub Releases avec scan securite</li>
+    </ul>
+  </div>
 
   <div class="section">
     <span class="version-tag">v1.3</span>

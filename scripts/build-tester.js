@@ -107,6 +107,49 @@ function main() {
 
   // manifest.json est copie tel quel (toutes les permissions et refs sont necessaires)
 
+  // Retirer toutes les credentials MSF du build tester
+  // Le user configurera ses propres cles via le panneau API de l'extension
+  // Seul le client secret OAuth est prive — l'API key et le client ID sont publics MSF
+  const CREDENTIALS_TO_STRIP = [
+    { find: /zJ~2rov\.SnpRkGnDWhFUqFM-u0/g, replace: "" },
+  ];
+
+  function stripCredentials(filePath) {
+    if (!fs.existsSync(filePath)) return false;
+    let content = fs.readFileSync(filePath, "utf-8");
+    let changed = false;
+    for (const { find, replace } of CREDENTIALS_TO_STRIP) {
+      if (find.test(content)) {
+        content = content.replace(find, replace);
+        changed = true;
+      }
+      find.lastIndex = 0;
+    }
+    if (changed) {
+      fs.writeFileSync(filePath, content);
+      return true;
+    }
+    return false;
+  }
+
+  // Nettoyer tous les fichiers JS/HTML du build
+  function stripDir(dir) {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name === "lib") continue; // Skip libs tierces
+        stripDir(full);
+      } else if (/\.(js|html|json)$/i.test(entry.name)) {
+        if (stripCredentials(full)) {
+          console.log(`  Nettoyage: ${path.relative(OUTPUT, full)} (credentials retirees)`);
+        }
+      }
+    }
+  }
+
+  stripDir(OUTPUT);
+
   // Modifier popup.html pour le mode tester (label + CSS pour cacher les boutons non inclus)
   const popupHtmlPath = path.join(OUTPUT, "popup", "popup.html");
   if (fs.existsSync(popupHtmlPath)) {
