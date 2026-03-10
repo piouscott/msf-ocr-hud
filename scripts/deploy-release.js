@@ -200,9 +200,72 @@ function main() {
   }
 
   console.log(`\n5. Release GitHub (tag: ${tag})...`);
+
+  const releaseBody = `## MSF Counter v${version}
+
+Browser extension for **Marvel Strike Force** — counters, events, raids, defense, farming, alliance, Crucible meta and more.
+
+Extension navigateur pour **Marvel Strike Force** — counters, events, raids, defense, farming, alliance, meta Crucible et plus.
+
+---
+
+### Installation
+
+#### Chrome / Vivaldi / Edge
+1. Download \`msf-counter.zip\` below
+2. Extract the ZIP into a folder
+3. Go to \`chrome://extensions/\` (or \`vivaldi://extensions/\`)
+4. Enable **Developer mode** (top-right toggle)
+5. Click **"Load unpacked"** and select the folder
+6. Click the MSF Counter icon in your toolbar!
+
+#### Firefox
+1. Download \`msf-counter.zip\` below
+2. Extract the ZIP into a folder
+3. Go to \`about:debugging#/runtime/this-firefox\`
+4. Click **"Load Temporary Add-on..."**
+5. Select \`manifest.json\` in the extracted folder
+
+---
+
+### Installation (Francais)
+
+#### Chrome / Vivaldi / Edge
+1. Telecharger \`msf-counter.zip\` ci-dessous
+2. Extraire le ZIP dans un dossier
+3. Aller sur \`chrome://extensions/\` (ou \`vivaldi://extensions/\`)
+4. Activer le **Mode developpeur** (bouton en haut a droite)
+5. Cliquer **"Charger l'extension non empaquetee"** et selectionner le dossier
+6. Cliquer sur l'icone MSF Counter dans la barre d'outils !
+
+#### Firefox
+1. Telecharger \`msf-counter.zip\` ci-dessous
+2. Extraire le ZIP dans un dossier
+3. Aller sur \`about:debugging#/runtime/this-firefox\`
+4. Cliquer **"Charger un module temporaire..."**
+5. Selectionner \`manifest.json\` dans le dossier extrait
+
+---
+
+### API Connection / Connexion API
+
+1. Click **API** button in the extension / Cliquer le bouton **API**
+2. Click **"Connexion OAuth MSF"**
+3. Log in with Scopely / Se connecter avec Scopely
+4. **Check ALL permissions** / **Cocher TOUTES les permissions** :
+   - Voir le profil, Voir l'effectif, Voir l'inventaire, Voir l'activite, Voir le profil d'alliance, Acces persistant
+5. Click **"Autoriser"** — done! / C'est fait !
+
+> Full documentation: [README](https://github.com/piouscott/msf-ocr-hud#readme)
+`;
+
   try {
-    const cmd = `gh release create "${tag}" "${ZIP_PATH}" --title "MSF Counter ${version}" --generate-notes`;
+    // Write body to temp file to avoid shell escaping issues
+    const bodyPath = path.join(ROOT, "releases", ".release-body.md");
+    fs.writeFileSync(bodyPath, releaseBody);
+    const cmd = `gh release create "${tag}" "${ZIP_PATH}" --title "MSF Counter ${version}" --notes-file "${bodyPath}"`;
     execSync(cmd, { cwd: ROOT, stdio: "inherit" });
+    fs.unlinkSync(bodyPath);
     console.log(`\n✓ https://github.com/piouscott/msf-ocr-hud/releases/tag/${tag}`);
   } catch (e) {
     console.error("Erreur release:", e.message);
