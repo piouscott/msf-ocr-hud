@@ -154,7 +154,7 @@ header h1 i {
   border: 1px solid #333;
   border-radius: 10px;
   width: 390px;
-  max-height: 480px;
+  max-height: 550px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -172,11 +172,11 @@ header h1 i {
 
 .bg-picker-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 8px;
   padding: 12px;
   overflow-y: auto;
-  max-height: 420px;
+  max-height: 490px;
 }
 
 .bg-picker-item {

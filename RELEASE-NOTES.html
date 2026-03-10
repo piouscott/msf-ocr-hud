@@ -90,10 +90,45 @@
 
   <h2>Version 1.4</h2>
 
-  <h3>Nouveautes</h3>
+  <h3>Barre d'outils</h3>
+  <div class="section">
+    <p>Chaque fonctionnalite est accessible via un bouton dans la toolbar :</p>
+    <ul>
+      <li>📅 <strong>Events</strong> — Evenements en cours avec progression</li>
+      <li>💀 <strong>Raids</strong> — Milestones Raids + guide par node</li>
+      <li>🛡️ <strong>Defense</strong> — Tester sa defense War, counters inverses</li>
+      <li>🌱 <strong>Farm</strong> — Ou farmer les personnages</li>
+      <li>⚔️ <strong>Counters</strong> — Gerer les counters offensifs</li>
+      <li>🎯 <strong>War OCR</strong> — Scan de salle automatique</li>
+      <li>🌐 <strong>BW</strong> — Equipes Battleworld</li>
+      <li>🔗 <strong>Fenetre</strong> — Ouvrir dans une fenetre permanente</li>
+      <li>📋 <strong>Notes</strong> — Notes de version</li>
+      <li>⬇️ <strong>Export</strong> / ⬆️ <strong>Import</strong> — Sauvegarde et restauration config</li>
+      <li>📤 <strong>Portraits</strong> / 📥 <strong>Imp. Port.</strong> — Export/import portraits appris</li>
+      <li>👥 <strong>Persos</strong> — Catalogue complet des personnages</li>
+      <li>🏆 <strong>Crucible</strong> — Meta defense et attaque Crucible</li>
+      <li>🛡️ <strong>Alliance</strong> — Infos et membres de l'alliance</li>
+      <li>🔑 <strong>API</strong> — Configuration connexion MSF</li>
+      <li>🔄 <strong>Sync</strong> — Synchronisation des counters</li>
+      <li>🎨 <strong>Fond d'ecran</strong> — Personnaliser le fond (bouton dans le header)</li>
+    </ul>
+  </div>
+
+  <h3>Nouveautes v1.4</h3>
 
   <div class="section">
-    <h4>Panneau Personnages</h4>
+    <h4>🏆 Panneau Crucible</h4>
+    <ul>
+      <li><strong>Meta defense</strong> : 758 equipes avec taux de victoire, W/L, portraits</li>
+      <li><strong>Meta attaque</strong> : meilleures equipes offensives Crucible</li>
+      <li><strong>Recherche</strong> par nom d'equipe ou personnage</li>
+      <li><strong>Tri</strong> par taux de victoire, nb victoires, nb defaites, total combats</li>
+      <li><strong>Filtre</strong> par nombre minimum de combats (50, 100, 500, 1000+)</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h4>👥 Panneau Personnages</h4>
     <ul>
       <li><strong>Catalogue complet</strong> : tous les personnages du jeu avec portraits, traits et recherche</li>
       <li><strong>Sync API</strong> : charger les personnages depuis l'API MSF (pagination auto, 487+ persos)</li>
@@ -103,7 +138,7 @@
   </div>
 
   <div class="section">
-    <h4>Guide Raids</h4>
+    <h4>💀 Guide Raids</h4>
     <ul>
       <li><strong>Guide Thunderstrike</strong> : equipes recommandees par node (10 nodes)</li>
       <li><strong>Portraits des membres</strong> pour chaque equipe</li>
@@ -113,18 +148,36 @@
   </div>
 
   <div class="section">
-    <h4>Panneau Alliance</h4>
+    <h4>🛡️ Panneau Alliance</h4>
     <ul>
-      <li><strong>Infos alliance</strong> : nom, niveau, trophees, puissance totale</li>
-      <li><strong>Liste des membres</strong> avec role, niveau, TCP et derniere connexion</li>
-      <li><strong>Resultats War</strong> : historique des guerres d'alliance</li>
+      <li><strong>Infos alliance</strong> : nom, niveau, trophees, zone War, ligue</li>
+      <li><strong>Liste des membres</strong> avec role, niveau, TCP, STP, persos collectes</li>
+      <li><strong>Tri</strong> par TCP, STP, Niveau, Nom, Persos, War MVP</li>
     </ul>
   </div>
 
   <div class="section">
-    <h4>Ameliorations</h4>
+    <h4>🎨 Fond d'ecran personnalisable</h4>
     <ul>
-      <li><strong>Lucide Icons</strong> : nouvelle iconographie moderne dans toute la toolbar</li>
+      <li><strong>19 wallpapers MSF</strong> au choix (bouton palette dans le header)</li>
+      <li><strong>Sauvegarde automatique</strong> dans les preferences</li>
+      <li><strong>Inclus dans Export/Import</strong> pour restauration apres reinstallation</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h4>🛡️ Defense amelioree</h4>
+    <ul>
+      <li><strong>Compteur 0/10</strong> : visualisation du nombre d'equipes en defense (max 10)</li>
+      <li><strong>Persistance Export/Import</strong> : les defenses taguees sont sauvegardees dans l'export</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h4>Ameliorations techniques</h4>
+    <ul>
+      <li><strong>Lucide Icons</strong> : iconographie moderne dans toute la toolbar</li>
+      <li><strong>Nouveaux endpoints API</strong> : Crucible, Offers, Time Heists, Calendar, Upgrade Tokens</li>
       <li><strong>Phase milestone</strong> : correction affichage (10/2 → 10/13) pour les events cycliques</li>
       <li><strong>Scan Salle</strong> : detection portraits vaincus (croix rouge), fix <code>loadImage</code></li>
       <li><strong>Deploiement GitHub Releases</strong> : script automatise avec scan de securite</li>
@@ -221,10 +274,14 @@
   <div class="section">
     <span class="version-tag">v1.4</span>
     <ul>
-      <li>Panneau Personnages : catalogue complet avec sync API + filtre nouveaux</li>
-      <li>Guide Raids : equipes recommandees Thunderstrike par node avec portraits</li>
-      <li>Panneau Alliance : infos, membres, resultats War via API</li>
+      <li>🏆 Panneau Crucible : meta defense/attaque avec stats, recherche et tri</li>
+      <li>👥 Panneau Personnages : catalogue complet avec sync API + filtre nouveaux</li>
+      <li>💀 Guide Raids : equipes recommandees Thunderstrike par node avec portraits</li>
+      <li>🛡️ Panneau Alliance : infos, membres avec tri multi-criteres</li>
+      <li>🎨 Fond d'ecran personnalisable : 19 wallpapers MSF</li>
+      <li>🛡️ Defense : compteur 0/10 + persistance dans Export/Import</li>
       <li>Lucide Icons : modernisation de l'interface</li>
+      <li>Nouveaux endpoints API : Crucible, Offers, Time Heists, Calendar, Upgrade Tokens</li>
       <li>Fix phases milestones cycliques (ex: 10/13 au lieu de 10/2)</li>
       <li>Fix scan salle : detection portraits vaincus + loadImage</li>
       <li>Tri counters par confiance + sync dynamique personnages</li>
