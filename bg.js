@@ -447,17 +447,17 @@ ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true;
   }
 
-  // Time Heists (all)
+  // Time Heists (all) — needs auth
   if (msg.type === "MSF_GET_TIME_HEISTS") {
-    handleGameRequest("/game/v1/timeHeists").then(sendResponse).catch(e => {
+    handlePlayerRequest("/game/v1/timeHeists").then(sendResponse).catch(e => {
       sendResponse({ error: e.message });
     });
     return true;
   }
 
-  // Time Heist detail
+  // Time Heist detail — needs auth
   if (msg.type === "MSF_GET_TIME_HEIST") {
-    handleGameRequest(`/game/v1/timeHeists/${msg.itemId}`).then(sendResponse).catch(e => {
+    handlePlayerRequest(`/game/v1/timeHeists/${msg.itemId}`).then(sendResponse).catch(e => {
       sendResponse({ error: e.message });
     });
     return true;
@@ -471,34 +471,50 @@ ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true;
   }
 
-  // Calendar rewards
+  // Calendar rewards — needs auth
   if (msg.type === "MSF_GET_CALENDAR_REWARDS") {
-    handleGameRequest(`/game/v1/calendarRewards/${msg.itemId}`).then(sendResponse).catch(e => {
+    handlePlayerRequest(`/game/v1/calendarRewards/${msg.itemId}`).then(sendResponse).catch(e => {
       sendResponse({ error: e.message });
     });
     return true;
   }
 
-  // Upgrade tokens (all)
+  // Upgrade tokens (all) — needs auth
   if (msg.type === "MSF_GET_UPGRADE_TOKENS") {
-    handleGameRequest("/game/v1/upgradeTokens").then(sendResponse).catch(e => {
+    handlePlayerRequest("/game/v1/upgradeTokens").then(sendResponse).catch(e => {
       sendResponse({ error: e.message });
     });
     return true;
   }
 
-  // Upgrade token detail
+  // Upgrade token detail — needs auth
   if (msg.type === "MSF_GET_UPGRADE_TOKEN") {
-    handleGameRequest(`/game/v1/upgradeTokens/${msg.templateId}`).then(sendResponse).catch(e => {
+    handlePlayerRequest(`/game/v1/upgradeTokens/${msg.templateId}`).then(sendResponse).catch(e => {
       sendResponse({ error: e.message });
     });
     return true;
   }
 
-  // Team order analysis (crucible, war, raids, etc.)
+  // Team order analysis (crucible, war, raids, etc.) — needs auth
   if (msg.type === "MSF_GET_TEAM_ORDER") {
     const tab = msg.tabId ? `/${msg.tabId}` : "";
-    handleGameRequest(`/game/v1/analysis/teamOrder${tab}`).then(sendResponse).catch(e => {
+    handlePlayerRequest(`/game/v1/analysis/teamOrder${tab}`).then(sendResponse).catch(e => {
+      sendResponse({ error: e.message });
+    });
+    return true;
+  }
+
+  // Player card (TCP, STP, level, name)
+  if (msg.type === "MSF_GET_PLAYER_CARD") {
+    handlePlayerRequest("/player/v1/card").then(sendResponse).catch(e => {
+      sendResponse({ error: e.message });
+    });
+    return true;
+  }
+
+  // Player inventory (gear, resources)
+  if (msg.type === "MSF_GET_INVENTORY") {
+    handlePlayerRequest("/player/v1/inventory").then(sendResponse).catch(e => {
       sendResponse({ error: e.message });
     });
     return true;
@@ -551,10 +567,15 @@ function normalizeMilestoneEvent(event) {
     };
   }
 
-  // Extraire maxCompletions
-  if (objective.maxCompletions) {
-    event.milestone.maxCompletions = objective.maxCompletions;
+  // Extraire maxCompletions — chercher dans plusieurs endroits
+  const maxComp = objective.maxCompletions || bracket.maxCompletions
+    || objective.completions || bracket.completions || 0;
+  if (maxComp) {
+    event.milestone.maxCompletions = maxComp;
   }
+
+  // Log complet pour debug des phases
+  console.log(`[BG] normalizeMilestone "${event.name}": tiers=${Object.keys(objective.tiers || {}).length}, maxComp=${maxComp}, bracket keys:`, Object.keys(bracket), "objective keys:", Object.keys(objective));
 
   // Extraire les ranges (rank/top rewards)
   if (objective.ranges) {

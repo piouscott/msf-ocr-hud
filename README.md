@@ -17,16 +17,20 @@ Compatible **Chrome**, **Vivaldi**, **Edge** et **Firefox** (Manifest V3).
 | Icon | Button | Description (EN) | Description (FR) |
 |---|---|---|---|
 | 📅 | **Events** | Live events with progress, pace tracker, action calculator | Events en cours avec progression, tracker de rythme |
-| 💀 | **Raids** | Raid milestones + Thunderstrike team guide per node | Milestones Raids + guide equipes par node |
+| 💀 | **Raids** | Raid milestones, team guide per node, lane advisor | Milestones Raids, guide par node, conseiller de lanes |
 | 🛡️ | **Defense** | Test your War defense, inverse counters, 10-team tracker | Tester sa defense War, counters inverses, compteur 0/10 |
 | 🌱 | **Farm** | Where to farm characters, counter advisor, roster tracker | Ou farmer les persos, conseiller counters, suivi roster |
 | ⚔️ | **Counters** | Full counter list with search, portraits, confidence | Liste counters avec recherche, portraits, confiance |
-| 🎯 | **War OCR** | Auto-scan war room portraits with learning system | Scan automatique salle avec systeme d'apprentissage |
+| 🎯 | **War OCR** | Auto-scan, war planner, attack export, scan history | Scan auto, plan d'attaque, export Discord, historique scans |
 | 🌐 | **BW** | Battleworld teams | Equipes Battleworld |
-| 🏆 | **Crucible** | Defense & attack meta with win rates, search, filters | Meta defense/attaque avec taux victoire, recherche, filtres |
-| 🛡️ | **Alliance** | Alliance info, members with TCP/STP sorting | Infos alliance, membres avec tri TCP/STP |
+| 🏆 | **Crucible** | Defense & attack meta with win rates, favorites, Marvel Church guide | Meta defense/attaque, favoris, guide Marvel Church |
+| 🛡️ | **Alliance** | Alliance info, members with TCP/STP sorting, below-average alerts | Infos alliance, tri TCP/STP, alertes sous la moyenne |
 | 👥 | **Characters** | Full character catalog with traits and API sync | Catalogue personnages avec traits et sync API |
 | 🎨 | **Background** | 19 MSF wallpapers to customize the popup | 19 fonds d'ecran MSF personnalisables |
+| 📊 | **Dashboard** | Player card, TCP/STP history chart, roster analytics, gear bottleneck, level-up recommendations, roster gap analysis | Carte joueur, historique TCP/STP, analytics roster, bottleneck gear, recommandations, analyse gaps |
+| 🎁 | **Offers** | Active player offers with rewards and timers | Offres actives avec recompenses et timers |
+| 🔍 | **Search** | Global search bar (characters, teams, farm locations) | Barre de recherche globale (persos, equipes, farm) |
+| ℹ️ | **Info** | Data sources overlay (MSF API, Marvel Church) | Sources de donnees (API MSF, Marvel Church) |
 | 🔑 | **API** | OAuth login and token management | Connexion OAuth et gestion des tokens |
 | 🔄 | **Sync** | Remote counter synchronization | Synchronisation des counters |
 

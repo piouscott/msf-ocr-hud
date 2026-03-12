@@ -13,9 +13,62 @@
         MSF Counter
         <i data-lucide="shield" style="color:#51cf66;"></i>
       </h1>
+      <button id="btn-compact" class="compact-toggle" title="Mode compact">±</button>
+      <button id="btn-info" class="btn-info" title="Sources de donnees">i</button>
       <button id="btn-help" class="btn-help" title="Aide / Revoir l'introduction">?</button>
       <button id="btn-bg-picker" class="btn-bg-picker" title="Personnaliser le fond d'écran"><i data-lucide="palette" style="width:14px;height:14px;"></i></button>
     </header>
+
+    <!-- Info overlay -->
+    <div id="info-overlay" class="info-overlay hidden">
+      <div class="info-panel">
+        <div class="info-panel-header">
+          <span>Sources de donnees</span>
+          <button id="btn-info-close" class="btn-close">X</button>
+        </div>
+        <div class="info-panel-content">
+          <div class="info-section">
+            <div class="info-section-title">API MSF (Scopely)</div>
+            <div class="info-section-desc">
+              Events, milestones, raids, roster joueur, alliance, offres, inventaire, upgrade tokens, Time Heists, Crucible meta.
+            </div>
+            <div class="info-section-url">hydra-public.prod.m3.scopelypv.com / api.marvelstrikeforce.com</div>
+          </div>
+          <div class="info-section">
+            <div class="info-section-title">Marvel Church</div>
+            <div class="info-section-desc">
+              Counters war (equipes offensives vs defensives), equipes meta, compositions recommandees.
+            </div>
+            <div class="info-section-url">marvelchurch.com</div>
+          </div>
+          <div class="info-section">
+            <div class="info-section-title">Donnees locales</div>
+            <div class="info-section-desc">
+              Personnages (portraits, traits, noms EN/FR), lieux de farm, equipes de raid. Fichiers JSON integres a l'extension.
+            </div>
+          </div>
+          <div class="info-section">
+            <div class="info-section-title">Portraits appris</div>
+            <div class="info-section-desc">
+              Base de portraits OCR enrichie par vos corrections manuelles. Stockee localement dans le navigateur.
+            </div>
+          </div>
+          <div class="info-section">
+            <div class="info-section-title">Crucible Meta</div>
+            <div class="info-section-desc">
+              Statistiques de defense et d'attaque Crucible (winrates, compositions) via l'API MSF.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Global Search -->
+    <div class="global-search-wrapper">
+      <span class="global-search-icon"><i data-lucide="search" style="width:14px;height:14px;"></i></span>
+      <input type="text" id="global-search" class="global-search-input" placeholder="Rechercher un perso, equipe, counter..." autocomplete="off">
+      <div id="global-search-results" class="global-search-results hidden"></div>
+    </div>
 
     <!-- Background picker overlay -->
     <div id="bg-picker-overlay" class="bg-picker-overlay hidden">
@@ -85,6 +138,8 @@
       <label for="import-learned-file" id="btn-import-learned-global" class="btn-small" title="Importer des portraits appris (fichier JSON)" style="cursor:pointer;"><i data-lucide="download-cloud" class="btn-icon"></i><span>Imp. Port.</span></label>
       <button id="btn-chars" class="btn-small" title="Tous les personnages du jeu"><i data-lucide="users" class="btn-icon"></i><span>Persos</span></button>
       <button id="btn-crucible" class="btn-small" title="Méta défense Crucible"><i data-lucide="trophy" class="btn-icon"></i><span>Crucible</span></button>
+      <button id="btn-dashboard" class="btn-small" title="Dashboard joueur (TCP, STP, stats)"><i data-lucide="bar-chart-3" class="btn-icon"></i><span>Dashboard</span></button>
+      <button id="btn-offers" class="btn-small" title="Offres actives du joueur"><i data-lucide="gift" class="btn-icon"></i><span>Offres</span></button>
       <button id="btn-alliance" class="btn-small" title="Infos et membres de l'alliance"><i data-lucide="shield" class="btn-icon"></i><span>Alliance</span></button>
       <button id="btn-api" class="btn-small" title="Configuration API"><i data-lucide="key" class="btn-icon"></i><span>API</span></button>
       <button id="btn-settings" class="btn-small" title="Synchronisation counters"><i data-lucide="refresh-cw" class="btn-icon"></i><span>Sync</span></button>
@@ -152,7 +207,10 @@
       <div id="events-loading" class="events-loading">Chargement des événements...</div>
       <div id="events-error" class="events-error hidden"></div>
       <div id="events-list" class="events-list hidden"></div>
-
+      <div id="time-heists-section" class="hidden">
+        <div class="events-section-title" style="margin-top:12px;">Time Heists</div>
+        <div id="time-heists-list"></div>
+      </div>
     </section>
 
     <section id="raids-panel" class="hidden">
@@ -176,6 +234,7 @@
         </div>
         <div id="raid-guide-list" class="raid-guide-list"></div>
       </div>
+      <div id="raid-advisor-section" class="raid-advisor-section hidden"></div>
     </section>
 
     <section id="defense-panel" class="hidden">
@@ -258,6 +317,7 @@
       <div class="crucible-tabs">
         <button class="crucible-tab active" data-tab="defense">Defense</button>
         <button class="crucible-tab" data-tab="attack">Attaque</button>
+        <button class="crucible-tab" data-tab="guide">Guide</button>
       </div>
       <div id="crucible-loading" class="events-loading hidden">Chargement...</div>
       <div id="crucible-error" class="events-error hidden"></div>
@@ -267,6 +327,36 @@
       <div id="crucible-attack" class="crucible-tab-content hidden">
         <div id="crucible-attack-list"></div>
       </div>
+      <div id="crucible-guide" class="crucible-tab-content hidden">
+        <div id="crucible-guide-content"></div>
+      </div>
+    </section>
+
+    <section id="dashboard-panel" class="hidden">
+      <div class="sync-header">
+        <span>Dashboard Joueur</span>
+        <button id="btn-close-dashboard" class="btn-close">X</button>
+      </div>
+      <div id="dashboard-loading" class="events-loading hidden">Chargement...</div>
+      <div id="dashboard-error" class="events-error hidden"></div>
+      <div id="dashboard-player-card" class="hidden"></div>
+      <div id="dashboard-roster-stats" class="hidden"></div>
+      <div id="dashboard-tcp-history" class="tcp-history-section hidden"></div>
+      <div id="dashboard-roster-gap" class="roster-gap-section hidden"></div>
+      <div id="dashboard-recommendations" class="hidden"></div>
+      <div id="dashboard-gear-bottleneck" class="gear-bottleneck-section hidden"></div>
+      <div id="dashboard-upgrade-tokens" class="hidden"></div>
+      <div id="dashboard-inventory" class="hidden"></div>
+    </section>
+
+    <section id="offers-panel" class="hidden">
+      <div class="sync-header">
+        <span>Offres actives</span>
+        <button id="btn-close-offers" class="btn-close">X</button>
+      </div>
+      <div id="offers-loading" class="events-loading hidden">Chargement...</div>
+      <div id="offers-error" class="events-error hidden"></div>
+      <div id="offers-list"></div>
     </section>
 
     <section id="alliance-panel" class="hidden">

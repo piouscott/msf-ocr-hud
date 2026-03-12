@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "MSF Counter",
-  "version": "1.4",
+  "version": "1.6",
 
   "browser_specific_settings": {
     "gecko": {

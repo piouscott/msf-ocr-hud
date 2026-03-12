@@ -860,6 +860,108 @@ function displayWarStats() {
 // Charger les stats au démarrage
 loadWarStats();
 
+// ═══════════════════════════════════════════════════════════
+// WAR HISTORY — save scan sessions for pattern analysis
+// ═══════════════════════════════════════════════════════════
+
+async function saveWarScanSession() {
+  if (!scanRoomState) return;
+
+  const teams = [];
+  for (const team of scanRoomState.teams) {
+    if (team.underAttack) {
+      teams.push({ slot: team.slotNumber, underAttack: true });
+      continue;
+    }
+    const charIds = team.portraits.filter(p => p.charId).map(p => p.charId);
+    const names = team.portraits.filter(p => p.name).map(p => p.name);
+    if (charIds.length < 3) continue;
+
+    // Resolve team name
+    let teamName = "";
+    if (warAnalyzer) {
+      const result = warAnalyzer._identifyTeamFromCharIds(charIds);
+      teamName = result?.team ? (result.team.nameFr || result.team.name) : "";
+    }
+
+    teams.push({
+      slot: team.slotNumber,
+      teamName,
+      charIds,
+      names,
+      power: team.enemyPower || null
+    });
+  }
+
+  if (teams.length === 0) return;
+
+  const session = {
+    date: new Date().toISOString(),
+    teams
+  };
+
+  const stored = await storageGet("msfWarHistory");
+  const history = stored.msfWarHistory || [];
+  history.unshift(session);
+
+  // Keep last 50 sessions
+  if (history.length > 50) history.length = 50;
+
+  await storageSet({ msfWarHistory: history });
+}
+
+function displayWarHistory() {
+  let html = "";
+
+  const stored = storageGetSync("msfWarHistory");
+  // We'll use async version — this function is called async anyway
+  return ""; // placeholder, real render is async
+}
+
+async function renderWarHistoryAsync() {
+  const stored = await storageGet("msfWarHistory");
+  const history = stored.msfWarHistory || [];
+
+  if (history.length === 0) return "";
+
+  // Count team frequency
+  const teamFreq = {};
+  for (const session of history) {
+    for (const team of session.teams) {
+      if (!team.teamName || team.underAttack) continue;
+      if (!teamFreq[team.teamName]) teamFreq[team.teamName] = 0;
+      teamFreq[team.teamName]++;
+    }
+  }
+
+  const sortedTeams = Object.entries(teamFreq).sort((a, b) => b[1] - a[1]);
+
+  let html = `<div class="war-history-section">
+    <div style="font-size:12px;font-weight:700;color:#845ef7;margin:8px 0 6px;">Historique scans (${history.length} sessions)</div>`;
+
+  // Most seen teams
+  if (sortedTeams.length > 0) {
+    html += `<div style="font-size:10px;color:#888;margin-bottom:4px;">Equipes les plus vues :</div>`;
+    html += `<div class="war-history-freq">`;
+    sortedTeams.slice(0, 10).forEach(([name, count]) => {
+      html += `<div class="war-history-freq-item"><span class="war-history-freq-name">${name}</span><span class="war-history-freq-count">${count}x</span></div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Last 5 sessions
+  html += `<div style="font-size:10px;color:#888;margin:8px 0 4px;">Derniers scans :</div>`;
+  history.slice(0, 5).forEach(session => {
+    const date = new Date(session.date);
+    const dateStr = `${date.toLocaleDateString("fr")} ${date.toLocaleTimeString("fr", { hour: "2-digit", minute: "2-digit" })}`;
+    const teamNames = session.teams.filter(t => t.teamName && !t.underAttack).map(t => t.teamName).join(", ") || "?";
+    html += `<div class="war-history-session"><span class="war-history-date">${dateStr}</span><span class="war-history-teams">${teamNames}</span></div>`;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
 /**
  * Enregistre une utilisation et rafraîchit l'affichage
  */
@@ -1990,6 +2092,47 @@ async function loadEvents() {
     showOfflineIndicator();
   }
 
+  // Charger les Time Heists en parallèle
+  loadTimeHeists();
+
+  // Verifier les events qui expirent bientot (< 2h) et pas completes
+  checkExpiringEvents(dedupedMilestones);
+}
+
+/**
+ * Alerte pour les events qui expirent dans moins de 2h et ne sont pas termines
+ */
+function checkExpiringEvents(milestones) {
+  const now = Date.now() / 1000;
+  const twoHours = 2 * 3600;
+  const expiring = milestones.filter(e => {
+    const remaining = e.endTime - now;
+    if (remaining <= 0 || remaining > twoHours) return false;
+    // Verifier si pas complete
+    const progress = e.milestone?.progress;
+    const tiers = e.milestone?.tiers;
+    if (progress && tiers && tiers.length > 0) {
+      const maxComp = e.milestone?.maxCompletions || 1;
+      const total = tiers.length * maxComp;
+      if (progress.completedTier >= total) return false; // complete
+    }
+    return true;
+  });
+
+  const notice = document.getElementById("expiring-notice");
+  if (!notice || expiring.length === 0) return;
+
+  const items = expiring.map(e => {
+    const remaining = e.endTime - now;
+    const mins = Math.round(remaining / 60);
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    const timeStr = h > 0 ? `${h}h${m}m` : `${m}m`;
+    return `<span class="expiring-item">⚠️ <strong>${e.name}</strong> expire dans ${timeStr}</span>`;
+  }).join("");
+
+  notice.innerHTML = items;
+  notice.classList.remove("hidden");
 }
 
 /**
@@ -2062,6 +2205,9 @@ async function loadRaids() {
 
   // Charger le guide raid (données statiques)
   loadRaidGuide();
+
+  // Raid lane advisor
+  renderRaidAdvisor();
 }
 
 /**
@@ -2472,23 +2618,39 @@ function renderEventInfo(event) {
   const tiers = event.milestone?.tiers;
   if (progress && tiers && tiers.length > 0) {
     const maxCompletions = event.milestone?.maxCompletions || 1;
-    // Chercher le total de phases dans tous les champs possibles
-    let totalTiers = event.milestone?.totalTiers || event.milestone?.numTiers
-      || event.milestone?.tierCount || event.milestone?.totalPhases
-      || (tiers.length * maxCompletions);
     const completedTier = progress.completedTier || 0;
+    const goalTier = progress.goalTier || 0;
+
+    // Calculer le total de phases en essayant plusieurs sources
+    // 1. Champs explicites sur le milestone
+    // 2. goalTier si > tiers.length (indique le vrai total)
+    // 3. tiers.length * maxCompletions (milestones répétitifs)
+    // 4. Fallback : tiers.length seul
+    let totalTiers = event.milestone?.totalTiers || event.milestone?.numTiers
+      || event.milestone?.tierCount || event.milestone?.totalPhases || 0;
+
+    if (!totalTiers) {
+      // goalTier souvent = vrai total pour les milestones multi-phases
+      if (goalTier > tiers.length) {
+        totalTiers = goalTier;
+      } else if (maxCompletions > 1) {
+        totalTiers = tiers.length * maxCompletions;
+      } else {
+        totalTiers = tiers.length;
+      }
+    }
+
     // Si notre calcul est inferieur au tier complété, le total est faux — fallback
     if (completedTier >= totalTiers) {
-      totalTiers = progress.goalTier || (completedTier + 1);
-      // On ne connait pas le vrai total, on affiche "X+"
+      totalTiers = goalTier > completedTier ? goalTier : (completedTier + 1);
     }
     const knownTotal = completedTier < totalTiers;
     const currentPoints = progress.points || 0;
     const nextGoal = progress.goal || (tiers[completedTier % tiers.length] ? tiers[completedTier % tiers.length].endScore : 0);
     const pct = nextGoal > 0 ? Math.min(100, Math.round((currentPoints / nextGoal) * 100)) : 0;
     const offset = progress.completionOffset || 0;
-    // Log debug temporaire
-    console.log(`[Events] "${event.name}" tiers=${tiers.length} maxComp=${maxCompletions} total=${totalTiers} completed=${completedTier} offset=${offset} milestoneKeys=`, Object.keys(event.milestone).join(","));
+    // Log debug
+    console.log(`[Events] "${event.name}" tiers=${tiers.length} maxComp=${maxCompletions} goalTier=${goalTier} total=${totalTiers} completed=${completedTier} offset=${offset}`);
 
     const phaseDisplay = knownTotal
       ? `Phase ${completedTier + offset} / ${totalTiers + offset}`
@@ -3882,6 +4044,28 @@ const crucibleList = document.getElementById("crucible-list");
 const crucibleAttackList = document.getElementById("crucible-attack-list");
 let crucibleCurrentTab = "defense";
 let crucibleAttackLoaded = false;
+let crucibleFavorites = new Set();
+
+// Load crucible favorites from storage
+(async function loadCrucibleFavorites() {
+  const stored = await storageGet("msfCrucibleFavorites");
+  if (stored.msfCrucibleFavorites && Array.isArray(stored.msfCrucibleFavorites)) {
+    crucibleFavorites = new Set(stored.msfCrucibleFavorites);
+  }
+})();
+
+function getCrucibleSquadKey(squad) {
+  return (Array.isArray(squad) ? squad : []).sort().join(",");
+}
+
+async function toggleCrucibleFavorite(squadKey) {
+  if (crucibleFavorites.has(squadKey)) {
+    crucibleFavorites.delete(squadKey);
+  } else {
+    crucibleFavorites.add(squadKey);
+  }
+  await storageSet({ msfCrucibleFavorites: [...crucibleFavorites] });
+}
 
 if (btnCrucible) {
   btnCrucible.addEventListener("click", () => {
@@ -3899,23 +4083,112 @@ if (btnCloseCrucible) {
 }
 
 // Onglets Crucible
+const crucibleGuideDiv = document.getElementById("crucible-guide");
+
 document.querySelectorAll(".crucible-tab").forEach(tab => {
   tab.addEventListener("click", () => {
     document.querySelectorAll(".crucible-tab").forEach(t => t.classList.remove("active"));
     tab.classList.add("active");
     crucibleCurrentTab = tab.dataset.tab;
 
+    crucibleDefenseDiv.classList.add("hidden");
+    crucibleAttackDiv.classList.add("hidden");
+    if (crucibleGuideDiv) crucibleGuideDiv.classList.add("hidden");
+
     if (crucibleCurrentTab === "defense") {
       crucibleDefenseDiv.classList.remove("hidden");
-      crucibleAttackDiv.classList.add("hidden");
       loadCrucibleDefense();
-    } else {
-      crucibleDefenseDiv.classList.add("hidden");
+    } else if (crucibleCurrentTab === "attack") {
       crucibleAttackDiv.classList.remove("hidden");
       loadCrucibleAttack();
+    } else if (crucibleCurrentTab === "guide") {
+      if (crucibleGuideDiv) crucibleGuideDiv.classList.remove("hidden");
+      renderCrucibleGuide();
     }
   });
 });
+
+// ═══════════════════════════════════════════════════════════
+// CRUCIBLE GUIDE — Marvel Church recommended setups
+// ═══════════════════════════════════════════════════════════
+
+const CRUCIBLE_GUIDE_DATA = {
+  source: "Marvel Church",
+  season: "Season 20",
+  setups: [
+    {
+      name: "Defense Heavy",
+      stages: [
+        { stage: 1, team: "Starjammer", members: null },
+        { stage: 2, team: "New Mutant", members: null },
+        { stage: 3, team: null, members: ["Fantastic Four (MCU)", "Professor Xavier", "Blue Marvel or Apocalypse"], note: "FF MCU + Prof X + Blue Marvel ou Apocalypse" },
+        { stage: 4, team: "Accursed", members: ["Accursed", "Superior Spider-Man", "Vulture"], note: "Sans Mordo, Juggernaut et Azazel" },
+        { stage: 5, team: "Phoenix Force", members: ["Phoenix Force", "Old Man Logan", "Nightcrawler"], note: "Phoenix Force + Old Man Logan + Nightcrawler" },
+        { stage: 6, team: null, members: ["Knull", "Gladiator", "Gorr", "Thanos Endgame", "The Leader"], note: "Equipe custom endgame" }
+      ]
+    },
+    {
+      name: "Offense Heavy",
+      stages: [
+        { stage: 1, team: "Vigilante", members: null },
+        { stage: 2, team: "Undying", members: null },
+        { stage: 3, team: null, members: ["Mephisto", "Super Skrull", "Quasar", "Adam Warlock", "Star-Lord"], note: "Equipe Mystic/Cosmic custom" },
+        { stage: 4, team: "Accursed", members: ["Accursed", "Superior Spider-Man", "Vulture"], note: "Sans Mordo, Juggernaut et Azazel" },
+        { stage: 5, team: "Phoenix Force", members: ["Phoenix Force", "Old Man Logan", "Nightcrawler"], note: "Phoenix Force + Old Man Logan + Nightcrawler" },
+        { stage: 6, team: "Immortal Weapon", members: ["Immortal Weapon", "Blue Marvel or Odin"], note: "Immortal Weapon + Blue Marvel ou Odin" }
+      ]
+    }
+  ]
+};
+
+function renderCrucibleGuide() {
+  const container = document.getElementById("crucible-guide-content");
+  if (!container) return;
+
+  let html = `<div class="crucible-guide-header">
+    <span class="crucible-guide-source">Source : ${CRUCIBLE_GUIDE_DATA.source} — ${CRUCIBLE_GUIDE_DATA.season}</span>
+  </div>`;
+
+  for (const setup of CRUCIBLE_GUIDE_DATA.setups) {
+    html += `<div class="crucible-guide-setup">
+      <div class="crucible-guide-setup-title">${setup.name}</div>`;
+
+    for (const stage of setup.stages) {
+      const teamLabel = stage.team || (stage.members ? stage.members.join(" + ") : "?");
+      const stageColor = getStageColor(stage.stage);
+
+      // Check player availability
+      let availHtml = "";
+      if (stage.team && typeof canMakeTeam === "function") {
+        const status = canMakeTeam(stage.team);
+        if (status) {
+          if (status.available) {
+            availHtml = `<span class="crucible-guide-avail ok">✓</span>`;
+          } else {
+            availHtml = `<span class="crucible-guide-avail miss">${status.hasCount}/${status.totalCount}</span>`;
+          }
+        }
+      }
+
+      html += `<div class="crucible-guide-stage">
+        <div class="crucible-guide-stage-num" style="background:${stageColor};">${stage.stage}</div>
+        <div class="crucible-guide-stage-info">
+          <div class="crucible-guide-team-name">${teamLabel} ${availHtml}</div>
+          ${stage.note ? `<div class="crucible-guide-note">${stage.note}</div>` : ""}
+        </div>
+      </div>`;
+    }
+
+    html += `</div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+function getStageColor(stage) {
+  const colors = { 1: "#51cf66", 2: "#339af0", 3: "#845ef7", 4: "#fcc419", 5: "#ff6b6b", 6: "#ff922b" };
+  return colors[stage] || "#888";
+}
 
 async function loadCrucibleDefense() {
   crucibleLoading.classList.remove("hidden");
@@ -3937,13 +4210,6 @@ async function loadCrucibleDefense() {
 
     if (res.error) throw new Error(res.error);
 
-    console.log("[Crucible] Total entries:", res.data.length);
-    if (Array.isArray(res.data) && res.data.length > 0) {
-      // Log 3 premiers entries complets pour comprendre la structure
-      for (let i = 0; i < Math.min(3, res.data.length); i++) {
-        console.log(`[Crucible] Entry #${i}:`, JSON.stringify(res.data[i], null, 2));
-      }
-    }
     renderCrucibleDefense(res.data);
 
   } catch (e) {
@@ -4015,6 +4281,7 @@ function renderCrucibleList(entries, charIndex) {
         <option value="500">500+ combats</option>
         <option value="1000">1000+ combats</option>
       </select>
+      <button id="crucible-fav-filter" class="crucible-fav-btn" title="Afficher les favoris">★</button>
     </div>
     <div class="crucible-count">${entries.length} equipes</div>`;
 
@@ -4026,6 +4293,8 @@ function renderCrucibleList(entries, charIndex) {
   const searchInput = document.getElementById("crucible-search");
   const sortSelect = document.getElementById("crucible-sort");
   const minFightsSelect = document.getElementById("crucible-min-fights");
+  const favFilterBtn = document.getElementById("crucible-fav-filter");
+  let showFavsOnly = false;
 
   const refresh = () => {
     const query = searchInput.value.toLowerCase().trim();
@@ -4033,6 +4302,14 @@ function renderCrucibleList(entries, charIndex) {
     const minFights = parseInt(minFightsSelect.value) || 0;
 
     let filtered = crucibleRawData;
+
+    // Filtre favoris
+    if (showFavsOnly) {
+      filtered = filtered.filter(entry => {
+        const key = getCrucibleSquadKey(Array.isArray(entry.squad) ? entry.squad : []);
+        return crucibleFavorites.has(key);
+      });
+    }
 
     // Filtre minimum de combats
     if (minFights > 0) {
@@ -4068,6 +4345,25 @@ function renderCrucibleList(entries, charIndex) {
   sortSelect.addEventListener("change", refresh);
   minFightsSelect.addEventListener("change", refresh);
 
+  // Toggle fav filter
+  if (favFilterBtn) {
+    favFilterBtn.addEventListener("click", () => {
+      showFavsOnly = !showFavsOnly;
+      favFilterBtn.classList.toggle("active", showFavsOnly);
+      refresh();
+    });
+  }
+
+  // Star click delegation (defense)
+  crucibleList.addEventListener("click", async (e) => {
+    const star = e.target.closest(".crucible-fav-star");
+    if (!star) return;
+    const key = star.dataset.squadKey;
+    if (!key) return;
+    await toggleCrucibleFavorite(key);
+    star.classList.toggle("active", crucibleFavorites.has(key));
+  });
+
   // Appliquer le filtre initial (100+ combats par defaut)
   refresh();
 }
@@ -4101,6 +4397,9 @@ function renderCrucibleCards(entries, charIndex) {
     const rateNum = parseFloat(winRate);
     const rateColor = rateNum >= 60 ? "#51cf66" : rateNum >= 40 ? "#fcc419" : "#ff6b6b";
 
+    const squadKey = getCrucibleSquadKey(memberIds);
+    const isFav = crucibleFavorites.has(squadKey);
+
     html += `
       <div class="crucible-team-card">
         <div class="crucible-team-header">
@@ -4108,6 +4407,7 @@ function renderCrucibleCards(entries, charIndex) {
           <div class="crucible-team-title">
             ${teamName ? `<span class="crucible-team-name">${teamName}</span>` : `<span class="crucible-team-name-auto">${(entry._memberNames || memberIds).join(", ")}</span>`}
           </div>
+          <button class="crucible-fav-star ${isFav ? 'active' : ''}" data-squad-key="${squadKey}" title="Favori">★</button>
           <span class="crucible-team-winrate" style="color:${rateColor};">${winRate}%</span>
         </div>
         ${membersHtml}
@@ -4145,11 +4445,6 @@ async function loadCrucibleAttack() {
     crucibleLoading.classList.add("hidden");
 
     if (res.error) throw new Error(res.error);
-
-    console.log("[Crucible] Attack data:", res.data);
-    if (Array.isArray(res.data) && res.data.length > 0) {
-      console.log("[Crucible] Attack sample:", JSON.stringify(res.data[0], null, 2));
-    }
 
     crucibleAttackRawData = Array.isArray(res.data) ? res.data : [];
     crucibleAttackLoaded = true;
@@ -4190,39 +4485,100 @@ function renderCrucibleAttack(data) {
     });
   });
 
+  // Sort by win rate by default
+  const sorted = [...data].sort((a, b) => {
+    const wA = (a.defends || a.wins || 0), lA = (a.defeats || a.losses || 0), tA = wA + lA;
+    const wB = (b.defends || b.wins || 0), lB = (b.defeats || b.losses || 0), tB = wB + lB;
+    return (tB > 0 ? wB / tB : 0) - (tA > 0 ? wA / tA : 0);
+  });
+
   // Build toolbar + cards
   let html = `
     <div class="crucible-toolbar">
       <input type="text" id="crucible-attack-search" class="crucible-search" placeholder="Rechercher...">
+      <select id="crucible-attack-sort" class="crucible-sort">
+        <option value="winrate">Taux victoire (%)</option>
+        <option value="wins">Nb victoires (W)</option>
+        <option value="losses">Nb defaites (L)</option>
+        <option value="total">Total combats</option>
+      </select>
+      <select id="crucible-attack-min" class="crucible-sort">
+        <option value="0">Tous</option>
+        <option value="50">50+</option>
+        <option value="100" selected>100+</option>
+        <option value="500">500+</option>
+      </select>
     </div>
-    <div class="crucible-count crucible-attack-count">${data.length} equipes</div>
+    <div class="crucible-count crucible-attack-count">${sorted.length} equipes</div>
     <div class="crucible-cards crucible-attack-cards">`;
 
-  data.forEach((entry, idx) => {
+  sorted.forEach((entry, idx) => {
     html += renderCrucibleAttackCard(entry, idx, charIndex);
   });
   html += "</div>";
 
   crucibleAttackList.innerHTML = html;
 
-  // Wire search
+  // Wire search, sort, and min fights filter
   const searchInput = document.getElementById("crucible-attack-search");
-  if (searchInput) {
-    searchInput.addEventListener("input", () => {
-      const query = searchInput.value.toLowerCase().trim();
-      let filtered = data;
-      if (query) {
-        filtered = data.filter(entry =>
-          (entry._teamName || "").toLowerCase().includes(query) ||
-          (entry._memberNames || []).some(n => n.toLowerCase().includes(query))
-        );
+  const sortSelect = document.getElementById("crucible-attack-sort");
+  const minSelect = document.getElementById("crucible-attack-min");
+
+  const refreshAttack = () => {
+    const query = (searchInput?.value || "").toLowerCase().trim();
+    const sortBy = sortSelect?.value || "winrate";
+    const minFights = parseInt(minSelect?.value) || 0;
+
+    let filtered = crucibleAttackRawData;
+
+    if (minFights > 0) {
+      filtered = filtered.filter(e => {
+        const w = e.defends || e.wins || 0, l = e.defeats || e.losses || 0;
+        return (w + l) >= minFights;
+      });
+    }
+
+    if (query) {
+      filtered = filtered.filter(entry =>
+        (entry._teamName || "").toLowerCase().includes(query) ||
+        (entry._memberNames || []).some(n => n.toLowerCase().includes(query))
+      );
+    }
+
+    filtered = [...filtered].sort((a, b) => {
+      const wA = a.defends || a.wins || 0, lA = a.defeats || a.losses || 0, tA = wA + lA;
+      const wB = b.defends || b.wins || 0, lB = b.defeats || b.losses || 0, tB = wB + lB;
+      switch (sortBy) {
+        case "winrate": return (tB > 0 ? wB / tB : 0) - (tA > 0 ? wA / tA : 0);
+        case "wins": return wB - wA;
+        case "losses": return lB - lA;
+        case "total": return tB - tA;
+        default: return 0;
       }
-      const container = crucibleAttackList.querySelector(".crucible-attack-cards");
-      const countEl = crucibleAttackList.querySelector(".crucible-attack-count");
-      if (container) container.innerHTML = filtered.map((e, i) => renderCrucibleAttackCard(e, i, charIndex)).join("");
-      if (countEl) countEl.textContent = `${filtered.length} equipes`;
     });
-  }
+
+    const container = crucibleAttackList.querySelector(".crucible-attack-cards");
+    const countEl = crucibleAttackList.querySelector(".crucible-attack-count");
+    if (container) container.innerHTML = filtered.map((e, i) => renderCrucibleAttackCard(e, i, charIndex)).join("");
+    if (countEl) countEl.textContent = `${filtered.length} equipes`;
+  };
+
+  if (searchInput) searchInput.addEventListener("input", refreshAttack);
+  if (sortSelect) sortSelect.addEventListener("change", refreshAttack);
+  if (minSelect) minSelect.addEventListener("change", refreshAttack);
+
+  // Star click delegation (attack)
+  crucibleAttackList.addEventListener("click", async (e) => {
+    const star = e.target.closest(".crucible-fav-star");
+    if (!star) return;
+    const key = star.dataset.squadKey;
+    if (!key) return;
+    await toggleCrucibleFavorite(key);
+    star.classList.toggle("active", crucibleFavorites.has(key));
+  });
+
+  // Apply initial filter (100+)
+  refreshAttack();
 }
 
 function renderCrucibleAttackCard(entry, idx, charIndex) {
@@ -4263,6 +4619,9 @@ function renderCrucibleAttackCard(entry, idx, charIndex) {
     statsHtml = `<div class="crucible-team-stats"><span>Score: ${score}</span></div>`;
   }
 
+  const squadKey = getCrucibleSquadKey(memberIds);
+  const isFav = crucibleFavorites.has(squadKey);
+
   return `
     <div class="crucible-team-card" style="border-left-color:#00d4ff;">
       <div class="crucible-team-header">
@@ -4270,6 +4629,7 @@ function renderCrucibleAttackCard(entry, idx, charIndex) {
         <div class="crucible-team-title">
           ${teamName ? `<span class="crucible-team-name">${teamName}</span>` : `<span class="crucible-team-name-auto">${(entry._memberNames || []).join(", ")}</span>`}
         </div>
+        <button class="crucible-fav-star ${isFav ? 'active' : ''}" data-squad-key="${squadKey}" title="Favori">★</button>
         ${winRate ? `<span class="crucible-team-winrate" style="color:${rateColor};">${winRate}%</span>` : ""}
       </div>
       ${membersHtml}
@@ -4329,8 +4689,7 @@ async function loadAlliance() {
 
     allianceData.card = cardRes.data;
     allianceData.members = Array.isArray(membersRes.data) ? membersRes.data : [];
-    console.log("[Alliance] Card:", JSON.stringify(allianceData.card, null, 2));
-    if (allianceData.members.length > 0) console.log("[Alliance] Member sample:", JSON.stringify(allianceData.members[0], null, 2));
+
 
     renderAllianceCard(allianceData.card);
     renderAllianceMembers(allianceData.members);
@@ -4411,23 +4770,33 @@ function renderAllianceMembers(members) {
   const rankColors = { leader: "#fcc419", captain: "#845ef7", member: "#8b949e" };
   const rankLabels = { leader: "Leader", captain: "Capitaine", member: "Membre" };
 
-  let html = `<div class="alliance-member-count">${sorted.length} membres</div>`;
+  // Calculate averages for comparison
+  const tcpValues = sorted.map(m => m.card?.tcp || 0).filter(v => v > 0);
+  const stpValues = sorted.map(m => m.card?.stp || 0).filter(v => v > 0);
+  const avgTcp = tcpValues.length > 0 ? tcpValues.reduce((a, b) => a + b, 0) / tcpValues.length : 0;
+  const avgStp = stpValues.length > 0 ? stpValues.reduce((a, b) => a + b, 0) / stpValues.length : 0;
+
+  let html = `<div class="alliance-member-count">${sorted.length} membres · Moy: ${formatNumber(Math.round(avgTcp))} TCP / ${formatNumber(Math.round(avgStp))} STP</div>`;
 
   sorted.forEach((m, i) => {
     const c = m.card || {};
     const rank = m.rank || "member";
     const rankColor = rankColors[rank] || "#8b949e";
     const level = c.level?.current || c.level?.completedTier || c.level || c.completedTier || "?";
+    const tcp = c.tcp || 0;
+    const stp = c.stp || 0;
+    const belowAvg = tcp > 0 && tcp < avgTcp * 0.85; // 15% below average
 
     html += `
-      <div class="alliance-member-row">
+      <div class="alliance-member-row ${belowAvg ? 'below-avg' : ''}">
         <div class="alliance-member-rank" style="color:${rankColor};">${i + 1}</div>
         <div class="alliance-member-info">
           <div class="alliance-member-name">
             ${c.name || "???"}
             <span class="alliance-member-badge" style="background:${rankColor}22;color:${rankColor};">${rankLabels[rank] || rank}</span>
+            ${belowAvg ? '<span class="alliance-below-badge">▼</span>' : ''}
           </div>
-          <div class="alliance-member-meta">Nv.${level} · ${formatNumber(c.tcp || 0)} TCP · ${formatNumber(c.stp || 0)} STP</div>
+          <div class="alliance-member-meta">Nv.${level} · ${formatNumber(tcp)} TCP · ${formatNumber(stp)} STP</div>
         </div>
         <div class="alliance-member-extra">
           <span title="Personnages collectes">${c.charactersCollected || 0} persos</span>
@@ -5672,9 +6041,10 @@ tabStats.addEventListener("click", async () => {
   warPowerSection.classList.add("hidden");
   warResult.classList.add("hidden");
 
-  // Afficher les stats
+  // Afficher les stats + historique
   await loadWarStats();
-  warStatsContent.innerHTML = displayWarStats();
+  const historyHtml = await renderWarHistoryAsync();
+  warStatsContent.innerHTML = displayWarStats() + historyHtml;
 });
 
 btnClearStats.addEventListener("click", async () => {
@@ -6507,6 +6877,9 @@ async function handleScanSalle(debugMode = false) {
   }
 
   renderScanRoomResults();
+
+  // Save scan session to war history
+  saveWarScanSession();
 }
 
 /**
@@ -6542,6 +6915,8 @@ function renderScanRoomResults() {
   if (learnedCount > 0) {
     html += `<button class="scan-room-btn-export" id="btn-export-learned" title="Copier les portraits appris dans le presse-papier">Exporter</button>`;
   }
+  html += `<button class="scan-room-btn-export" id="btn-war-planner" style="background:#51cf66;color:#000;" title="Generer un plan d'attaque optimal">Plan d'attaque</button>`;
+  html += `<button class="scan-room-btn-export" id="btn-war-export" style="background:#845ef7;color:#fff;" title="Copier le plan dans le presse-papier (Discord)">Copier</button>`;
   html += `</div>`;
 
   for (let t = 0; t < scanRoomState.teams.length; t++) {
@@ -6608,6 +6983,9 @@ function renderScanRoomResults() {
 
     // Zone counters (remplie apres lookup)
     html += `<div class="scan-room-counters-zone hidden" id="counters-${t}"></div>`;
+
+    // Zone plan d'attaque (remplie par generateWarPlan)
+    html += `<div class="war-planner-zone hidden" id="war-plan-${t}"></div>`;
 
     html += `</div>`; // fin card
   }
@@ -6713,6 +7091,40 @@ function setupScanRoomListeners() {
       } catch (err) {
         btnExport.textContent = "Erreur";
         setTimeout(() => { btnExport.textContent = "Exporter"; }, 2000);
+      }
+    });
+  }
+
+  // War Planner button
+  const btnPlan = document.getElementById("btn-war-planner");
+  if (btnPlan) {
+    btnPlan.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      btnPlan.disabled = true;
+      btnPlan.textContent = "Calcul...";
+      try {
+        await generateWarPlan();
+      } catch (err) {
+        console.error("[WarPlanner] Erreur:", err);
+      }
+      btnPlan.disabled = false;
+      btnPlan.textContent = "Plan d'attaque";
+    });
+  }
+
+  // War Export (clipboard, Discord format)
+  const btnExportPlan = document.getElementById("btn-war-export");
+  if (btnExportPlan) {
+    btnExportPlan.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      try {
+        const text = exportWarPlanToText();
+        await navigator.clipboard.writeText(text);
+        btnExportPlan.textContent = "Copie !";
+        setTimeout(() => { btnExportPlan.textContent = "Copier"; }, 2000);
+      } catch (err) {
+        btnExportPlan.textContent = "Erreur";
+        setTimeout(() => { btnExportPlan.textContent = "Copier"; }, 2000);
       }
     });
   }
@@ -6956,6 +7368,9 @@ function getPunchIndicator(playerPower, enemyPower, punchFactor) {
 async function lookupTeamCounters(teamIdx) {
   if (!scanRoomState || !warAnalyzer) return;
 
+  // Pre-load crucible attack winrates for cross-reference badges
+  if (!crucibleAttackWinrateCache) loadCrucibleAttackWinrates();
+
   const team = scanRoomState.teams[teamIdx];
   const charIds = team.portraits.filter(p => p.charId).map(p => p.charId);
 
@@ -7014,6 +7429,7 @@ function renderCounterItems(enriched, hasRoster, enemyPower) {
           ${hasRoster && typeof renderAvailabilityBadge === "function" ? renderAvailabilityBadge(c.teamId) : ''}
           <span class="war-counter-confidence">${confidenceToSymbols(c.confidence)}</span>
           ${typeof renderStatsBadge === "function" ? renderStatsBadge(c.teamId) : ''}
+          ${getCrucibleXrefBadge(c.teamId)}
           ${powerPunchHtml}
         </div>
       </div>
@@ -7135,6 +7551,239 @@ async function renderTeamCountersResult(teamIdx, teamResult, counters, error, en
   // Re-enable button
   const btn = document.querySelector(`.scan-room-btn-counters[data-team="${teamIdx}"]`);
   if (btn) { btn.disabled = false; btn.textContent = "Chercher counters"; }
+}
+
+// ═══════════════════════════════════════════════════════════
+// WAR PLANNER — auto-assign best counters per team card
+// Uses: war squads, roster, defense tags
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * Check if a counter team can be formed from the player's war squads
+ * (registered squads from the API, not just general roster).
+ * Returns { found: bool, squadMembers: [], inDefense: [] }
+ */
+function checkWarSquadAvailability(counterTeamId, warSquads, defCharIds) {
+  if (!warSquads || warSquads.length === 0) return null;
+
+  const team = teamsData.find(t => t.id === counterTeamId);
+  if (!team || !team.memberIds) return null;
+
+  // Check if any war squad contains all team members
+  for (const squad of warSquads) {
+    if (!Array.isArray(squad)) continue;
+    const squadSet = new Set(squad.filter(Boolean));
+    const allPresent = team.memberIds.every(id => squadSet.has(id));
+    if (allPresent) {
+      const inDef = team.memberIds.filter(id => defCharIds.has(id));
+      return { found: true, squadMembers: team.memberIds, inDefense: inDef, isWarSquad: true };
+    }
+  }
+
+  return { found: false, squadMembers: [], inDefense: [], isWarSquad: false };
+}
+
+async function generateWarPlan() {
+  if (!scanRoomState || !warAnalyzer) return;
+
+  const hasRoster = typeof playerRoster !== "undefined" && playerRoster.size > 0;
+
+  // Load war squads and defense info
+  const stored = await storageGet(["msfWarSquads", "msfDefenseTagged"]);
+  const warSquads = stored.msfWarSquads || [];
+  const tagged = stored.msfDefenseTagged || [];
+
+  // Build set of all chars currently in defense
+  const defCharIds = new Set();
+  for (const idx of tagged) {
+    const squad = warSquads[idx];
+    if (squad) squad.forEach(id => { if (id) defCharIds.add(id); });
+  }
+
+  // Track used attack team IDs across all assignments (greedy no-overlap)
+  const usedTeamIds = new Set();
+
+  // Phase 1: collect all targets with their counters
+  const targets = [];
+  for (let t = 0; t < scanRoomState.teams.length; t++) {
+    const team = scanRoomState.teams[t];
+    if (team.underAttack) continue;
+    const charIds = team.portraits.filter(p => p.charId).map(p => p.charId);
+    if (charIds.length < 3) continue;
+
+    const teamResult = warAnalyzer._identifyTeamFromCharIds(charIds);
+    if (!teamResult || !teamResult.team) continue;
+
+    const powerInput = document.getElementById(`power-input-${t}`);
+    const powerRaw = powerInput?.value?.trim().replace(/[\s,.]/g, "") || "";
+    const enemyPower = /^\d{5,}$/.test(powerRaw) ? parseInt(powerRaw, 10) : (team.enemyPower || null);
+
+    const countersResult = warAnalyzer.getCountersWithVariants(teamResult.team.id, charIds, enemyPower);
+    const counters = countersResult?.counters || [];
+
+    // Enrich each counter with war squad + roster + defense info
+    const enriched = [];
+    for (const c of counters) {
+      const rosterStatus = typeof canMakeTeam === "function" ? canMakeTeam(c.teamId) : null;
+      const warStatus = checkWarSquadAvailability(c.teamId, warSquads, defCharIds);
+      let playerPower = null;
+      if (enemyPower) {
+        playerPower = await getTeamPowerFromRoster(c.teamId);
+      }
+
+      // Priority: war squad registered > roster available > roster partial > nothing
+      const inWarSquad = warStatus?.found || false;
+      const rosterAvail = rosterStatus?.available || false;
+      const inDefense = warStatus?.found ? warStatus.inDefense : (rosterStatus?.inDefense || []);
+      const blockedByDef = inDefense.length > 0;
+
+      enriched.push({
+        ...c,
+        _rosterStatus: rosterStatus,
+        _warStatus: warStatus,
+        playerPower,
+        inWarSquad,
+        rosterAvail,
+        inDefense,
+        blockedByDef
+      });
+    }
+
+    targets.push({
+      teamIdx: t,
+      slotNumber: team.slotNumber,
+      teamName: teamResult.team.nameFr || teamResult.team.variantName || teamResult.team.name,
+      enemyPower,
+      counters: enriched
+    });
+  }
+
+  if (targets.length === 0) return;
+
+  // Phase 2: Greedy assignment (hardest targets first = fewest usable counters)
+  const sortedTargets = [...targets].sort((a, b) => {
+    const aUsable = a.counters.filter(c => (c.inWarSquad || c.rosterAvail) && !c.blockedByDef).length;
+    const bUsable = b.counters.filter(c => (c.inWarSquad || c.rosterAvail) && !c.blockedByDef).length;
+    return aUsable - bUsable;
+  });
+
+  const assignments = {}; // teamIdx -> { bestCounter, alternates }
+
+  for (const target of sortedTargets) {
+    let bestCounter = null;
+    let bestScore = -Infinity;
+    const alternates = [];
+
+    for (const c of target.counters) {
+      let score = c.confidence * 10;
+
+      // Bonus: in war squad and not in defense
+      if (c.inWarSquad && !c.blockedByDef) score += 200;
+      // Bonus: in war squad but some in defense
+      else if (c.inWarSquad) score += 100;
+      // Bonus: in roster, not in defense
+      else if (c.rosterAvail && !c.blockedByDef) score += 80;
+      // Bonus: in roster, some in defense
+      else if (c.rosterAvail) score += 40;
+
+      // Punch advantage
+      if (c.playerPower && target.enemyPower) {
+        const punchFactor = confidenceToPunchFactor(c.confidence);
+        const punchPct = ((c.playerPower * punchFactor) - target.enemyPower) / target.enemyPower * 100;
+        score += Math.min(punchPct, 50);
+      }
+
+      // Penalty if already used by another target
+      if (usedTeamIds.has(c.teamId)) {
+        score -= 500;
+      }
+
+      if (score > bestScore) {
+        // Push previous best as alternate
+        if (bestCounter) alternates.push(bestCounter);
+        bestScore = score;
+        bestCounter = c;
+      } else {
+        alternates.push(c);
+      }
+    }
+
+    assignments[target.teamIdx] = { bestCounter, alternates: alternates.slice(0, 2) };
+
+    if (bestCounter && !usedTeamIds.has(bestCounter.teamId)) {
+      usedTeamIds.add(bestCounter.teamId);
+    }
+  }
+
+  // Phase 3: Render into each team's war-plan-{t} zone
+  for (const target of targets) {
+    const zone = document.getElementById(`war-plan-${target.teamIdx}`);
+    if (!zone) continue;
+
+    const { bestCounter, alternates } = assignments[target.teamIdx] || {};
+
+    let html = '<div class="war-planner-title">Suggestion d\'attaque</div>';
+
+    if (!bestCounter) {
+      html += `<div class="war-planner-empty">Pas de counter disponible</div>`;
+    } else {
+      html += renderWarPlanCard(bestCounter, target, hasRoster, warSquads.length > 0);
+
+      // Show up to 2 alternatives
+      if (alternates && alternates.length > 0) {
+        html += `<div style="font-size:10px;color:#666;margin:4px 0 2px;">Alternatives :</div>`;
+        for (const alt of alternates) {
+          html += renderWarPlanCard(alt, target, hasRoster, warSquads.length > 0);
+        }
+      }
+    }
+
+    zone.innerHTML = html;
+    zone.classList.remove("hidden");
+  }
+}
+
+function renderWarPlanCard(counter, target, hasRoster, hasWarSquads) {
+  const isWarSquad = counter.inWarSquad && !counter.blockedByDef;
+  const isRosterOk = counter.rosterAvail && !counter.blockedByDef;
+  const cardClass = isWarSquad ? "" : (isRosterOk ? "" : "partial");
+
+  let availHtml = "";
+  if (isWarSquad) {
+    availHtml = `<span class="war-planner-available">Equipe de guerre enregistree</span>`;
+  } else if (counter.inWarSquad && counter.blockedByDef) {
+    const defNames = counter.inDefense.map(id => {
+      const c = charactersData?.characters?.[id];
+      return c ? c.name : id;
+    }).join(", ");
+    availHtml = `<span class="war-planner-unavailable">Equipe de guerre — en defense: ${defNames}</span>`;
+  } else if (isRosterOk) {
+    availHtml = `<span class="war-planner-available">Disponible dans le roster</span>`;
+  } else if (counter.rosterAvail && counter.blockedByDef) {
+    const defNames = counter.inDefense.map(id => {
+      const c = charactersData?.characters?.[id];
+      return c ? c.name : id;
+    }).join(", ");
+    availHtml = `<span class="war-planner-unavailable">En defense: ${defNames}</span>`;
+  } else if (counter._rosterStatus) {
+    availHtml = `<span class="war-planner-unavailable">${counter._rosterStatus.hasCount}/${counter._rosterStatus.totalCount} persos dans le roster</span>`;
+  }
+
+  const confStars = confidenceToSymbols(counter.confidence);
+  let powerHtml = "";
+  if (counter.playerPower && target.enemyPower) {
+    const fmtP = typeof formatPower === "function" ? formatPower(counter.playerPower) : counter.playerPower.toLocaleString();
+    const fmtE = typeof formatPower === "function" ? formatPower(target.enemyPower) : target.enemyPower.toLocaleString();
+    const punchFactor = confidenceToPunchFactor(counter.confidence);
+    const punch = getPunchIndicator(counter.playerPower, target.enemyPower, punchFactor);
+    powerHtml = ` <span style="font-size:10px;color:#888;">(${fmtP} vs ${fmtE}${punch ? ` <span style="color:${punch.color}">${punch.label}</span>` : ""})</span>`;
+  }
+
+  return `<div class="war-planner-card ${cardClass}">
+    <div class="war-planner-counter-name">${counter.teamName} ${confStars}${powerHtml}</div>
+    ${counter.notes ? `<div style="font-size:10px;color:#888;margin-top:2px;">${counter.notes}</div>` : ""}
+    <div class="war-planner-availability">${availHtml}</div>
+  </div>`;
 }
 
 /**
@@ -7651,6 +8300,20 @@ function applyBackground(filename) {
   if (msfBackground) applyBackground(msfBackground);
 })();
 
+// Info overlay
+(function initInfoOverlay() {
+  const btn = document.getElementById("btn-info");
+  const overlay = document.getElementById("info-overlay");
+  const btnClose = document.getElementById("btn-info-close");
+  if (!btn || !overlay) return;
+
+  btn.addEventListener("click", () => overlay.classList.remove("hidden"));
+  if (btnClose) btnClose.addEventListener("click", () => overlay.classList.add("hidden"));
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) overlay.classList.add("hidden");
+  });
+})();
+
 // Background picker UI
 (function initBgPicker() {
   const btnOpen = document.getElementById("btn-bg-picker");
@@ -7697,6 +8360,1438 @@ function applyBackground(filename) {
     if (e.target === overlay) overlay.classList.add("hidden");
   });
 })();
+
+// ═══════════════════════════════════════════════════════════
+// DASHBOARD PANEL (Player Card + Roster Analytics + Upgrade Tokens + Inventory)
+// ═══════════════════════════════════════════════════════════
+
+const dashboardPanel = document.getElementById("dashboard-panel");
+const btnDashboard = document.getElementById("btn-dashboard");
+const btnCloseDashboard = document.getElementById("btn-close-dashboard");
+const dashboardLoading = document.getElementById("dashboard-loading");
+const dashboardError = document.getElementById("dashboard-error");
+const dashboardPlayerCard = document.getElementById("dashboard-player-card");
+const dashboardRosterStats = document.getElementById("dashboard-roster-stats");
+const dashboardUpgradeTokens = document.getElementById("dashboard-upgrade-tokens");
+const dashboardInventory = document.getElementById("dashboard-inventory");
+let dashboardLoaded = false;
+
+if (btnDashboard) {
+  btnDashboard.addEventListener("click", () => {
+    dashboardPanel.classList.remove("hidden");
+    dashboardPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (!dashboardLoaded) loadDashboard();
+  });
+}
+if (btnCloseDashboard) {
+  btnCloseDashboard.addEventListener("click", () => dashboardPanel.classList.add("hidden"));
+}
+
+async function loadDashboard() {
+  dashboardLoading.classList.remove("hidden");
+  dashboardError.classList.add("hidden");
+  dashboardPlayerCard.classList.add("hidden");
+  dashboardRosterStats.classList.add("hidden");
+  dashboardUpgradeTokens.classList.add("hidden");
+  dashboardInventory.classList.add("hidden");
+
+  try {
+    if (!charactersData) {
+      const resp = await fetch(ext.runtime.getURL("data/characters-full.json"));
+      charactersData = await resp.json();
+    }
+
+    // Parallel API calls
+    const [cardRes, tokensRes, inventoryRes] = await Promise.all([
+      new Promise(r => ext.runtime.sendMessage({ type: "MSF_GET_PLAYER_CARD" }, r)),
+      new Promise(r => ext.runtime.sendMessage({ type: "MSF_GET_UPGRADE_TOKENS" }, r)),
+      new Promise(r => ext.runtime.sendMessage({ type: "MSF_GET_INVENTORY" }, r))
+    ]);
+
+    dashboardLoading.classList.add("hidden");
+    dashboardLoaded = true;
+
+    console.log("[Dashboard] Player Card:", JSON.stringify(cardRes, null, 2).substring(0, 1000));
+    console.log("[Dashboard] Upgrade Tokens:", JSON.stringify(tokensRes, null, 2).substring(0, 1000));
+    console.log("[Dashboard] Inventory:", JSON.stringify(inventoryRes, null, 2).substring(0, 1000));
+
+    // Player Card
+    if (cardRes && !cardRes.error) {
+      renderPlayerCard(cardRes.data);
+      // Save TCP/STP snapshot for history
+      await saveTcpSnapshot(cardRes.data);
+    } else {
+      console.warn("[Dashboard] Player Card error:", cardRes?.error);
+    }
+
+    // Roster Analytics (from local storage — no API call needed)
+    await renderRosterAnalytics();
+
+    // TCP History Chart
+    await renderTcpHistoryChart();
+
+    // Roster Gap Analysis (vs Crucible top teams)
+    await renderRosterGapAnalysis();
+
+    // "Who to level" recommendations
+    await renderRecommendations();
+
+    // Gear bottleneck analysis
+    if (inventoryRes && !inventoryRes.error && inventoryRes.data) {
+      await renderGearBottleneck(inventoryRes.data);
+    }
+
+    // Upgrade Tokens
+    if (tokensRes && !tokensRes.error && tokensRes.data) {
+      renderUpgradeTokens(tokensRes.data);
+    } else {
+      console.warn("[Dashboard] Tokens error:", tokensRes?.error);
+    }
+
+    // Inventory
+    if (inventoryRes && !inventoryRes.error && inventoryRes.data) {
+      renderInventory(inventoryRes.data);
+    } else {
+      console.warn("[Dashboard] Inventory error:", inventoryRes?.error);
+    }
+
+  } catch (e) {
+    dashboardLoading.classList.add("hidden");
+    dashboardError.innerHTML = `<div class="empty-state-cta"><p>${e.message}</p></div>`;
+    dashboardError.classList.remove("hidden");
+  }
+}
+
+function renderPlayerCard(data) {
+  if (!data) return;
+  const name = data.name || "Joueur";
+  const lvlObj = typeof data.level === "object" ? data.level : null;
+  const level = lvlObj ? (lvlObj.completedTier || "?") : (data.level || "?");
+  const tcp = data.tcp || 0;
+  const stp = data.stp || 0;
+  const collected = data.charactersCollected || 0;
+  const maxStars = data.charactersAtMaxStarRank || 0;
+  const arena = data.latestArena || "";
+  const warMvp = data.warMvp || 0;
+  const blitzRank = data.latestBlitz || "";
+  const icon = data.icon || "";
+  const frame = data.frame || "";
+
+  let xpHtml = "";
+  if (lvlObj && lvlObj.goal > 0) {
+    const xpPct = Math.round((lvlObj.points / lvlObj.goal) * 100);
+    xpHtml = `<div class="dash-xp"><div class="dash-xp-bar" style="width:${xpPct}%"></div><span class="dash-xp-label">XP ${formatNumber(lvlObj.points)} / ${formatNumber(lvlObj.goal)} (${xpPct}%)</span></div>`;
+  }
+
+  dashboardPlayerCard.innerHTML = `
+    <div class="dash-card">
+      <div class="dash-card-header">
+        ${icon ? `<div class="dash-avatar">${frame ? `<img src="${frame}" class="dash-frame">` : ""}<img src="${icon}" class="dash-icon"></div>` : ""}
+        <div>
+          <div class="dash-card-name">${name}</div>
+          <div class="dash-card-level">Niveau ${level}</div>
+          ${xpHtml}
+        </div>
+      </div>
+      <div class="dash-card-stats">
+        <div class="dash-stat"><span class="dash-stat-value">${formatNumber(tcp)}</span><span class="dash-stat-label">TCP</span></div>
+        <div class="dash-stat"><span class="dash-stat-value">${formatNumber(stp)}</span><span class="dash-stat-label">STP</span></div>
+        <div class="dash-stat"><span class="dash-stat-value">${collected}</span><span class="dash-stat-label">Persos</span></div>
+        <div class="dash-stat"><span class="dash-stat-value" style="color:#fcc419;">${maxStars}</span><span class="dash-stat-label">7 etoiles</span></div>
+        ${arena ? `<div class="dash-stat"><span class="dash-stat-value" style="color:#51cf66;">#${arena}</span><span class="dash-stat-label">Arena</span></div>` : ""}
+        ${warMvp ? `<div class="dash-stat"><span class="dash-stat-value" style="color:#ff6b6b;">${warMvp}</span><span class="dash-stat-label">War MVP</span></div>` : ""}
+        ${blitzRank ? `<div class="dash-stat"><span class="dash-stat-value">#${formatNumber(blitzRank)}</span><span class="dash-stat-label">Blitz</span></div>` : ""}
+      </div>
+    </div>`;
+  dashboardPlayerCard.classList.remove("hidden");
+}
+
+async function renderRosterAnalytics() {
+  const stored = await storageGet(["msfPlayerRosterFull"]);
+  const roster = stored.msfPlayerRosterFull;
+  if (!roster || !Array.isArray(roster) || roster.length === 0) {
+    dashboardRosterStats.innerHTML = '<div class="dash-section-title">Roster Analytics</div><div class="no-counters">Pas de roster. Utilisez "Récupérer Squads" dans le panneau API.</div>';
+    dashboardRosterStats.classList.remove("hidden");
+    return;
+  }
+
+  const total = roster.length;
+  const star7 = roster.filter(c => (c.stars || c.activeYellow || 0) >= 7).length;
+  const star6 = roster.filter(c => (c.stars || c.activeYellow || 0) >= 6).length;
+  const gearTier = roster.map(c => c.gearTier || c.tier || 0);
+  const avgGear = gearTier.length > 0 ? (gearTier.reduce((a, b) => a + b, 0) / gearTier.length).toFixed(1) : "?";
+  const maxGear = Math.max(...gearTier, 0);
+  const powers = roster.map(c => c.power || 0).filter(p => p > 0);
+  const avgPower = powers.length > 0 ? Math.round(powers.reduce((a, b) => a + b, 0) / powers.length) : 0;
+  const maxPower = Math.max(...powers, 0);
+  const g19Plus = roster.filter(c => (c.gearTier || c.tier || 0) >= 19).length;
+  const g17Plus = roster.filter(c => (c.gearTier || c.tier || 0) >= 17).length;
+
+  dashboardRosterStats.innerHTML = `
+    <div class="dash-section-title">Roster Analytics</div>
+    <div class="dash-roster-grid">
+      <div class="dash-roster-stat"><span class="dash-roster-value">${total}</span><span class="dash-roster-label">Total</span></div>
+      <div class="dash-roster-stat"><span class="dash-roster-value" style="color:#fcc419;">${star7}</span><span class="dash-roster-label">7 etoiles</span></div>
+      <div class="dash-roster-stat"><span class="dash-roster-value" style="color:#fcc419;">${star6}</span><span class="dash-roster-label">6+ etoiles</span></div>
+      <div class="dash-roster-stat"><span class="dash-roster-value" style="color:#00d4ff;">${avgGear}</span><span class="dash-roster-label">Gear moyen</span></div>
+      <div class="dash-roster-stat"><span class="dash-roster-value" style="color:#51cf66;">${g19Plus}</span><span class="dash-roster-label">G19+</span></div>
+      <div class="dash-roster-stat"><span class="dash-roster-value" style="color:#51cf66;">${g17Plus}</span><span class="dash-roster-label">G17+</span></div>
+      <div class="dash-roster-stat"><span class="dash-roster-value">${formatNumber(avgPower)}</span><span class="dash-roster-label">Power moyen</span></div>
+      <div class="dash-roster-stat"><span class="dash-roster-value">${formatNumber(maxPower)}</span><span class="dash-roster-label">Power max</span></div>
+    </div>`;
+  dashboardRosterStats.classList.remove("hidden");
+}
+
+function renderUpgradeTokens(data) {
+  const tokens = Array.isArray(data) ? data : (data.data || []);
+  if (tokens.length === 0) return;
+
+  let html = '<div class="dash-section-title">Upgrade Tokens</div><div class="dash-tokens-list">';
+  tokens.forEach(t => {
+    const name = t.name || t.templateId || t.id || "Token";
+    const quantity = t.quantity || t.amount || 0;
+    html += `<div class="dash-token"><span class="dash-token-name">${name}</span><span class="dash-token-qty">${formatNumber(quantity)}</span></div>`;
+  });
+  html += '</div>';
+  dashboardUpgradeTokens.innerHTML = html;
+  dashboardUpgradeTokens.classList.remove("hidden");
+}
+
+// Parse inventory item ID into readable name and category
+function parseInventoryItem(itemId) {
+  const id = itemId || "";
+  // Determine category from prefix
+  let cat = "Autre";
+  if (id.startsWith("GEAR_")) cat = "Gear";
+  else if (id.startsWith("ABILITY_MATERIAL")) cat = "Ability";
+  else if (id.startsWith("CONSUMABLE_")) cat = "Consommable";
+  else if (id.startsWith("CURRENCY_")) cat = "Monnaie";
+  else if (id.startsWith("SHARD_")) cat = "Fragments";
+  else if (id.startsWith("ORB_")) cat = "Orbes";
+  else if (id.startsWith("CATALYST_")) cat = "Catalyseur";
+  else if (id.startsWith("ISO_") || id.includes("ISO")) cat = "ISO-8";
+  else if (id.startsWith("TEAL_") || id.includes("TEAL")) cat = "Teal Gear";
+  else if (id.startsWith("T4_") || id.includes("T4")) cat = "T4 Ability";
+
+  // Humanize the name: remove prefix, replace _ with space, title case
+  let name = id
+    .replace(/^(GEAR_|ABILITY_MATERIAL_|CONSUMABLE_|CURRENCY_|SHARD_|ORB_|CATALYST_|ISO_)/, "")
+    .replace(/_/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, c => c.toUpperCase())
+    .replace(/\bMat\b/g, "Material")
+    .replace(/\bXp\b/g, "XP");
+
+  return { name, cat };
+}
+
+function renderInventory(data) {
+  const items = Array.isArray(data) ? data : (data.items || data.data || []);
+  if (items.length === 0) return;
+
+  // Parse and group items
+  const grouped = {};
+  items.forEach(raw => {
+    const { name, cat } = parseInventoryItem(raw.item || raw.itemId || raw.id);
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push({ name, quantity: raw.quantity || 0 });
+  });
+
+  // Sort categories by total quantity, show top items per category
+  const sortedCats = Object.entries(grouped).sort((a, b) => {
+    const totalA = a[1].reduce((s, i) => s + i.quantity, 0);
+    const totalB = b[1].reduce((s, i) => s + i.quantity, 0);
+    return totalB - totalA;
+  });
+
+  let html = `<div class="dash-section-title">Inventaire (${items.length} items)</div><div class="dash-inventory">`;
+  for (const [cat, catItems] of sortedCats) {
+    const sorted = catItems.sort((a, b) => b.quantity - a.quantity).slice(0, 8);
+    const totalQty = catItems.reduce((s, i) => s + i.quantity, 0);
+    html += `<div class="dash-inv-category"><span class="dash-inv-cat-name">${cat} <span style="color:#888;font-weight:400;">(${catItems.length} items, ${formatNumber(totalQty)} total)</span></span>`;
+    sorted.forEach(item => {
+      html += `<div class="dash-inv-item"><span>${item.name}</span><span>${formatNumber(item.quantity)}</span></div>`;
+    });
+    if (catItems.length > 8) {
+      html += `<div class="dash-inv-item" style="color:#666;font-style:italic;"><span>+${catItems.length - 8} autres</span><span></span></div>`;
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+  dashboardInventory.innerHTML = html;
+  dashboardInventory.classList.remove("hidden");
+}
+
+// ═══════════════════════════════════════════════════════════
+// TCP HISTORY — save daily snapshots and render SVG chart
+// ═══════════════════════════════════════════════════════════
+
+async function saveTcpSnapshot(cardData) {
+  if (!cardData) return;
+  const tcp = cardData.tcp || 0;
+  const stp = cardData.stp || 0;
+  if (tcp === 0) return;
+
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const stored = await storageGet("msfTcpHistory");
+  const history = stored.msfTcpHistory || [];
+
+  // Only one snapshot per day
+  const existing = history.find(h => h.date === today);
+  if (existing) {
+    existing.tcp = tcp;
+    existing.stp = stp;
+  } else {
+    history.push({ date: today, tcp, stp });
+  }
+
+  // Keep last 90 days
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 90);
+  const cutoffStr = cutoff.toISOString().slice(0, 10);
+  const trimmed = history.filter(h => h.date >= cutoffStr);
+
+  await storageSet({ msfTcpHistory: trimmed });
+}
+
+async function renderTcpHistoryChart() {
+  const container = document.getElementById("dashboard-tcp-history");
+  if (!container) return;
+
+  const stored = await storageGet("msfTcpHistory");
+  const history = (stored.msfTcpHistory || []).sort((a, b) => a.date.localeCompare(b.date));
+
+  if (history.length < 2) {
+    container.innerHTML = `
+      <div class="tcp-history-title">Progression TCP/STP</div>
+      <div class="tcp-chart-container"><div class="tcp-no-data">Pas assez de donnees (revenez demain)</div></div>`;
+    container.classList.remove("hidden");
+    return;
+  }
+
+  const W = 340, H = 100, PX = 30, PY = 10;
+  const plotW = W - PX * 2, plotH = H - PY * 2;
+
+  const allTcp = history.map(h => h.tcp);
+  const allStp = history.map(h => h.stp);
+  const minVal = Math.min(...allTcp, ...allStp) * 0.98;
+  const maxVal = Math.max(...allTcp, ...allStp) * 1.02;
+  const range = maxVal - minVal || 1;
+
+  const xScale = (i) => PX + (i / (history.length - 1)) * plotW;
+  const yScale = (v) => PY + plotH - ((v - minVal) / range) * plotH;
+
+  function buildPath(values) {
+    return values.map((v, i) => `${i === 0 ? "M" : "L"}${xScale(i).toFixed(1)},${yScale(v).toFixed(1)}`).join(" ");
+  }
+
+  function buildArea(values) {
+    const line = values.map((v, i) => `${xScale(i).toFixed(1)},${yScale(v).toFixed(1)}`).join(" L");
+    return `M${xScale(0).toFixed(1)},${yScale(minVal).toFixed(1)} L${line} L${xScale(values.length - 1).toFixed(1)},${yScale(minVal).toFixed(1)} Z`;
+  }
+
+  // X-axis labels (first, middle, last)
+  const labelIndices = [0, Math.floor(history.length / 2), history.length - 1];
+  const labelsHtml = labelIndices.map(i => {
+    const d = history[i].date.slice(5); // MM-DD
+    return `<text x="${xScale(i)}" y="${H}" class="tcp-chart-label" text-anchor="middle">${d}</text>`;
+  }).join("");
+
+  // Y-axis labels
+  const yLabels = [
+    `<text x="${PX - 4}" y="${PY + 4}" class="tcp-chart-label" text-anchor="end">${formatNumber(Math.round(maxVal))}</text>`,
+    `<text x="${PX - 4}" y="${PY + plotH + 4}" class="tcp-chart-label" text-anchor="end">${formatNumber(Math.round(minVal))}</text>`
+  ].join("");
+
+  // Dots (last point only for cleanliness)
+  const lastI = history.length - 1;
+  const dotsHtml = `
+    <circle cx="${xScale(lastI)}" cy="${yScale(allTcp[lastI])}" class="tcp-chart-dot tcp-chart-dot-tcp"/>
+    <circle cx="${xScale(lastI)}" cy="${yScale(allStp[lastI])}" class="tcp-chart-dot tcp-chart-dot-stp"/>`;
+
+  // Variation text
+  const tcpDiff = allTcp[lastI] - allTcp[0];
+  const stpDiff = allStp[lastI] - allStp[0];
+  const tcpPct = allTcp[0] > 0 ? ((tcpDiff / allTcp[0]) * 100).toFixed(1) : "0";
+  const stpPct = allStp[0] > 0 ? ((stpDiff / allStp[0]) * 100).toFixed(1) : "0";
+  const tcpSign = tcpDiff >= 0 ? "+" : "";
+  const stpSign = stpDiff >= 0 ? "+" : "";
+
+  container.innerHTML = `
+    <div class="tcp-history-title">Progression TCP/STP (${history.length} jours)</div>
+    <div class="tcp-chart-container">
+      <svg class="tcp-chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+        <path d="${buildArea(allTcp)}" class="tcp-chart-area-tcp"/>
+        <path d="${buildArea(allStp)}" class="tcp-chart-area-stp"/>
+        <path d="${buildPath(allTcp)}" class="tcp-chart-line tcp-chart-line-tcp"/>
+        <path d="${buildPath(allStp)}" class="tcp-chart-line tcp-chart-line-stp"/>
+        ${dotsHtml}
+        ${labelsHtml}
+        ${yLabels}
+      </svg>
+    </div>
+    <div class="tcp-chart-legend">
+      <span><span class="tcp-legend-dot" style="background:#51cf66;"></span>TCP ${tcpSign}${formatNumber(tcpDiff)} (${tcpSign}${tcpPct}%)</span>
+      <span><span class="tcp-legend-dot" style="background:#339af0;"></span>STP ${stpSign}${formatNumber(stpDiff)} (${stpSign}${stpPct}%)</span>
+    </div>`;
+  container.classList.remove("hidden");
+}
+
+// ═══════════════════════════════════════════════════════════
+// ROSTER GAP ANALYSIS — compare roster vs top Crucible teams
+// ═══════════════════════════════════════════════════════════
+
+async function renderRosterGapAnalysis() {
+  const container = document.getElementById("dashboard-roster-gap");
+  if (!container) return;
+
+  if (playerRoster.size === 0) {
+    container.innerHTML = `<div class="roster-gap-title">Analyse Roster vs Crucible</div><div class="no-counters">Pas de roster charge.</div>`;
+    container.classList.remove("hidden");
+    return;
+  }
+
+  // Load crucible defense data
+  let crucibleData;
+  try {
+    const res = await new Promise(r => ext.runtime.sendMessage({ type: "MSF_GET_CRUCIBLE_DEFENSE" }, r));
+    if (res.error || !res.data || !Array.isArray(res.data)) {
+      container.innerHTML = `<div class="roster-gap-title">Analyse Roster vs Crucible</div><div class="no-counters">Donnees Crucible non disponibles.</div>`;
+      container.classList.remove("hidden");
+      return;
+    }
+    crucibleData = res.data;
+  } catch (e) {
+    return;
+  }
+
+  if (!charactersData) {
+    try {
+      const resp = await fetch(ext.runtime.getURL("data/characters-full.json"));
+      charactersData = await resp.json();
+    } catch (e) { return; }
+  }
+  const charIndex = {};
+  for (const [id, c] of Object.entries(charactersData?.characters || {})) {
+    charIndex[id.toLowerCase()] = c;
+  }
+
+  // Load farming locations
+  let farmingData = null;
+  try {
+    const resp = await fetch(ext.runtime.getURL("data/farming-locations.json"));
+    farmingData = await resp.json();
+  } catch (e) { /* ignore */ }
+
+  // Sort crucible teams by win rate, take top 20
+  const sorted = [...crucibleData]
+    .map(e => {
+      const t = (e.defends || 0) + (e.defeats || 0);
+      return { ...e, _total: t, _winrate: t > 0 ? e.defends / t : 0 };
+    })
+    .filter(e => e._total >= 100)
+    .sort((a, b) => b._winrate - a._winrate)
+    .slice(0, 20);
+
+  // Analyze gaps
+  const gaps = [];
+  for (const entry of sorted) {
+    const squad = Array.isArray(entry.squad) ? entry.squad : [];
+    const members = squad.map(id => {
+      const char = charIndex[id.toLowerCase()];
+      const name = char ? char.name : id.replace(/([A-Z])/g, " $1").trim();
+      const owned = playerRoster.has(id);
+      const portrait = char?.portrait || "";
+
+      // Find farm location
+      let farmHint = "";
+      if (!owned && farmingData) {
+        const farmChar = farmingData.find(f => {
+          const fName = (f.name || "").replace(/-/g, "");
+          return fName.toLowerCase() === id.toLowerCase() || fName.toLowerCase() === name.toLowerCase().replace(/\s/g, "");
+        });
+        if (farmChar && farmChar.locations && farmChar.locations.length > 0) {
+          farmHint = farmChar.locations.slice(0, 2).map(l => l.name || l).join(", ");
+        }
+      }
+
+      return { id, name, owned, portrait, farmHint };
+    });
+
+    const missing = members.filter(m => !m.owned);
+    if (missing.length === 0) continue; // full team, no gap
+
+    // Resolve team name
+    const teams = inverseCounters?.teams || [];
+    let teamName = "";
+    if (typeof matchSquadToTeam === "function" && teams.length > 0) {
+      const match = matchSquadToTeam(squad, teams);
+      teamName = match ? match.team.name : "";
+    }
+    if (!teamName) teamName = members.map(m => m.name).join(", ");
+
+    gaps.push({
+      teamName,
+      winrate: (entry._winrate * 100).toFixed(1),
+      members,
+      missing,
+      total: entry._total
+    });
+  }
+
+  if (gaps.length === 0) {
+    container.innerHTML = `<div class="roster-gap-title">Analyse Roster vs Crucible</div><div class="no-counters">Vous avez toutes les equipes du top 20 Crucible !</div>`;
+    container.classList.remove("hidden");
+    return;
+  }
+
+  // Sort by fewest missing (closest to complete)
+  gaps.sort((a, b) => a.missing.length - b.missing.length);
+
+  let html = `<div class="roster-gap-title">Analyse Roster vs Top Crucible (${gaps.length} equipes incompletes)</div>`;
+
+  for (const gap of gaps.slice(0, 10)) {
+    html += `<div class="roster-gap-card">
+      <div class="roster-gap-team-name">${gap.teamName} <span style="color:#888;font-size:10px;">(${gap.winrate}% WR, ${gap.total} combats)</span></div>
+      <div class="roster-gap-members">`;
+
+    for (const m of gap.members) {
+      const cls = m.owned ? "owned" : "missing";
+      const icon = m.owned ? "✓" : "✗";
+      html += `<div class="roster-gap-member ${cls}">
+        ${m.portrait ? `<img src="${m.portrait}" class="roster-gap-member-portrait">` : ""}
+        ${icon} ${m.name}
+      </div>`;
+    }
+
+    html += `</div>`;
+
+    // Show farm hints for missing
+    const farmHints = gap.missing.filter(m => m.farmHint);
+    if (farmHints.length > 0) {
+      html += `<div class="roster-gap-summary">Farm: ${farmHints.map(m => `${m.name} → ${m.farmHint}`).join(" · ")}</div>`;
+    }
+
+    html += `</div>`;
+  }
+
+  container.innerHTML = html;
+  container.classList.remove("hidden");
+}
+
+// ═══════════════════════════════════════════════════════════
+// TIER LIST PANEL (Team Order rankings by mode)
+// ═══════════════════════════════════════════════════════════
+
+const tierlistPanel = document.getElementById("tierlist-panel");
+const btnTierlist = document.getElementById("btn-tierlist");
+const btnCloseTierlist = document.getElementById("btn-close-tierlist");
+const tierlistLoading = document.getElementById("tierlist-loading");
+const tierlistError = document.getElementById("tierlist-error");
+const tierlistList = document.getElementById("tierlist-list");
+let tierlistCurrentMode = "war";
+let tierlistCache = {};
+
+if (btnTierlist) {
+  btnTierlist.addEventListener("click", () => {
+    tierlistPanel.classList.remove("hidden");
+    tierlistPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+    loadTierList(tierlistCurrentMode);
+  });
+}
+if (btnCloseTierlist) {
+  btnCloseTierlist.addEventListener("click", () => tierlistPanel.classList.add("hidden"));
+}
+
+// Tab switching
+document.querySelectorAll(".tierlist-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tierlist-tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    tierlistCurrentMode = tab.dataset.mode;
+    loadTierList(tierlistCurrentMode);
+  });
+});
+
+async function loadTierList(mode) {
+  // Use cache if available
+  if (tierlistCache[mode]) {
+    renderTierList(tierlistCache[mode], mode);
+    return;
+  }
+
+  tierlistLoading.classList.remove("hidden");
+  tierlistError.classList.add("hidden");
+  tierlistList.innerHTML = "";
+
+  try {
+    if (!charactersData) {
+      const resp = await fetch(ext.runtime.getURL("data/characters-full.json"));
+      charactersData = await resp.json();
+    }
+
+    const res = await new Promise(r => {
+      ext.runtime.sendMessage({ type: "MSF_GET_TEAM_ORDER", tabId: mode }, r);
+    });
+
+    tierlistLoading.classList.add("hidden");
+
+    if (res.error) throw new Error(res.error);
+
+    tierlistCache[mode] = res.data;
+    renderTierList(res.data, mode);
+
+  } catch (e) {
+    tierlistLoading.classList.add("hidden");
+    tierlistError.innerHTML = `<div class="empty-state-cta"><p>${e.message}</p></div>`;
+    tierlistError.classList.remove("hidden");
+  }
+}
+
+function renderTierList(data, mode) {
+  const entries = Array.isArray(data) ? data : (data.data || []);
+  if (entries.length === 0) {
+    tierlistList.innerHTML = '<div class="no-counters">Aucune donnee disponible pour ce mode</div>';
+    return;
+  }
+
+  const charIndex = {};
+  const chars = charactersData?.characters || {};
+  for (const [id, c] of Object.entries(chars)) {
+    charIndex[id.toLowerCase()] = c;
+  }
+
+  const teams = inverseCounters?.teams || [];
+  const modeLabels = { war: "War", crucible: "Crucible", raids: "Raids", arena: "Arena", blitz: "Blitz" };
+
+  let html = `<div class="tierlist-header-info">${modeLabels[mode] || mode} — ${entries.length} equipes classees</div><div class="tierlist-cards">`;
+
+  entries.forEach((entry, idx) => {
+    const memberIds = Array.isArray(entry.squad) ? entry.squad :
+                      Array.isArray(entry.characters) ? entry.characters :
+                      Array.isArray(entry.members) ? entry.members : [];
+
+    // Team name matching
+    let teamName = entry.name || entry.teamName || "";
+    if (!teamName && typeof matchSquadToTeam === "function" && teams.length > 0) {
+      const match = matchSquadToTeam(memberIds, teams);
+      teamName = match ? match.team.name : "";
+    }
+    const memberNames = memberIds.map(id => {
+      const c = charIndex[id.toLowerCase()];
+      return c ? c.name : id.replace(/([A-Z])/g, " $1").trim();
+    });
+
+    // Score/rank
+    const score = entry.score || entry.rank || entry.rating || "";
+    const wins = entry.wins || entry.defends || 0;
+    const losses = entry.losses || entry.defeats || 0;
+    const total = wins + losses;
+    const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : "";
+
+    // Tier badge color
+    let tierColor = "#d4af37";
+    if (idx < 5) tierColor = "#ff6b6b";
+    else if (idx < 15) tierColor = "#fcc419";
+    else if (idx < 30) tierColor = "#51cf66";
+    else tierColor = "#00d4ff";
+
+    // Portraits
+    let membersHtml = '<div class="crucible-members">';
+    memberIds.forEach(id => {
+      const char = charIndex[id.toLowerCase()];
+      const charName = char ? char.name : id.replace(/([A-Z])/g, " $1").trim();
+      const portrait = char?.portrait || "";
+      if (portrait) {
+        membersHtml += `<img src="${portrait}" class="crucible-member-portrait" title="${charName}" alt="${charName}">`;
+      } else {
+        membersHtml += `<div class="crucible-member-placeholder" title="${charName}">${charName.substring(0, 2)}</div>`;
+      }
+    });
+    membersHtml += "</div>";
+
+    html += `
+      <div class="tierlist-card">
+        <div class="crucible-team-header">
+          <span class="crucible-team-rank" style="background:${tierColor};">${idx + 1}</span>
+          <div class="crucible-team-title">
+            ${teamName ? `<span class="crucible-team-name">${teamName}</span>` : `<span class="crucible-team-name-auto">${memberNames.join(", ")}</span>`}
+          </div>
+          ${winRate ? `<span class="crucible-team-winrate" style="color:${parseFloat(winRate) >= 50 ? "#51cf66" : "#ff6b6b"};">${winRate}%</span>` : ""}
+          ${score && !winRate ? `<span class="crucible-team-winrate" style="color:#d4af37;">Score: ${score}</span>` : ""}
+        </div>
+        ${membersHtml}
+        ${total > 0 ? `<div class="crucible-team-stats"><span class="crucible-stat-win">${wins} W</span><span class="crucible-stat-loss">${losses} L</span><span class="crucible-stat-total">${total} combats</span></div>` : ""}
+      </div>`;
+  });
+
+  html += '</div>';
+  tierlistList.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════
+// OFFERS PANEL
+// ═══════════════════════════════════════════════════════════
+
+const offersPanel = document.getElementById("offers-panel");
+const btnOffers = document.getElementById("btn-offers");
+const btnCloseOffers = document.getElementById("btn-close-offers");
+const offersLoading = document.getElementById("offers-loading");
+const offersError = document.getElementById("offers-error");
+const offersList = document.getElementById("offers-list");
+let offersLoaded = false;
+
+if (btnOffers) {
+  btnOffers.addEventListener("click", () => {
+    offersPanel.classList.remove("hidden");
+    offersPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (!offersLoaded) loadOffers();
+  });
+}
+if (btnCloseOffers) {
+  btnCloseOffers.addEventListener("click", () => offersPanel.classList.add("hidden"));
+}
+
+async function loadOffers() {
+  offersLoading.classList.remove("hidden");
+  offersError.classList.add("hidden");
+  offersList.innerHTML = "";
+
+  try {
+    const res = await new Promise(r => {
+      ext.runtime.sendMessage({ type: "MSF_GET_OFFERS" }, r);
+    });
+
+    offersLoading.classList.add("hidden");
+    offersLoaded = true;
+
+    if (res.error) throw new Error(res.error);
+
+    renderOffers(res.data);
+
+  } catch (e) {
+    offersLoading.classList.add("hidden");
+    offersError.innerHTML = `<div class="empty-state-cta"><p>${e.message}</p></div>`;
+    offersError.classList.remove("hidden");
+  }
+}
+
+function renderOffers(data) {
+  const offers = Array.isArray(data) ? data : (data.offers || data.data || []);
+  if (offers.length === 0) {
+    offersList.innerHTML = '<div class="no-counters">Aucune offre active</div>';
+    return;
+  }
+
+  const now = Date.now() / 1000;
+
+  let html = `<div class="offers-count">${offers.length} offres</div><div class="offers-cards">`;
+
+  offers.forEach(offer => {
+    const name = offer.name || offer.title || offer.offerId || "Offre";
+    const desc = offer.description || "";
+    const endTime = offer.endTime || offer.expiresAt || 0;
+    const remaining = endTime > now ? formatTimeRemaining(endTime - now) : "Expiree";
+    const price = offer.price || offer.cost || "";
+    const currency = offer.currency || offer.costCurrency || "";
+    const quantity = offer.quantity || offer.purchasesRemaining || "";
+    const maxPurchases = offer.maxPurchases || offer.purchaseLimit || "";
+
+    // Rewards
+    let rewardsHtml = "";
+    const rewards = offer.rewards || offer.items || [];
+    if (Array.isArray(rewards) && rewards.length > 0) {
+      rewardsHtml = '<div class="offer-rewards">';
+      rewards.slice(0, 5).forEach(r => {
+        const rName = r.name || r.itemName || r.itemId || "?";
+        const rQty = r.quantity || r.amount || 1;
+        rewardsHtml += `<span class="offer-reward">${rQty}x ${rName}</span>`;
+      });
+      if (rewards.length > 5) rewardsHtml += `<span class="offer-reward">+${rewards.length - 5} autres</span>`;
+      rewardsHtml += '</div>';
+    }
+
+    html += `
+      <div class="offer-card">
+        <div class="offer-header">
+          <span class="offer-name">${name}</span>
+          <span class="offer-timer">${remaining}</span>
+        </div>
+        ${desc ? `<div class="offer-desc">${desc}</div>` : ""}
+        ${rewardsHtml}
+        <div class="offer-footer">
+          ${price ? `<span class="offer-price">${price} ${currency}</span>` : ""}
+          ${quantity && maxPurchases ? `<span class="offer-qty">${quantity}/${maxPurchases}</span>` : ""}
+        </div>
+      </div>`;
+  });
+
+  html += '</div>';
+  offersList.innerHTML = html;
+}
+
+function formatTimeRemaining(seconds) {
+  if (seconds <= 0) return "Expiree";
+  const d = Math.floor(seconds / 86400);
+  const h = Math.floor((seconds % 86400) / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (d > 0) return `${d}j ${h}h`;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// TIME HEISTS (added to Events panel)
+// ═══════════════════════════════════════════════════════════
+
+async function loadTimeHeists() {
+  const section = document.getElementById("time-heists-section");
+  const list = document.getElementById("time-heists-list");
+  if (!section || !list) return;
+
+  try {
+    const res = await new Promise(r => {
+      ext.runtime.sendMessage({ type: "MSF_GET_TIME_HEISTS" }, r);
+    });
+
+    if (res.error || !res.data) return;
+
+    const heists = Array.isArray(res.data) ? res.data : (res.data.data || []);
+    if (heists.length === 0) return;
+
+    let html = '';
+    for (const heist of heists) {
+      const name = heist.name || heist.id || "Time Heist";
+      const status = heist.status || "";
+      const endTime = heist.endTime || 0;
+      const now = Date.now() / 1000;
+      const remaining = endTime > now ? formatTimeRemaining(endTime - now) : "";
+
+      // Try to get TCP projection
+      let tcpHtml = "";
+      if (heist.id) {
+        try {
+          const tcpRes = await new Promise(r => {
+            ext.runtime.sendMessage({ type: "MSF_GET_TIME_HEIST_TCP", itemId: heist.id }, r);
+          });
+          if (tcpRes && !tcpRes.error && tcpRes.data) {
+            const tcp = tcpRes.data.tcp || tcpRes.data.projectedTcp || tcpRes.data;
+            if (typeof tcp === "number") {
+              tcpHtml = `<span class="heist-tcp">TCP projet: ${formatNumber(tcp)}</span>`;
+            }
+          }
+        } catch (_) { /* ignore */ }
+      }
+
+      html += `
+        <div class="heist-card">
+          <div class="heist-header">
+            <span class="heist-name">${name}</span>
+            ${remaining ? `<span class="heist-timer">${remaining}</span>` : ""}
+          </div>
+          ${status ? `<div class="heist-status">${status}</div>` : ""}
+          ${tcpHtml}
+        </div>`;
+    }
+
+    list.innerHTML = html;
+    section.classList.remove("hidden");
+
+  } catch (e) {
+    console.log("[TimeHeists] Erreur:", e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// GEAR BOTTLENECK ANALYZER
+// ═══════════════════════════════════════════════════════════
+
+async function renderGearBottleneck(inventoryData) {
+  const container = document.getElementById("dashboard-gear-bottleneck");
+  if (!container) return;
+  if (playerRoster.size === 0) return;
+
+  const items = Array.isArray(inventoryData) ? inventoryData : (inventoryData.items || inventoryData.data || []);
+  if (items.length === 0) return;
+
+  // Build inventory map: itemId -> quantity
+  const invMap = {};
+  items.forEach(raw => {
+    const id = raw.item || raw.itemId || raw.id || "";
+    invMap[id.toLowerCase()] = raw.quantity || 0;
+  });
+
+  const stored = await storageGet("msfPlayerRosterFull");
+  const roster = stored.msfPlayerRosterFull || [];
+  if (roster.length === 0) return;
+
+  // Find characters at high gear tiers (16+) that could benefit from tier-up
+  // Group by gear tier, show what's most commonly needed
+  const gearGroups = {};
+  const nearTierUp = roster.filter(c => {
+    const tier = c.gearTier || c.tier || 0;
+    return tier >= 16 && tier < 19; // characters close to endgame but not maxed
+  });
+
+  if (nearTierUp.length === 0) {
+    container.innerHTML = `<div class="dash-section-title">Gear Bottleneck</div><div class="no-counters">Pas de personnages entre G16 et G18.</div>`;
+    container.classList.remove("hidden");
+    return;
+  }
+
+  // Group by gear tier
+  nearTierUp.forEach(c => {
+    const tier = c.gearTier || c.tier || 0;
+    const tierKey = `G${tier}→G${tier + 1}`;
+    if (!gearGroups[tierKey]) gearGroups[tierKey] = [];
+    const charName = c.name || c.id || "?";
+    gearGroups[tierKey].push(charName);
+  });
+
+  // Check inventory for common endgame gear items
+  const criticalGear = [
+    { pattern: "TEAL", label: "Teal Gear" },
+    { pattern: "GEAR_ORANGE", label: "Orange Gear" },
+    { pattern: "GEAR_PURPLE", label: "Purple Gear" },
+    { pattern: "CATALYST", label: "Catalyseurs" },
+    { pattern: "G4_UNSTABLE_MOLECULE", label: "Molecules instables" },
+    { pattern: "UNIQUE", label: "Gear Unique" }
+  ];
+
+  let html = `<div class="dash-section-title">Gear Bottleneck (${nearTierUp.length} persos G16-G18)</div>`;
+
+  // Show tier groups
+  for (const [tierKey, chars] of Object.entries(gearGroups)) {
+    html += `<div class="gear-bottleneck-card has-stock">
+      <div class="gear-bottleneck-name">${tierKey} (${chars.length} persos)</div>
+      <div class="gear-bottleneck-chars">${chars.slice(0, 8).map(n => `<span class="gear-bottleneck-char">${n}</span>`).join("")}${chars.length > 8 ? `<span class="gear-bottleneck-char">+${chars.length - 8}</span>` : ""}</div>
+    </div>`;
+  }
+
+  // Show low-stock critical gear
+  const lowStock = [];
+  for (const [id, qty] of Object.entries(invMap)) {
+    for (const cg of criticalGear) {
+      if (id.toUpperCase().includes(cg.pattern) && qty < 50) {
+        const { name } = parseInventoryItem(id);
+        lowStock.push({ name, qty, cat: cg.label });
+      }
+    }
+  }
+
+  if (lowStock.length > 0) {
+    lowStock.sort((a, b) => a.qty - b.qty);
+    html += `<div style="font-size:10px;color:#ff6b6b;margin-top:6px;font-weight:600;">Stock faible :</div>`;
+    lowStock.slice(0, 6).forEach(item => {
+      html += `<div class="gear-bottleneck-card">
+        <div class="gear-bottleneck-name">${item.name} <span style="color:#ff6b6b;font-weight:700;">x${item.qty}</span></div>
+        <div class="gear-bottleneck-meta">${item.cat}</div>
+      </div>`;
+    });
+  }
+
+  container.innerHTML = html;
+  container.classList.remove("hidden");
+}
+
+// ═══════════════════════════════════════════════════════════
+// WHO TO LEVEL — ROI-based character recommendations
+// ═══════════════════════════════════════════════════════════
+
+async function renderRecommendations() {
+  const container = document.getElementById("dashboard-recommendations");
+  if (!container) return;
+  if (playerRoster.size === 0) return;
+
+  const stored = await storageGet("msfPlayerRosterFull");
+  const roster = stored.msfPlayerRosterFull || [];
+  if (roster.length === 0) return;
+
+  if (!charactersData) {
+    try {
+      const resp = await fetch(ext.runtime.getURL("data/characters-full.json"));
+      charactersData = await resp.json();
+    } catch (e) { return; }
+  }
+  const charIndex = {};
+  for (const [id, c] of Object.entries(charactersData?.characters || {})) {
+    charIndex[id.toLowerCase()] = c;
+  }
+
+  // Load counters to understand which teams matter
+  let countersData = null;
+  try {
+    const resp = await fetch(ext.runtime.getURL("data/counters.json"));
+    countersData = await resp.json();
+  } catch (e) { /* ignore */ }
+
+  // Count how many counter teams each character appears in
+  const charTeamCount = {};
+  if (countersData) {
+    const teams = countersData.teams || teamsData || [];
+    teams.forEach(team => {
+      (team.memberIds || []).forEach(id => {
+        charTeamCount[id] = (charTeamCount[id] || 0) + 1;
+      });
+    });
+  }
+
+  // Score each character:
+  // - Higher tier = less ROI (already strong)
+  // - More team appearances = higher priority
+  // - Low stars = higher upgrade potential
+  const scored = [];
+  roster.forEach(c => {
+    const id = c.id || c.characterId || "";
+    const tier = c.gearTier || c.tier || 0;
+    const stars = c.activeYellow || c.stars || 0;
+    const power = c.power || 0;
+    const char = charIndex[id.toLowerCase()];
+
+    if (tier >= 19 || !char) return; // Skip maxed or unknown
+
+    let score = 0;
+    const teamAppearances = charTeamCount[id] || 0;
+
+    // Team utility (most important)
+    score += teamAppearances * 15;
+
+    // Gear upgrade potential (mid-tier chars benefit most)
+    if (tier >= 14 && tier < 17) score += 30; // sweet spot
+    else if (tier >= 12 && tier < 14) score += 20;
+    else if (tier >= 17) score += 10;
+
+    // Star potential
+    if (stars < 7) score += (7 - stars) * 5;
+
+    // Power weight (lower power = more room for growth)
+    if (power > 0 && power < 200000) score += 15;
+    else if (power >= 200000 && power < 500000) score += 8;
+
+    scored.push({
+      id,
+      name: char.name || id,
+      portrait: char.portrait || "",
+      tier,
+      stars,
+      power,
+      teams: teamAppearances,
+      score
+    });
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+  const top = scored.slice(0, 8);
+
+  if (top.length === 0) return;
+
+  let html = `<div class="dash-section-title">Qui monter en priorite</div>`;
+  top.forEach(c => {
+    const reasons = [];
+    if (c.teams > 0) reasons.push(`${c.teams} equipes`);
+    reasons.push(`G${c.tier}`);
+    if (c.stars < 7) reasons.push(`${c.stars}★`);
+    if (c.power > 0) reasons.push(formatNumber(c.power));
+
+    html += `<div class="rec-card">
+      ${c.portrait ? `<img src="${c.portrait}" class="rec-portrait">` : ""}
+      <div class="rec-info">
+        <div class="rec-name">${c.name}</div>
+        <div class="rec-reason">${reasons.join(" · ")}</div>
+      </div>
+      <div class="rec-score">${c.score}</div>
+    </div>`;
+  });
+
+  container.innerHTML = html;
+  container.classList.remove("hidden");
+}
+
+// ═══════════════════════════════════════════════════════════
+// GLOBAL SEARCH
+// ═══════════════════════════════════════════════════════════
+
+(function initGlobalSearch() {
+  const input = document.getElementById("global-search");
+  const resultsDiv = document.getElementById("global-search-results");
+  if (!input || !resultsDiv) return;
+
+  let debounceTimer;
+
+  input.addEventListener("input", () => {
+    clearTimeout(debounceTimer);
+    const query = input.value.trim().toLowerCase();
+    if (query.length < 2) {
+      resultsDiv.classList.add("hidden");
+      return;
+    }
+    debounceTimer = setTimeout(() => performGlobalSearch(query, resultsDiv), 200);
+  });
+
+  input.addEventListener("focus", () => {
+    if (input.value.trim().length >= 2) {
+      resultsDiv.classList.remove("hidden");
+    }
+  });
+
+  // Close on click outside
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".global-search-wrapper")) {
+      resultsDiv.classList.add("hidden");
+    }
+  });
+})();
+
+async function performGlobalSearch(query, resultsDiv) {
+  // Normalize for accent-insensitive search
+  const normalize = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const nQuery = normalize(query);
+
+  const results = [];
+
+  // Search characters
+  if (charactersData?.characters) {
+    for (const [id, c] of Object.entries(charactersData.characters)) {
+      const name = c.name || id;
+      if (normalize(name).includes(nQuery) || normalize(id).includes(nQuery)) {
+        results.push({ type: "character", id, name, portrait: c.portrait || "", data: c });
+        if (results.length >= 30) break;
+      }
+    }
+  }
+
+  // Search teams
+  if (teamsData && teamsData.length > 0) {
+    teamsData.forEach(team => {
+      const name = team.name || "";
+      const nameFr = team.nameFr || "";
+      if (normalize(name).includes(nQuery) || normalize(nameFr).includes(nQuery)) {
+        results.push({ type: "team", id: team.id, name: nameFr || name, data: team });
+      }
+    });
+  }
+
+  // Search farming locations
+  try {
+    if (!window._globalSearchFarmData) {
+      const resp = await fetch(ext.runtime.getURL("data/farming-locations.json"));
+      window._globalSearchFarmData = await resp.json();
+    }
+    const farmData = window._globalSearchFarmData;
+    if (Array.isArray(farmData)) {
+      farmData.forEach(f => {
+        const name = f.name || "";
+        if (normalize(name).includes(nQuery)) {
+          const existing = results.find(r => r.type === "character" && normalize(r.name).includes(normalize(name.replace(/-/g, ""))));
+          if (!existing) {
+            results.push({ type: "farm", id: name, name, data: f });
+          } else {
+            existing._farmData = f;
+          }
+        }
+      });
+    }
+  } catch (e) { /* ignore */ }
+
+  // Render results
+  if (results.length === 0) {
+    resultsDiv.innerHTML = `<div class="gs-no-results">Aucun resultat pour "${query}"</div>`;
+    resultsDiv.classList.remove("hidden");
+    return;
+  }
+
+  // Group by type
+  const characters = results.filter(r => r.type === "character").slice(0, 8);
+  const teams = results.filter(r => r.type === "team").slice(0, 5);
+  const farms = results.filter(r => r.type === "farm").slice(0, 3);
+
+  let html = "";
+
+  if (characters.length > 0) {
+    html += `<div class="gs-category">Personnages</div>`;
+    characters.forEach(r => {
+      const inRoster = playerRoster.has(r.id);
+      const rosterBadge = inRoster ? `<span style="color:#51cf66;font-size:10px;">✓</span>` : "";
+      const farmInfo = r._farmData ? ` · ${r._farmData.locations?.slice(0, 2).map(l => l.name || l).join(", ") || ""}` : "";
+      html += `<div class="gs-item" data-type="character" data-id="${r.id}">
+        ${r.portrait ? `<img src="${r.portrait}" class="gs-item-portrait">` : ""}
+        <span class="gs-item-name">${r.name} ${rosterBadge}</span>
+        <span class="gs-item-meta">${farmInfo}</span>
+      </div>`;
+    });
+  }
+
+  if (teams.length > 0) {
+    html += `<div class="gs-category">Equipes</div>`;
+    teams.forEach(r => {
+      const memberCount = r.data?.memberIds?.length || 0;
+      html += `<div class="gs-item" data-type="team" data-id="${r.id}">
+        <span class="gs-item-name">${r.name}</span>
+        <span class="gs-item-meta">${memberCount} membres</span>
+      </div>`;
+    });
+  }
+
+  if (farms.length > 0) {
+    html += `<div class="gs-category">Farm</div>`;
+    farms.forEach(r => {
+      const locs = r.data?.locations?.slice(0, 3).map(l => l.name || l).join(", ") || "";
+      html += `<div class="gs-item" data-type="farm" data-id="${r.id}">
+        <span class="gs-item-name">${r.name}</span>
+        <span class="gs-item-meta">${locs}</span>
+      </div>`;
+    });
+  }
+
+  resultsDiv.innerHTML = html;
+  resultsDiv.classList.remove("hidden");
+
+  // Click handlers
+  resultsDiv.querySelectorAll(".gs-item").forEach(item => {
+    item.addEventListener("click", () => {
+      const type = item.dataset.type;
+      const id = item.dataset.id;
+      resultsDiv.classList.add("hidden");
+      document.getElementById("global-search").value = "";
+
+      if (type === "team") {
+        // Open counters for this team
+        const manage = document.getElementById("btn-manage");
+        if (manage) manage.click();
+      } else if (type === "farm" || type === "character") {
+        // Open farm panel and search
+        const farmBtn = document.getElementById("btn-farm");
+        if (farmBtn) {
+          farmBtn.click();
+          setTimeout(() => {
+            const farmSearch = document.querySelector("#farm-panel .sync-input, #farm-panel input[type='text']");
+            if (farmSearch) {
+              farmSearch.value = item.querySelector(".gs-item-name").textContent.trim().replace(/✓/g, "").trim();
+              farmSearch.dispatchEvent(new Event("input"));
+            }
+          }, 300);
+        }
+      }
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// COMPACT MODE
+// ═══════════════════════════════════════════════════════════
+
+(function initCompactMode() {
+  const btn = document.getElementById("btn-compact");
+  if (!btn) return;
+
+  // Restore saved state
+  storageGet("msfCompactMode").then(stored => {
+    if (stored.msfCompactMode) {
+      document.body.classList.add("compact-mode");
+      btn.classList.add("active");
+    }
+  });
+
+  btn.addEventListener("click", () => {
+    const isCompact = document.body.classList.toggle("compact-mode");
+    btn.classList.toggle("active", isCompact);
+    storageSet({ msfCompactMode: isCompact });
+  });
+})();
+
+// ═══════════════════════════════════════════════════════════
+// WAR PLAN EXPORT (Discord format)
+// ═══════════════════════════════════════════════════════════
+
+function exportWarPlanToText() {
+  if (!scanRoomState) return "Pas de scan en cours.";
+
+  let lines = ["**Plan d'attaque — MSF Counter**", ""];
+
+  for (let t = 0; t < scanRoomState.teams.length; t++) {
+    const team = scanRoomState.teams[t];
+    if (team.underAttack) {
+      lines.push(`🔴 **Eq ${team.slotNumber}** — UNDER ATTACK`);
+      continue;
+    }
+
+    const charIds = team.portraits.filter(p => p.charId).map(p => p.charId);
+    if (charIds.length < 3) continue;
+
+    let teamName = "?";
+    if (warAnalyzer) {
+      const result = warAnalyzer._identifyTeamFromCharIds(charIds);
+      teamName = result?.team ? (result.team.nameFr || result.team.name) : "Inconnue";
+    }
+    const names = team.portraits.filter(p => p.name).map(p => p.name).join(", ");
+    const power = team.enemyPower ? ` (${formatPower(team.enemyPower)})` : "";
+
+    lines.push(`🛡️ **Eq ${team.slotNumber} — ${teamName}**${power}`);
+    if (names) lines.push(`   ${names}`);
+
+    // Check if war plan zone has a suggestion
+    const planZone = document.getElementById(`war-plan-${t}`);
+    if (planZone && !planZone.classList.contains("hidden")) {
+      const counterName = planZone.querySelector(".war-planner-counter-name");
+      if (counterName) {
+        lines.push(`   ⚔️ → ${counterName.textContent.trim()}`);
+      }
+    }
+
+    lines.push("");
+  }
+
+  lines.push(`_Genere le ${new Date().toLocaleDateString("fr")} a ${new Date().toLocaleTimeString("fr", { hour: "2-digit", minute: "2-digit" })}_`);
+  return lines.join("\n");
+}
+
+// ═══════════════════════════════════════════════════════════
+// CRUCIBLE CROSS-REFERENCE (counter vs actual winrates)
+// ═══════════════════════════════════════════════════════════
+
+let crucibleAttackWinrateCache = null;
+
+async function loadCrucibleAttackWinrates() {
+  if (crucibleAttackWinrateCache) return crucibleAttackWinrateCache;
+
+  try {
+    const res = await new Promise(r => ext.runtime.sendMessage({ type: "MSF_GET_CRUCIBLE_ATTACK" }, r));
+    if (res.error || !res.data) return null;
+
+    const data = Array.isArray(res.data) ? res.data : [];
+    const map = {}; // teamId or squad key -> winrate
+
+    data.forEach(entry => {
+      const squad = Array.isArray(entry.squad) ? entry.squad : [];
+      const w = entry.defends || entry.wins || 0;
+      const l = entry.defeats || entry.losses || 0;
+      const total = w + l;
+      if (total < 50) return;
+
+      const key = squad.sort().join(",").toLowerCase();
+      map[key] = { winrate: total > 0 ? Math.round((w / total) * 100) : 0, total };
+
+      // Also try to match to team name
+      if (typeof matchSquadToTeam === "function" && inverseCounters?.teams) {
+        const match = matchSquadToTeam(squad, inverseCounters.teams);
+        if (match?.team?.id) {
+          map[match.team.id.toLowerCase()] = map[key];
+        }
+      }
+    });
+
+    crucibleAttackWinrateCache = map;
+    return map;
+  } catch (e) {
+    return null;
+  }
+}
+
+function getCrucibleXrefBadge(teamId) {
+  if (!crucibleAttackWinrateCache) return "";
+  const data = crucibleAttackWinrateCache[teamId?.toLowerCase()];
+  if (!data) return "";
+
+  const cls = data.winrate >= 60 ? "good" : data.winrate >= 40 ? "mid" : "bad";
+  return `<span class="crucible-xref-badge ${cls}" title="Crucible attaque: ${data.winrate}% WR (${data.total} combats)">${data.winrate}%</span>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// RAID LANE ADVISOR
+// ═══════════════════════════════════════════════════════════
+
+async function renderRaidAdvisor() {
+  const section = document.getElementById("raid-advisor-section");
+  if (!section) return;
+
+  if (playerRoster.size === 0) return;
+
+  const stored = await storageGet("msfPlayerRosterFull");
+  const roster = stored.msfPlayerRosterFull || [];
+  if (roster.length === 0) return;
+
+  // Build roster power map: charId -> power
+  const rosterPowerMap = {};
+  roster.forEach(c => {
+    const id = c.id || c.characterId || "";
+    rosterPowerMap[id] = c.power || 0;
+  });
+
+  if (!charactersData) {
+    try {
+      const resp = await fetch(ext.runtime.getURL("data/characters-full.json"));
+      charactersData = await resp.json();
+    } catch (e) { return; }
+  }
+
+  // Get raid teams from teams data (traits: "Raid" or specific raid teams)
+  const raidTeams = teamsData.filter(team => {
+    const name = (team.name || "").toLowerCase();
+    const tags = (team.tags || []).map(t => t.toLowerCase());
+    return name.includes("raid") || tags.includes("raid") || tags.includes("incursion") || tags.includes("doom");
+  });
+
+  if (raidTeams.length === 0) return;
+
+  // Score each raid team by player's available power
+  const teamScores = [];
+  raidTeams.forEach(team => {
+    const memberIds = team.memberIds || [];
+    let totalPower = 0;
+    let available = 0;
+    const missing = [];
+
+    memberIds.forEach(id => {
+      if (rosterPowerMap[id]) {
+        totalPower += rosterPowerMap[id];
+        available++;
+      } else {
+        missing.push(id);
+      }
+    });
+
+    if (available === 0) return;
+
+    const strength = available === memberIds.length ? "strong" : (available >= memberIds.length - 1 ? "medium" : "weak");
+    const teamName = team.nameFr || team.name;
+
+    teamScores.push({
+      teamName,
+      totalPower,
+      available,
+      total: memberIds.length,
+      missing,
+      strength
+    });
+  });
+
+  teamScores.sort((a, b) => {
+    // Sort: strong first, then by power
+    const strOrder = { strong: 0, medium: 1, weak: 2 };
+    if (strOrder[a.strength] !== strOrder[b.strength]) return strOrder[a.strength] - strOrder[b.strength];
+    return b.totalPower - a.totalPower;
+  });
+
+  if (teamScores.length === 0) return;
+
+  let html = `<div class="raid-advisor-title">Equipes Raid disponibles</div>`;
+
+  teamScores.slice(0, 10).forEach(team => {
+    const missingNames = team.missing.map(id => {
+      const c = charactersData?.characters?.[id];
+      return c ? c.name : id;
+    }).join(", ");
+
+    html += `<div class="raid-advisor-card">
+      <div class="raid-advisor-team-name">${team.teamName} <span class="raid-advisor-strength ${team.strength}">${team.available}/${team.total}</span></div>
+      <div class="raid-advisor-power">Power: ${formatNumber(team.totalPower)}</div>
+      ${team.missing.length > 0 ? `<div class="raid-advisor-missing">Manque: ${missingNames}</div>` : ""}
+    </div>`;
+  });
+
+  section.innerHTML = html;
+  section.classList.remove("hidden");
+}
 
 // ===== LUCIDE ICONS INITIALIZATION =====
 // Initialise les icônes Lucide après le chargement du DOM
