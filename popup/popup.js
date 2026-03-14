@@ -4094,6 +4094,8 @@ document.querySelectorAll(".crucible-tab").forEach(tab => {
     crucibleDefenseDiv.classList.add("hidden");
     crucibleAttackDiv.classList.add("hidden");
     if (crucibleGuideDiv) crucibleGuideDiv.classList.add("hidden");
+    const s21Div = document.getElementById("crucible-season21");
+    if (s21Div) s21Div.classList.add("hidden");
 
     if (crucibleCurrentTab === "defense") {
       crucibleDefenseDiv.classList.remove("hidden");
@@ -4104,6 +4106,9 @@ document.querySelectorAll(".crucible-tab").forEach(tab => {
     } else if (crucibleCurrentTab === "guide") {
       if (crucibleGuideDiv) crucibleGuideDiv.classList.remove("hidden");
       renderCrucibleGuide();
+    } else if (crucibleCurrentTab === "season21") {
+      if (s21Div) s21Div.classList.remove("hidden");
+      renderSeason21Guide();
     }
   });
 });
@@ -4638,6 +4643,111 @@ function renderCrucibleAttackCard(entry, idx, charIndex) {
 }
 
 // ═══════════════════════════════════════════════════════════
+// CRUCIBLE SEASON 21 GUIDE
+// ═══════════════════════════════════════════════════════════
+
+let season21Rendered = false;
+
+function renderSeason21Guide() {
+  const container = document.getElementById("crucible-season21-content");
+  if (!container || season21Rendered) return;
+  season21Rendered = true;
+
+  // Season 21 data based on official patch notes
+  const season = {
+    name: "Saison 21 — The Moon Cycle",
+    global: {
+      title: "Regle globale — The Moon Cycle",
+      desc: "Les persos Daring Warrior avec des allies Eclipse gagnent des bonus selon la phase lunaire (dmg/heal/focus). En defense: +20% PV max, +10% degats, +1 Exhausted apres chaque attaque completee.",
+      tip: "La regle defense rend chaque equipe plus tanky. Privilegiez des equipes offensives capables de finir vite pour limiter l'Exhausted."
+    },
+    stages: [
+      {
+        num: 1, name: "Standard",
+        rule: "Aucune regle speciale (globale uniquement).",
+        tip: "Placez vos meilleures equipes meta ici sans contrainte.",
+        defTeams: ["Annihilator", "Undying", "Accursed", "Bifrost"],
+        atkTeams: ["Hivemind", "Orchis", "Cabal", "Out of Time"],
+        reason: "Pas de regle de stage — les equipes les plus fortes dominent naturellement."
+      },
+      {
+        num: 2, name: "Standard",
+        rule: "Aucune regle speciale (globale uniquement).",
+        tip: "Deuxieme room standard. Continuez avec vos equipes meta restantes.",
+        defTeams: ["Nightstalker", "Pegasus", "Secret Warrior", "Darkhunter"],
+        atkTeams: ["Tangled", "Astral", "Vigilante", "Brimstone"],
+        reason: "Room standard — placez vos equipes meta #2."
+      },
+      {
+        num: 3, name: "Combat Support",
+        rule: "Fortifier/Healer: +1 Vulnerable par hit. Raider/Skirmisher: +2. Striker: +3. Tous: +100% degats par Vulnerable sur l'attaquant. Clear Vulnerable en fin de tour.",
+        tip: "Les Strikers empilent le plus de Vulnerable (+3/hit) et beneficient du +100% dmg. Privilegiez des equipes avec beaucoup de Strikers et des attaques multi-hit.",
+        defTeams: ["Hivemind", "Accursed", "Undying"],
+        atkTeams: ["Orchis", "Annihilator", "Bifrost", "Cabal"],
+        reason: "Strikers = +3 Vuln/hit + 100% dmg bonus. Les equipes avec multi-hit Strikers explosent les degats. En defense, misez sur la survie car les attaquants frapperont tres fort."
+      },
+      {
+        num: 4, name: "R&R",
+        rule: "Soin → Offense Up. Tour de n'importe quel perso: ceux avec Offense Up gagnent Defense Up. Ceux avec Offense Down gagnent 15% PV max en barriere.",
+        tip: "Les equipes avec beaucoup de soins generent Offense Up + Defense Up en boucle. En attaque, evitez d'appliquer Offense Down car ca donne des barrieres a l'adversaire.",
+        defTeams: ["Undying", "Bifrost", "Pegasus", "Secret Defender"],
+        atkTeams: ["Nightstalker", "Darkhunter", "Brimstone", "Vigilante"],
+        reason: "Undying/Bifrost ont d'excellents soins → Offense Up + Defense Up permanent. Evitez Offense Down en attaque (barrieres gratuites pour l'ennemi)."
+      },
+      {
+        num: 5, name: "Best Buddies",
+        rule: "Les persos Retcon, X-Men, Avengers et Spider-Verse gagnent TOUS les traits Retcon + X-Men + Avenger + Spider-Verse.",
+        tip: "Enorme pour les equipes de ces factions! Les synergies cross-trait explosent. Retcon en particulier gagne tous les autres traits.",
+        defTeams: ["Retcon", "Astonishing X-Men", "Xtreme", "Spider Society"],
+        atkTeams: ["Retcon", "Unlimited X-Men", "Xtreme", "New Warrior"],
+        reason: "Retcon gagne les traits X-Men + Avenger + Spider-Verse en plus des siens — synergies demultipliees. Toute equipe X-Men/Avenger/Spider-Verse beneficie des traits croises."
+      },
+      {
+        num: 6, name: "Raids Up!",
+        rule: "Vigilante, Thunderbolts, Immortal Weapons, Hellfire Club, Insidious 6, Champions gagnent TOUS les traits de ces 6 factions + 100% stats primaires.",
+        tip: "Ces equipes deviennent extremement puissantes avec +100% stats. Priorite absolue aux Vigilante et Thunderbolts qui sont les plus meta de cette liste.",
+        defTeams: ["Vigilante", "Thunderbolt", "Hellfire Club", "Immortal Weapon"],
+        atkTeams: ["Vigilante", "Thunderbolt", "Insidious Six", "Champions"],
+        reason: "+100% stats primaires est enorme. Vigilante et Thunderbolts sont deja meta — avec ce boost ils deviennent quasi imbattables dans ce stage."
+      }
+    ]
+  };
+
+  let html = `<div class="s21-header">
+    <div class="s21-title">${season.name}</div>
+    <div class="s21-global">
+      <div class="s21-rule-title">${season.global.title}</div>
+      <div class="s21-rule-desc">${season.global.desc}</div>
+      <div class="s21-tip">${season.global.tip}</div>
+    </div>
+  </div>`;
+
+  for (const stage of season.stages) {
+    html += `<div class="s21-stage">
+      <div class="s21-stage-header">
+        <div class="s21-stage-num">${stage.num}</div>
+        <div class="s21-stage-name">${stage.name}</div>
+      </div>
+      <div class="s21-rule-desc">${stage.rule}</div>
+      <div class="s21-tip">${stage.tip}</div>
+      <div class="s21-teams-row">
+        <div class="s21-teams-col">
+          <div class="s21-teams-label def-label">Defense</div>
+          ${stage.defTeams.map(t => `<div class="s21-team-pill s21-def">${t}</div>`).join("")}
+        </div>
+        <div class="s21-teams-col">
+          <div class="s21-teams-label atk-label">Attaque</div>
+          ${stage.atkTeams.map(t => `<div class="s21-team-pill s21-atk">${t}</div>`).join("")}
+        </div>
+      </div>
+      <div class="s21-reason">${stage.reason}</div>
+    </div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════
 // ALLIANCE PANEL
 // ═══════════════════════════════════════════════════════════
 
@@ -4710,7 +4820,7 @@ async function loadAlliance() {
 function renderAllianceCard(card) {
   if (!card) return;
 
-  const level = card.level?.current || card.level || "?";
+  const level = (typeof card.level === "object") ? (card.level.completedTier || card.level.current || "?") : (card.level || "?");
   const league = card.warLeague?.name || "?";
   const trophies = card.warTrophies ?? "?";
   const zone = card.warZone || "?";
@@ -8402,9 +8512,8 @@ async function loadDashboard() {
     }
 
     // Parallel API calls
-    const [cardRes, tokensRes, inventoryRes] = await Promise.all([
+    const [cardRes, inventoryRes] = await Promise.all([
       new Promise(r => ext.runtime.sendMessage({ type: "MSF_GET_PLAYER_CARD" }, r)),
-      new Promise(r => ext.runtime.sendMessage({ type: "MSF_GET_UPGRADE_TOKENS" }, r)),
       new Promise(r => ext.runtime.sendMessage({ type: "MSF_GET_INVENTORY" }, r))
     ]);
 
@@ -8412,7 +8521,6 @@ async function loadDashboard() {
     dashboardLoaded = true;
 
     console.log("[Dashboard] Player Card:", JSON.stringify(cardRes, null, 2).substring(0, 1000));
-    console.log("[Dashboard] Upgrade Tokens:", JSON.stringify(tokensRes, null, 2).substring(0, 1000));
     console.log("[Dashboard] Inventory:", JSON.stringify(inventoryRes, null, 2).substring(0, 1000));
 
     // Player Card
@@ -8441,13 +8549,6 @@ async function loadDashboard() {
       await renderGearBottleneck(inventoryRes.data);
     }
 
-    // Upgrade Tokens
-    if (tokensRes && !tokensRes.error && tokensRes.data) {
-      renderUpgradeTokens(tokensRes.data);
-    } else {
-      console.warn("[Dashboard] Tokens error:", tokensRes?.error);
-    }
-
     // Inventory
     if (inventoryRes && !inventoryRes.error && inventoryRes.data) {
       renderInventory(inventoryRes.data);
@@ -8474,8 +8575,20 @@ function renderPlayerCard(data) {
   const arena = data.latestArena || "";
   const warMvp = data.warMvp || 0;
   const blitzRank = data.latestBlitz || "";
-  const icon = data.icon || "";
-  const frame = data.frame || "";
+  // Find avatar: could be nested in icon/portrait/avatar objects or direct URL
+  const findUrl = (...keys) => {
+    for (const k of keys) {
+      const v = data[k];
+      if (!v) continue;
+      if (typeof v === "string" && v.startsWith("http")) return v;
+      if (typeof v === "object" && v.url) return v.url;
+      if (typeof v === "object" && v.image) return v.image;
+    }
+    return "";
+  };
+  const icon = findUrl("icon", "portrait", "avatar", "avatarUrl", "profilePic", "image", "thumbnailUrl");
+  const frame = findUrl("frame", "frameUrl", "profileFrame", "border");
+  console.log("[Dashboard] Player card full data:", JSON.stringify(data, null, 2).substring(0, 2000));
 
   let xpHtml = "";
   if (lvlObj && lvlObj.goal > 0) {
@@ -8805,12 +8918,9 @@ async function renderRosterGapAnalysis() {
 
       // Find farm location
       let farmHint = "";
-      if (!owned && farmingData) {
-        const farmChar = farmingData.find(f => {
-          const fName = (f.name || "").replace(/-/g, "");
-          return fName.toLowerCase() === id.toLowerCase() || fName.toLowerCase() === name.toLowerCase().replace(/\s/g, "");
-        });
-        if (farmChar && farmChar.locations && farmChar.locations.length > 0) {
+      if (!owned && farmingData?.characters) {
+        const farmChar = farmingData.characters[id];
+        if (farmChar?.locations?.length > 0) {
           farmHint = farmChar.locations.slice(0, 2).map(l => l.name || l).join(", ");
         }
       }
@@ -9315,94 +9425,178 @@ async function renderRecommendations() {
   }
   const charIndex = {};
   for (const [id, c] of Object.entries(charactersData?.characters || {})) {
-    charIndex[id.toLowerCase()] = c;
+    charIndex[id.toLowerCase()] = { ...c, _id: id };
   }
 
-  // Load counters to understand which teams matter
-  let countersData = null;
-  try {
-    const resp = await fetch(ext.runtime.getURL("data/counters.json"));
-    countersData = await resp.json();
-  } catch (e) { /* ignore */ }
-
-  // Count how many counter teams each character appears in
-  const charTeamCount = {};
-  if (countersData) {
-    const teams = countersData.teams || teamsData || [];
-    teams.forEach(team => {
-      (team.memberIds || []).forEach(id => {
-        charTeamCount[id] = (charTeamCount[id] || 0) + 1;
-      });
-    });
-  }
-
-  // Score each character:
-  // - Higher tier = less ROI (already strong)
-  // - More team appearances = higher priority
-  // - Low stars = higher upgrade potential
-  const scored = [];
+  // Build roster lookup: charId -> { tier, stars, power }
+  const rosterIndex = {};
   roster.forEach(c => {
     const id = c.id || c.characterId || "";
-    const tier = c.gearTier || c.tier || 0;
-    const stars = c.activeYellow || c.stars || 0;
-    const power = c.power || 0;
-    const char = charIndex[id.toLowerCase()];
-
-    if (tier >= 19 || !char) return; // Skip maxed or unknown
-
-    let score = 0;
-    const teamAppearances = charTeamCount[id] || 0;
-
-    // Team utility (most important)
-    score += teamAppearances * 15;
-
-    // Gear upgrade potential (mid-tier chars benefit most)
-    if (tier >= 14 && tier < 17) score += 30; // sweet spot
-    else if (tier >= 12 && tier < 14) score += 20;
-    else if (tier >= 17) score += 10;
-
-    // Star potential
-    if (stars < 7) score += (7 - stars) * 5;
-
-    // Power weight (lower power = more room for growth)
-    if (power > 0 && power < 200000) score += 15;
-    else if (power >= 200000 && power < 500000) score += 8;
-
-    scored.push({
-      id,
-      name: char.name || id,
-      portrait: char.portrait || "",
-      tier,
-      stars,
-      power,
-      teams: teamAppearances,
-      score
-    });
+    rosterIndex[id] = {
+      tier: c.gearTier || c.tier || 0,
+      stars: c.activeYellow || c.stars || 0,
+      power: c.power || 0
+    };
   });
 
-  scored.sort((a, b) => b.score - a.score);
-  const top = scored.slice(0, 8);
+  // Team meta data: modes and era
+  const teamMeta = {
+    aforce:{modes:["war","crucible"],era:"legacy"},absoluteaforce:{modes:["crucible","war"],era:"mid"},
+    alphaflight:{modes:["war","crucible"],era:"mid"},astonishing:{modes:["war","crucible","raid"],era:"mid"},
+    bifrost:{modes:["crucible","war","raid"],era:"meta"},brimstone:{modes:["crucible","war","raid"],era:"meta"},
+    darkhunter:{modes:["crucible","war","raid"],era:"meta"},defender:{modes:["war"],era:"legacy"},
+    fantasticfourmcu:{modes:["crucible","war","battleworld"],era:"mid"},hellfireclub:{modes:["crucible","war"],era:"mid"},
+    heroesforhire:{modes:["war"],era:"legacy"},hivemind:{modes:["crucible","war","raid"],era:"meta"},
+    immortalweapon:{modes:["war","crucible"],era:"legacy"},infinitywatch:{modes:["war","crucible"],era:"legacy"},
+    knowhere:{modes:["crucible","war"],era:"mid"},liberty:{modes:["crucible","war","battleworld"],era:"mid"},
+    newavenger:{modes:["war"],era:"legacy"},newmutant:{modes:["crucible","war"],era:"mid"},
+    newwarrior:{modes:["war","crucible"],era:"legacy"},nightstalker:{modes:["crucible","war","raid"],era:"meta"},
+    pegasus:{modes:["crucible","war","raid","battleworld"],era:"meta"},retcon:{modes:["crucible","war"],era:"mid"},
+    secretdefender:{modes:["crucible","war"],era:"mid"},secretwarrior:{modes:["crucible","war","raid"],era:"meta"},
+    shadowland:{modes:["war"],era:"legacy"},spidersociety:{modes:["crucible","war","battleworld"],era:"mid"},
+    starjammer:{modes:["crucible","war"],era:"mid"},supernatural:{modes:["war"],era:"legacy"},
+    unlimited:{modes:["crucible","war","raid"],era:"mid"},vigilante:{modes:["crucible","war","raid"],era:"meta"},
+    wardog:{modes:["war","crucible"],era:"mid"},webwarrior:{modes:["war","raid"],era:"legacy"},
+    winterguard:{modes:["war"],era:"legacy"},xfactor:{modes:["crucible","war"],era:"mid"},
+    xtreme:{modes:["crucible","war","raid"],era:"mid"},xforce:{modes:["war","crucible"],era:"legacy"},
+    accursed:{modes:["crucible","war","raid"],era:"meta"},annihilator:{modes:["crucible","war","raid","battleworld"],era:"meta"},
+    cabal:{modes:["crucible","war","raid"],era:"meta"},darkhold:{modes:["war","crucible"],era:"legacy"},
+    deathseed:{modes:["crucible","war"],era:"mid"},horseman:{modes:["crucible","war"],era:"mid"},
+    marauders:{modes:["war","crucible"],era:"legacy"},mercsformoney:{modes:["war"],era:"legacy"},
+    mightyavenger:{modes:["crucible","war"],era:"mid"},outoftime:{modes:["crucible","war","raid"],era:"meta"},
+    powerarmor:{modes:["war"],era:"legacy"},pymtech:{modes:["war"],era:"legacy"},
+    superiorsix:{modes:["crucible","war"],era:"mid"},thunderbolt:{modes:["crucible","war","battleworld"],era:"mid"},
+    uncannyavenger:{modes:["crucible","war"],era:"mid"},undying:{modes:["crucible","war","raid"],era:"meta"},
+    weaponx:{modes:["war","crucible","raid"],era:"legacy"},youngavenger:{modes:["war"],era:"legacy"},
+    gamma:{modes:["crucible","war","raid"],era:"mid"},astral:{modes:["crucible","war","raid"],era:"meta"},
+    orchis:{modes:["crucible","war","raid"],era:"meta"},illuminati:{modes:["crucible","war"],era:"mid"},
+    eternals:{modes:["war","crucible"],era:"legacy"},blackorder:{modes:["war","crucible"],era:"legacy"},
+    underworld:{modes:["war","crucible"],era:"legacy"},sinistersix:{modes:["war"],era:"legacy"},
+    tangled:{modes:["crucible","war","raid"],era:"meta"},infestation:{modes:["crucible","war"],era:"mid"},
+    immortalxmen:{modes:["crucible","war"],era:"mid"},insidioussix:{modes:["war"],era:"legacy"},
+    spiderweaver:{modes:["crucible","war"],era:"mid"}
+  };
+  const eraMultiplier = { meta: 3, mid: 1.5, legacy: 0.3 };
+  const eraLabel = { meta: "META", mid: "", legacy: "ancien" };
+  const eraColor = { meta: "#51cf66", mid: "", legacy: "#868e96" };
 
-  if (top.length === 0) return;
+  // Analyze teams per mode
+  // candidates[mode][charId] = { score, reasons[], name, portrait, tier, stars, power, teamEra }
+  const modes = ["crucible", "war", "raid", "battleworld"];
+  const candidatesByMode = {};
+  modes.forEach(m => { candidatesByMode[m] = new Map(); });
 
+  const teams = teamsData || [];
+  for (const team of teams) {
+    const memberIds = team.memberIds || [];
+    if (memberIds.length === 0) continue;
+    // Skip variant teams (with underscore) — use base team meta
+    const baseId = team.id.includes("_") ? team.id.split("_")[0] : team.id;
+    const meta = teamMeta[baseId];
+    if (!meta) continue;
+
+    const era = meta.era;
+    const mult = eraMultiplier[era] || 1;
+
+    // Check team completeness
+    const owned = [];
+    const missing = [];
+    let teamPower = 0;
+    for (const mid of memberIds) {
+      const r = rosterIndex[mid];
+      if (r && r.power > 0) {
+        owned.push({ id: mid, ...r });
+        teamPower += r.power;
+      } else {
+        missing.push(mid);
+      }
+    }
+
+    const addCandidate = (charId, baseScore, reason, mode) => {
+      const char = charIndex[charId.toLowerCase()];
+      if (!char || char.status === "summon") return;
+      const map = candidatesByMode[mode];
+      if (!map) return;
+      const r = rosterIndex[charId] || {};
+      const prev = map.get(charId) || { score: 0, reasons: [], name: char.name || charId, portrait: char.portrait || "", tier: r.tier || 0, stars: r.stars || 0, power: r.power || 0, bestEra: era };
+      prev.score += Math.round(baseScore * mult);
+      prev.reasons.push(reason);
+      if (eraMultiplier[era] > eraMultiplier[prev.bestEra || "legacy"]) prev.bestEra = era;
+      map.set(charId, prev);
+    };
+
+    // Case 1: 1 member missing — HIGH priority
+    if (missing.length === 1 && owned.length >= 4) {
+      for (const mode of meta.modes) {
+        addCandidate(missing[0], 50, `manque dans ${team.name}`, mode);
+      }
+    }
+
+    // Case 2: 2 members missing — moderate priority
+    if (missing.length === 2 && owned.length >= 3) {
+      for (const mid of missing) {
+        for (const mode of meta.modes) {
+          addCandidate(mid, 20, `manque dans ${team.name}`, mode);
+        }
+      }
+    }
+
+    // Case 3: all owned but weakest member is bottleneck
+    if (missing.length === 0 && owned.length >= 4) {
+      const avgPower = teamPower / owned.length;
+      const weakest = owned.reduce((a, b) => a.power < b.power ? a : b);
+      if (weakest.power < avgPower * 0.6 && weakest.tier < 19) {
+        for (const mode of meta.modes) {
+          addCandidate(weakest.id, 30, `faible dans ${team.name}`, mode);
+        }
+      }
+    }
+  }
+
+  // Render by mode
+  const modeLabels = { crucible: "Crucible", war: "War", raid: "Raids", battleworld: "Battleworld" };
+  const modeIcons = { crucible: "⚔", war: "🛡", raid: "👥", battleworld: "🌐" };
   let html = `<div class="dash-section-title">Qui monter en priorite</div>`;
-  top.forEach(c => {
-    const reasons = [];
-    if (c.teams > 0) reasons.push(`${c.teams} equipes`);
-    reasons.push(`G${c.tier}`);
-    if (c.stars < 7) reasons.push(`${c.stars}★`);
-    if (c.power > 0) reasons.push(formatNumber(c.power));
+  let hasAny = false;
 
-    html += `<div class="rec-card">
-      ${c.portrait ? `<img src="${c.portrait}" class="rec-portrait">` : ""}
-      <div class="rec-info">
-        <div class="rec-name">${c.name}</div>
-        <div class="rec-reason">${reasons.join(" · ")}</div>
-      </div>
-      <div class="rec-score">${c.score}</div>
-    </div>`;
-  });
+  for (const mode of modes) {
+    const map = candidatesByMode[mode];
+    const sorted = [...map.entries()]
+      .map(([id, data]) => ({ id, ...data }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5);
 
+    if (sorted.length === 0) continue;
+    hasAny = true;
+
+    html += `<div class="rec-mode-section">
+      <div class="rec-mode-title">${modeIcons[mode]} ${modeLabels[mode]}</div>`;
+
+    sorted.forEach(c => {
+      const uniqueReasons = [...new Set(c.reasons)].slice(0, 2);
+      const details = [];
+      if (c.tier > 0) details.push(`G${c.tier}`);
+      if (c.stars > 0 && c.stars < 7) details.push(`${c.stars}★`);
+      if (c.power > 0) details.push(formatNumber(c.power));
+
+      const era = c.bestEra || "mid";
+      const badge = eraLabel[era];
+      const badgeHtml = badge ? `<span class="rec-era" style="color:${eraColor[era]}">${badge}</span>` : "";
+
+      html += `<div class="rec-card">
+        ${c.portrait ? `<img src="${c.portrait}" class="rec-portrait">` : ""}
+        <div class="rec-info">
+          <div class="rec-name">${c.name} ${badgeHtml}</div>
+          <div class="rec-reason">${uniqueReasons.join(" · ")}</div>
+          ${details.length ? `<div class="rec-reason" style="opacity:0.5">${details.join(" · ")}</div>` : ""}
+        </div>
+      </div>`;
+    });
+
+    html += `</div>`;
+  }
+
+  if (!hasAny) return;
   container.innerHTML = html;
   container.classList.remove("hidden");
 }

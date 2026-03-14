@@ -379,7 +379,7 @@ ext.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       clientId: MSF_OAUTH.clientId,
       authUrl: "https://hydra-public.prod.m3.scopelypv.com/oauth2/auth",
       redirectUri: "https://piouscott.github.io/msf-ocr-hud/callback.html",
-      scopes: "openid offline m3p.f.pr.pro m3p.f.pr.ros m3p.f.pr.inv m3p.f.pr.act m3p.f.ar.pro"
+      scopes: "openid offline m3p.f.pr.pro m3p.f.pr.ros m3p.f.pr.inv m3p.f.pr.act m3p.f.ar.pro m3p.f.pr.buy"
     });
     return true;
   }

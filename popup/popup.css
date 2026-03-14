@@ -5514,11 +5514,120 @@ body.compact-mode .global-search-input {
   color: #8b949e;
 }
 
-.rec-score {
-  font-size: 14px;
+.rec-mode-section {
+  margin-bottom: 10px;
+}
+.rec-mode-title {
+  font-size: 11px;
   font-weight: 700;
-  color: #fcc419;
-  flex-shrink: 0;
+  color: #7c8da6;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid #2d3e56;
+}
+.rec-era {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: 4px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.06);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SEASON 21 GUIDE
+   ═══════════════════════════════════════════════════════════ */
+.s21-header { margin-bottom: 14px; }
+.s21-title {
+  font-size: 15px; font-weight: 700; color: #fff;
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.s21-title::before {
+  content: ""; display: inline-block;
+  width: 4px; height: 18px; border-radius: 2px;
+  background: linear-gradient(180deg, #845ef7, #d4af37);
+}
+.s21-global {
+  background: linear-gradient(135deg, #1a1a3e, #12122a);
+  border: 1px solid #3d2d6b; border-radius: 8px;
+  padding: 12px; margin-bottom: 12px;
+  border-left: 3px solid #845ef7;
+}
+.s21-rule-title {
+  font-size: 11px; font-weight: 700; color: #b197fc;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.s21-rule-desc {
+  font-size: 11px; color: #8b949e; margin-bottom: 6px; line-height: 1.5;
+}
+.s21-tip {
+  font-size: 10px; color: #fcc419; line-height: 1.4;
+  padding: 6px 8px; border-radius: 4px;
+  background: rgba(252,196,25,0.08);
+  border-left: 2px solid rgba(252,196,25,0.4);
+}
+.s21-stage {
+  background: linear-gradient(135deg, #16162a, #12122a);
+  border: 1px solid #2d3e56; border-radius: 8px;
+  padding: 12px; margin-bottom: 10px;
+  transition: border-color 0.2s;
+}
+.s21-stage:hover { border-color: #845ef7; }
+.s21-stage-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 8px; padding-bottom: 6px;
+  border-bottom: 1px solid #1e1e3e;
+}
+.s21-stage-num {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: linear-gradient(135deg, #845ef7, #6741d9);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.s21-stage-name {
+  font-size: 12px; font-weight: 700; color: #fff;
+}
+.s21-teams-row {
+  display: flex; gap: 8px; margin: 10px 0 6px;
+}
+.s21-teams-col { flex: 1; min-width: 0; }
+.s21-teams-label {
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.8px; margin-bottom: 5px; padding-bottom: 3px;
+}
+.s21-teams-label.def-label { color: #ff6b6b; border-bottom: 1px solid rgba(255,107,107,0.2); }
+.s21-teams-label.atk-label { color: #51cf66; border-bottom: 1px solid rgba(81,207,102,0.2); }
+.s21-team-pill {
+  font-size: 10px; font-weight: 600; padding: 4px 8px;
+  border-radius: 5px; margin-bottom: 4px;
+  display: flex; align-items: center; gap: 4px;
+}
+.s21-def {
+  background: rgba(255,107,107,0.08); color: #ff8787;
+  border: 1px solid rgba(255,107,107,0.18);
+}
+.s21-atk {
+  background: rgba(81,207,102,0.08); color: #69db7c;
+  border: 1px solid rgba(81,207,102,0.18);
+}
+.s21-team-pill:first-of-type { font-weight: 700; }
+.s21-def:first-of-type {
+  background: rgba(255,107,107,0.15); border-color: rgba(255,107,107,0.35);
+  color: #ffa8a8;
+}
+.s21-atk:first-of-type {
+  background: rgba(81,207,102,0.15); border-color: rgba(81,207,102,0.35);
+  color: #8ce99a;
+}
+.s21-reason {
+  font-size: 10px; color: #6b7d96; line-height: 1.4;
+  margin-top: 6px; padding-top: 6px; border-top: 1px solid #1e1e3e;
 }
 
 /* ═══════════════════════════════════════════════════════════

@@ -369,6 +369,10 @@
         "confidence": 80
       },
       {
+        "team": "retcon",
+        "confidence": 80
+      },
+      {
         "team": "vigilante",
         "confidence": 65
       },
@@ -803,6 +807,10 @@
         "team": "hivemind",
         "confidence": 80,
         "notes": "+ Kull, start with Knull’s Ultimate"
+      },
+      {
+        "team": "retcon",
+        "confidence": 80
       }
     ],
     "hivemind": [
@@ -1135,6 +1143,10 @@
         "confidence": 80
       },
       {
+        "team": "retcon",
+        "confidence": 80
+      },
+      {
         "team": "cabal",
         "confidence": 65,
         "notes": "+ Kang + 1"
@@ -1323,6 +1335,10 @@
       {
         "team": "hellfireclub",
         "confidence": 80
+      },
+      {
+        "team": "retcon",
+        "confidence": 80
       }
     ],
     "infestation": [
@@ -1386,6 +1402,10 @@
         "team": "hivemind",
         "confidence": 80,
         "notes": "+ Knull, no Venom"
+      },
+      {
+        "team": "retcon",
+        "confidence": 80
       }
     ],
     "vigilante": [
@@ -1646,6 +1666,10 @@
       {
         "team": "mightyavenger",
         "confidence": 80
+      },
+      {
+        "team": "retcon",
+        "confidence": 75
       },
       {
         "team": "thunderbolt",
@@ -1944,6 +1968,10 @@
         "confidence": 80
       },
       {
+        "team": "retcon",
+        "confidence": 75
+      },
+      {
         "team": "superiorsix",
         "confidence": 65
       },
@@ -1999,6 +2027,10 @@
       },
       {
         "team": "newavenger",
+        "confidence": 80
+      },
+      {
+        "team": "retcon",
         "confidence": 80
       },
       {
@@ -2483,6 +2515,10 @@
         "notes": "+ Cable / Oath / Emma Frost, no Yelena Belova"
       },
       {
+        "team": "retcon",
+        "confidence": 95
+      },
+      {
         "team": "winterguard",
         "confidence": 80
       }
@@ -2532,6 +2568,10 @@
       },
       {
         "team": "illuminati",
+        "confidence": 80
+      },
+      {
+        "team": "retcon",
         "confidence": 80
       },
       {
@@ -2672,6 +2712,10 @@
       {
         "team": "aforce",
         "confidence": 80
+      },
+      {
+        "team": "retcon",
+        "confidence": 75
       }
     ],
     "tangledweb": [
@@ -2884,6 +2928,10 @@
         "confidence": 80
       },
       {
+        "team": "retcon",
+        "confidence": 70
+      },
+      {
         "team": "secretdefender",
         "confidence": 65,
         "notes": "without Photon"
@@ -2908,6 +2956,33 @@
       {
         "team": "annihilator",
         "confidence": 65
+      }
+    ],
+    "retcon": [
+      {
+        "team": "fantasticfourmcu",
+        "confidence": 95,
+        "notes": "+ Professor Xavier"
+      },
+      {
+        "team": "hellfireclub",
+        "confidence": 95,
+        "notes": "+ Professor Xavier — Ability Block Jeff with Professor X (primary target) and focus She-Hulk"
+      },
+      {
+        "team": "xtreme",
+        "confidence": 80,
+        "notes": "Professor Xavier + Emma Frost + Sentry + Oath + Storm — stun key targets"
+      },
+      {
+        "team": "newmutant",
+        "confidence": 70,
+        "notes": "Professor Xavier + Old Man Logan + Storm + Cannonball + Wolfsbane — replace She-Hulk with OML"
+      },
+      {
+        "team": "winterguard",
+        "confidence": 30,
+        "notes": "+ Emma Frost — unreliable"
       }
     ]
   }
