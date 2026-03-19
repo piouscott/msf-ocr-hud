@@ -823,8 +823,10 @@ class WarAnalyzer {
   }
 
   /**
-   * Detecte si un portrait individuel est barre d'une croix rouge (perso elimine)
-   * Analyse la concentration de pixels rouges sur les diagonales vs le reste
+   * Detecte si un portrait individuel est un perso elimine.
+   * Deux modes de detection :
+   * 1) Croix rouge (X) sur les diagonales
+   * 2) Portrait tres assombri (voile sombre/rouge) = perso battu sans X visible
    */
   async detectDefeatedPortrait(imageDataUrl) {
     const img = await this.loadImage(imageDataUrl);
@@ -841,13 +843,37 @@ class WarAnalyzer {
     let offRed = 0, offTotal = 0;
     const bandWidth = size * 0.15;
 
+    // Stats sur la zone CENTRALE du portrait (masque circulaire)
+    // pour ignorer le fond sombre/rouge de la carte de guerre
+    const cx = size / 2, cy = size / 2;
+    const maxR = size * 0.35; // ~35% du rayon = zone portrait uniquement
+    let centerPixels = 0;
+    let sumV = 0;
+    let darkPixels = 0;
+    let redDarkPixels = 0;
+
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
         const idx = (y * size + x) * 4;
         const r = data[idx], g = data[idx + 1], b = data[idx + 2];
         const hsv = this.rgbToHsv(r, g, b);
-        if (hsv.s < 0.15 || hsv.v < 0.10) continue;
 
+        // Zone centrale uniquement pour detection assombrissement
+        const dx = x - cx, dy = y - cy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist <= maxR) {
+          centerPixels++;
+          sumV += hsv.v;
+          if (hsv.v < 0.20) {
+            darkPixels++;
+            if ((hsv.h < 30 || hsv.h > 330) && hsv.s > 0.10) {
+              redDarkPixels++;
+            }
+          }
+        }
+
+        // Detection croix rouge sur toute l'image (methode originale)
+        if (hsv.s < 0.15 || hsv.v < 0.10) continue;
         const isRed = hsv.h < 25 || hsv.h > 335;
         const d1 = Math.abs(y - x);
         const d2 = Math.abs(y - (size - 1 - x));
@@ -863,12 +889,92 @@ class WarAnalyzer {
       }
     }
 
+    // Mode 1: croix rouge diagonale
     const diagRatio = diagTotal > 0 ? diagRed / diagTotal : 0;
     const offRatio = offTotal > 0 ? offRed / offTotal : 0;
-    const isDefeated = diagRatio > 0.40 && diagRatio > offRatio * 2.0;
+    const hasCross = diagRatio > 0.40 && diagRatio > offRatio * 2.0;
 
-    console.log(`[WarAnalyzer] Defeated check: diag=${(diagRatio * 100).toFixed(0)}% off=${(offRatio * 100).toFixed(0)}%${isDefeated ? ' → DEFEATED' : ''}`);
+    // Mode 2: zone centrale du portrait tres assombrie
+    // Les portraits normaux ont un fond sombre mais le visage est clair (avgV > 0.25)
+    // Un perso battu a le visage AUSSI assombri (avgV < 0.13) avec quasi tout sombre
+    const avgV = centerPixels > 0 ? sumV / centerPixels : 1;
+    const darkRatio = centerPixels > 0 ? darkPixels / centerPixels : 0;
+    const redDarkRatio = centerPixels > 0 ? redDarkPixels / centerPixels : 0;
+    const isDarkened = avgV < 0.13 && darkRatio > 0.75;
+    const isRedDarkened = avgV < 0.18 && redDarkRatio > 0.40 && darkRatio > 0.65;
+
+    const isDefeated = hasCross || isDarkened || isRedDarkened;
+
+    console.log(`[WarAnalyzer] Defeated check: diag=${(diagRatio * 100).toFixed(0)}% off=${(offRatio * 100).toFixed(0)}% avgV=${avgV.toFixed(2)} dark=${(darkRatio * 100).toFixed(0)}% redDark=${(redDarkRatio * 100).toFixed(0)}%${isDefeated ? ' → DEFEATED' : ''}`);
     return isDefeated;
+  }
+
+  /**
+   * Detecte si un portrait a un overlay defense (teinte doree/jaune)
+   * @returns {Promise<boolean>}
+   */
+  async detectDefenseOverlay(imageDataUrl) {
+    const img = await this.loadImage(imageDataUrl);
+    const canvas = document.createElement("canvas");
+    const size = 64;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0, size, size);
+    const imageData = ctx.getImageData(0, 0, size, size);
+    const data = imageData.data;
+
+    let yellowPixels = 0;
+    let totalSaturated = 0;
+
+    for (let i = 0; i < data.length; i += 4) {
+      const hsv = this.rgbToHsv(data[i], data[i + 1], data[i + 2]);
+      if (hsv.s < 0.15 || hsv.v < 0.15) continue;
+      totalSaturated++;
+      // Jaune/or = hue 30-70°
+      if (hsv.h >= 30 && hsv.h <= 70 && hsv.s > 0.25) {
+        yellowPixels++;
+      }
+    }
+
+    const yellowRatio = totalSaturated > 0 ? yellowPixels / totalSaturated : 0;
+    const hasOverlay = yellowRatio > 0.35;
+
+    console.log(`[WarAnalyzer] Defense overlay check: yellow=${(yellowRatio * 100).toFixed(0)}%${hasOverlay ? ' → DEFENSE' : ''}`);
+    return hasOverlay;
+  }
+
+  /**
+   * Compense l'overlay defense jaune sur un portrait
+   * Reduit la composante jaune/or pour retrouver les couleurs originales
+   * @returns {Promise<string>} data URL de l'image compensee
+   */
+  async compensateDefenseOverlay(imageDataUrl) {
+    const img = await this.loadImage(imageDataUrl);
+    const canvas = document.createElement("canvas");
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+      let r = data[i], g = data[i + 1], b = data[i + 2];
+      const hsv = this.rgbToHsv(r, g, b);
+
+      // Reduire la teinte jaune/or (hue 25-75°) en desaturant partiellement
+      // et en reequilibrant les canaux
+      if (hsv.h >= 25 && hsv.h <= 75 && hsv.s > 0.20) {
+        // Attenuuer le vert (la composante jaune = R+G)
+        // et augmenter legerement le bleu pour compenser
+        data[i + 1] = Math.max(0, Math.round(g * 0.75)); // reduire vert
+        data[i + 2] = Math.min(255, Math.round(b * 1.3)); // augmenter bleu
+      }
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+    return canvas.toDataURL("image/png");
   }
 
   /**

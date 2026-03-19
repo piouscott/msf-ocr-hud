@@ -6897,7 +6897,7 @@ async function handleScanSalle(debugMode = false) {
     for (let i = 0; i < slot.portraits.length; i++) {
       const dataUrl = slot.portraits[i];
 
-      // Detecter portrait elimine (croix rouge X)
+      // Detecter portrait elimine (assombri/rouge/croix)
       const isDefeated = await warAnalyzer.detectDefeatedPortrait(dataUrl);
       if (isDefeated) {
         team.portraits.push({
@@ -6910,13 +6910,32 @@ async function handleScanSalle(debugMode = false) {
         continue;
       }
 
-      const hueHist = await warAnalyzer.computeHueHistogram(dataUrl);
-      const hash = await warAnalyzer.computePortraitHash(dataUrl);
+      // Detecter et compenser l'overlay defense (teinte jaune/or)
+      let effectiveDataUrl = dataUrl;
+      let hasDefenseOverlay = false;
+      try {
+        hasDefenseOverlay = await warAnalyzer.detectDefenseOverlay(dataUrl);
+        if (hasDefenseOverlay) {
+          effectiveDataUrl = await warAnalyzer.compensateDefenseOverlay(dataUrl);
+          console.log(`[ScanSalle] E${slot.slotNumber}-P${i + 1} overlay defense detecte → compensation appliquee`);
+        }
+      } catch (e) {
+        console.warn(`[ScanSalle] Erreur detection overlay defense:`, e);
+      }
+
+      const hueHist = await warAnalyzer.computeHueHistogram(effectiveDataUrl);
+      const hash = await warAnalyzer.computePortraitHash(effectiveDataUrl);
 
       // DB apprise d'abord (meme rendu = fiable), puis CDN (best effort)
       let match = warAnalyzer.findLearnedMatch(hueHist, hash);
       if (!match) {
         match = warAnalyzer.findCombinedMatch(hueHist, hash, 70, 2.0);
+      }
+
+      // Si overlay defense et pas de match, retenter avec seuil plus bas
+      if (!match && hasDefenseOverlay) {
+        match = warAnalyzer.findCombinedMatch(hueHist, hash, 60, 1.5);
+        if (match) console.log(`[ScanSalle] E${slot.slotNumber}-P${i + 1} match defense overlay (seuil bas): ${match.name} ${match.similarity}%`);
       }
 
       team.portraits.push({
@@ -6926,7 +6945,8 @@ async function handleScanSalle(debugMode = false) {
         charId: match?.charId || null,
         name: match?.name || null,
         similarity: match?.similarity || 0,
-        learned: match?.method === "learned"
+        learned: match?.method === "learned",
+        defenseOverlay: hasDefenseOverlay
       });
     }
 
@@ -8000,6 +8020,18 @@ async function displayScanDebug(screenshotDataUrl, slots, cropper) {
   html += `<button id="debug-save-calib" style="padding:4px 12px;background:#51cf66;color:#0a0a14;border:none;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600;">Sauvegarder la calibration</button>`;
   html += `</div>`;
   html += `<div id="debug-save-status" style="font-size:10px;color:#666;margin-top:4px;"></div>`;
+  html += `<div style="margin-top:6px;display:flex;align-items:center;gap:6px;">`;
+  html += `<label style="font-size:10px;color:#aaa;cursor:pointer;display:flex;align-items:center;gap:4px;"><input type="checkbox" id="debug-calib-power" style="accent-color:#00ffff;"> Calibrer aussi les zones Power (4 clics supplementaires)</label>`;
+  html += `</div>`;
+  html += `<div style="margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">`;
+  html += `<span style="font-size:10px;color:#aaa;">Corriger un point :</span>`;
+  html += `<select id="debug-edit-point" style="font-size:10px;background:#1a1a2e;color:#e0e0e0;border:1px solid #444;border-radius:3px;padding:1px 4px;">`;
+  html += `<option value="">—</option>`;
+  ["E1-P1","E1-P2","E1-P3","E1-P4","E1-P5","E2-P1","E2-P2","E2-P3","E2-P4","E2-P5","E3-P1","E3-P2","E3-P3","E3-P4","E3-P5","E4-P1","E4-P2","E4-P3","E4-P4","E4-P5","E1-PWR","E2-PWR","E3-PWR","E4-PWR"].forEach(l => { html += `<option value="${l}">${l}</option>`; });
+  html += `</select>`;
+  html += `<button id="debug-edit-point-btn" style="font-size:10px;padding:2px 8px;background:#ff922b;color:#fff;border:none;border-radius:3px;cursor:pointer;">Repositionner</button>`;
+  html += `<span id="debug-edit-status" style="font-size:10px;color:#888;"></span>`;
+  html += `</div>`;
   html += `<div style="font-size:10px;color:#666;margin-top:8px;">Clique sur le screenshot pour marquer les centres des portraits. Les rectangles colores montrent les zones actuelles.</div>`;
 
   html += `</div>`;
@@ -8047,11 +8079,16 @@ async function displayScanDebug(screenshotDataUrl, slots, cropper) {
   const magnifier = document.getElementById("debug-magnifier");
   const magInner = document.getElementById("debug-mag-inner");
   const calibPoints = [];
+  const powerPoints = []; // 4 points optionnels pour les zones power
   const portraitLabels = ["E1-P1", "E1-P2", "E1-P3", "E1-P4", "E1-P5",
                           "E2-P1", "E2-P2", "E2-P3", "E2-P4", "E2-P5",
                           "E3-P1", "E3-P2", "E3-P3", "E3-P4", "E3-P5",
                           "E4-P1", "E4-P2", "E4-P3", "E4-P4", "E4-P5"];
+  const powerLabels = ["E1-PWR", "E2-PWR", "E3-PWR", "E4-PWR"];
   let clickIndex = 0;
+  let powerClickIndex = 0;
+  let inPowerMode = false;
+  let editingPoint = null; // { label, type: "portrait"|"power", index }
   const ZOOM = 4;
   const MAG_SIZE = 140;
 
@@ -8083,10 +8120,31 @@ async function displayScanDebug(screenshotDataUrl, slots, cropper) {
     magnifier.style.display = "none";
   });
 
-  const calibMarkers = [];
+  const calibMarkers = []; // index 0-19 = portraits, 20-23 = power
+
+  // --- Bouton "Repositionner" un point existant ---
+  document.getElementById("debug-edit-point-btn").addEventListener("click", () => {
+    const sel = document.getElementById("debug-edit-point");
+    const status = document.getElementById("debug-edit-status");
+    const label = sel.value;
+    if (!label) { status.textContent = "Selectionne un point."; status.style.color = "#ff6b6b"; return; }
+
+    const pIdx = portraitLabels.indexOf(label);
+    const pwrIdx = powerLabels.indexOf(label);
+
+    if (pIdx >= 0) {
+      editingPoint = { label, type: "portrait", index: pIdx };
+    } else if (pwrIdx >= 0) {
+      editingPoint = { label, type: "power", index: pwrIdx };
+    } else {
+      status.textContent = "Point invalide."; status.style.color = "#ff6b6b"; return;
+    }
+
+    status.textContent = `Clique sur le screenshot pour repositionner ${label}`;
+    status.style.color = "#ff922b";
+  });
 
   container.addEventListener("click", (e) => {
-    if (clickIndex >= 20) return;
     const rect = debugImg.getBoundingClientRect();
     const scaleX = imgW / rect.width;
     const scaleY = imgH / rect.height;
@@ -8095,43 +8153,125 @@ async function displayScanDebug(screenshotDataUrl, slots, cropper) {
     const nx = (px - gameArea.x) / gameArea.w;
     const ny = (py - gameArea.y) / gameArea.h;
 
-    const label = portraitLabels[clickIndex];
-    calibPoints.push({ label, px: Math.round(px), py: Math.round(py), nx: +nx.toFixed(4), ny: +ny.toFixed(4) });
+    // --- Mode edition ponctuelle ---
+    if (editingPoint) {
+      const ep = editingPoint;
+      const status = document.getElementById("debug-edit-status");
 
-    // Marqueur visuel sur le screenshot
-    const marker = document.createElement("div");
-    marker.style.cssText = `position:absolute;left:${(px/imgW*100)}%;top:${(py/imgH*100)}%;width:8px;height:8px;background:#fff;border:2px solid #000;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:10;`;
-    container.appendChild(marker);
-    calibMarkers.push(marker);
+      if (ep.type === "portrait") {
+        // Mettre a jour le point portrait existant
+        const oldPoint = calibPoints[ep.index];
+        calibPoints[ep.index] = { label: ep.label, px: Math.round(px), py: Math.round(py), nx: +nx.toFixed(4), ny: +ny.toFixed(4) };
 
-    // Log
-    clickLog.innerHTML += `<div id="calib-log-${clickIndex}"><span style="color:#00d4ff;">${label}</span>: x=${nx.toFixed(4)}, y=${ny.toFixed(4)} (${Math.round(px)}, ${Math.round(py)}px)</div>`;
-    clickLog.scrollTop = clickLog.scrollHeight;
+        // Remplacer le marqueur visuel
+        if (calibMarkers[ep.index]) calibMarkers[ep.index].remove();
+        const marker = document.createElement("div");
+        marker.style.cssText = `position:absolute;left:${(px/imgW*100)}%;top:${(py/imgH*100)}%;width:8px;height:8px;background:#ff922b;border:2px solid #fff;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:10;`;
+        container.appendChild(marker);
+        calibMarkers[ep.index] = marker;
 
-    clickIndex++;
-    if (clickIndex >= 20) {
-      clickLog.innerHTML += `<div style="color:#44ff44;font-weight:bold;">Calibration complete ! Sauvegarde ou copie les coordonnees.</div>`;
+        clickLog.innerHTML += `<div><span style="color:#ff922b;">${ep.label} corrige</span>: x=${nx.toFixed(4)}, y=${ny.toFixed(4)}</div>`;
+      } else if (ep.type === "power") {
+        // Mettre a jour le point power
+        powerPoints[ep.index] = { label: ep.label, px: Math.round(px), py: Math.round(py), nx: +nx.toFixed(4), ny: +ny.toFixed(4) };
+
+        const markerIdx = 20 + ep.index;
+        if (calibMarkers[markerIdx]) calibMarkers[markerIdx].remove();
+        const marker = document.createElement("div");
+        marker.style.cssText = `position:absolute;left:${(px/imgW*100)}%;top:${(py/imgH*100)}%;width:8px;height:8px;background:#00ffff;border:2px solid #fff;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:10;`;
+        container.appendChild(marker);
+        calibMarkers[markerIdx] = marker;
+
+        clickLog.innerHTML += `<div><span style="color:#00ffff;">${ep.label} corrige</span>: x=${nx.toFixed(4)}, y=${ny.toFixed(4)}</div>`;
+      }
+
+      clickLog.scrollTop = clickLog.scrollHeight;
+      status.textContent = `${ep.label} repositionne !`;
+      status.style.color = "#51cf66";
+      editingPoint = null;
+      return;
+    }
+
+    const calibPowerCheckbox = document.getElementById("debug-calib-power");
+    const wantPower = calibPowerCheckbox && calibPowerCheckbox.checked;
+
+    if (!inPowerMode && clickIndex < 20) {
+      // Mode portrait : 20 clics
+      const label = portraitLabels[clickIndex];
+      calibPoints.push({ label, px: Math.round(px), py: Math.round(py), nx: +nx.toFixed(4), ny: +ny.toFixed(4) });
+
+      const marker = document.createElement("div");
+      marker.style.cssText = `position:absolute;left:${(px/imgW*100)}%;top:${(py/imgH*100)}%;width:8px;height:8px;background:#fff;border:2px solid #000;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:10;`;
+      container.appendChild(marker);
+      calibMarkers.push(marker);
+
+      clickLog.innerHTML += `<div id="calib-log-${clickIndex}"><span style="color:#00d4ff;">${label}</span>: x=${nx.toFixed(4)}, y=${ny.toFixed(4)} (${Math.round(px)}, ${Math.round(py)}px)</div>`;
+      clickLog.scrollTop = clickLog.scrollHeight;
+
+      clickIndex++;
+      if (clickIndex >= 20 && wantPower) {
+        inPowerMode = true;
+        clickLog.innerHTML += `<div style="color:#00ffff;font-weight:bold;">Portraits OK ! Maintenant clique sur le centre du chiffre power de chaque equipe (${powerLabels.join(", ")}).</div>`;
+      } else if (clickIndex >= 20) {
+        clickLog.innerHTML += `<div style="color:#44ff44;font-weight:bold;">Calibration complete ! Sauvegarde ou copie les coordonnees.</div>`;
+      }
+    } else if (inPowerMode && powerClickIndex < 4) {
+      // Mode power : 4 clics
+      const label = powerLabels[powerClickIndex];
+      powerPoints.push({ label, px: Math.round(px), py: Math.round(py), nx: +nx.toFixed(4), ny: +ny.toFixed(4) });
+
+      const marker = document.createElement("div");
+      marker.style.cssText = `position:absolute;left:${(px/imgW*100)}%;top:${(py/imgH*100)}%;width:8px;height:8px;background:#00ffff;border:2px solid #000;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:10;`;
+      container.appendChild(marker);
+      calibMarkers.push(marker);
+
+      clickLog.innerHTML += `<div id="calib-pwr-${powerClickIndex}"><span style="color:#00ffff;">${label}</span>: x=${nx.toFixed(4)}, y=${ny.toFixed(4)} (${Math.round(px)}, ${Math.round(py)}px)</div>`;
+      clickLog.scrollTop = clickLog.scrollHeight;
+
+      powerClickIndex++;
+      if (powerClickIndex >= 4) {
+        clickLog.innerHTML += `<div style="color:#44ff44;font-weight:bold;">Calibration complete (portraits + power) ! Sauvegarde ou copie les coordonnees.</div>`;
+      }
     }
   });
 
   // Clic droit = annuler le dernier point
   container.addEventListener("contextmenu", (e) => {
     e.preventDefault();
-    if (clickIndex <= 0) return;
-    clickIndex--;
-    calibPoints.pop();
-    // Retirer le marqueur visuel
-    const lastMarker = calibMarkers.pop();
-    if (lastMarker) lastMarker.remove();
-    // Retirer la derniere ligne de log
-    const lastLog = document.getElementById(`calib-log-${clickIndex}`);
-    if (lastLog) lastLog.remove();
-    clickLog.innerHTML += `<div style="color:#ff6b6b;">← Annule ${portraitLabels[clickIndex]}</div>`;
-    clickLog.scrollTop = clickLog.scrollHeight;
+    if (inPowerMode && powerClickIndex > 0) {
+      powerClickIndex--;
+      powerPoints.pop();
+      const lastMarker = calibMarkers.pop();
+      if (lastMarker) lastMarker.remove();
+      const lastLog = document.getElementById(`calib-pwr-${powerClickIndex}`);
+      if (lastLog) lastLog.remove();
+      clickLog.innerHTML += `<div style="color:#ff6b6b;">← Annule ${powerLabels[powerClickIndex]}</div>`;
+      clickLog.scrollTop = clickLog.scrollHeight;
+    } else if (inPowerMode && powerClickIndex === 0) {
+      // Retour au mode portrait
+      inPowerMode = false;
+      clickIndex--;
+      calibPoints.pop();
+      const lastMarker = calibMarkers.pop();
+      if (lastMarker) lastMarker.remove();
+      const lastLog = document.getElementById(`calib-log-${clickIndex}`);
+      if (lastLog) lastLog.remove();
+      clickLog.innerHTML += `<div style="color:#ff6b6b;">← Annule ${portraitLabels[clickIndex]}, retour mode portrait</div>`;
+      clickLog.scrollTop = clickLog.scrollHeight;
+    } else if (clickIndex > 0) {
+      clickIndex--;
+      calibPoints.pop();
+      const lastMarker = calibMarkers.pop();
+      if (lastMarker) lastMarker.remove();
+      const lastLog = document.getElementById(`calib-log-${clickIndex}`);
+      if (lastLog) lastLog.remove();
+      clickLog.innerHTML += `<div style="color:#ff6b6b;">← Annule ${portraitLabels[clickIndex]}</div>`;
+      clickLog.scrollTop = clickLog.scrollHeight;
+    }
   });
 
   // Helper : generer les slots config depuis les points cliques
-  function generateSlotsFromPoints(points) {
+  function generateSlotsFromPoints(points, pwrPoints) {
     const zoneW = 0.05, zoneH = 0.08;
     const slotsConfig = [];
     for (let s = 0; s < 4; s++) {
@@ -8144,12 +8284,26 @@ async function displayScanDebug(screenshotDataUrl, slots, cropper) {
       const maxX = Math.max(...allX) + zoneW / 2 + 0.005;
       const minY = Math.min(...allY) - zoneH / 2 - 0.005;
       const maxY = Math.max(...allY) + zoneH / 2 + 0.005;
-      // Power: AU-DESSUS des portraits, pleine largeur de la carte
+
+      // Power: utiliser le clic custom si disponible, sinon auto au-dessus des portraits
       const powerH = 0.045;
-      const powerY = minY - powerH; // juste au-dessus de la zone portraits
-      const extendedMinY = powerY;
+      let powerX, powerY, powerW;
+      if (pwrPoints && pwrPoints[s]) {
+        // Le clic power indique le CENTRE du chiffre power
+        // Zone power centree sur ce point, largeur = largeur de la carte
+        const pp = pwrPoints[s];
+        powerX = +minX.toFixed(4);
+        powerY = +(pp.ny - powerH / 2).toFixed(4);
+        powerW = +(maxX - minX).toFixed(4);
+      } else {
+        // Auto: juste au-dessus des portraits
+        powerX = +minX.toFixed(4);
+        powerY = +(minY - powerH).toFixed(4);
+        powerW = +(maxX - minX).toFixed(4);
+      }
+      const extendedMinY = Math.min(minY, powerY);
       zones.team_full = { x: +minX.toFixed(4), y: +extendedMinY.toFixed(4), w: +(maxX - minX).toFixed(4), h: +(maxY - extendedMinY).toFixed(4) };
-      zones.team_power = { x: +minX.toFixed(4), y: +powerY.toFixed(4), w: +(maxX - minX).toFixed(4), h: powerH };
+      zones.team_power = { x: powerX, y: powerY, w: powerW, h: powerH };
       slotPoints.forEach((p, i) => {
         zones[`portrait_${i + 1}`] = { x: +(p.nx - zoneW / 2).toFixed(4), y: +(p.ny - zoneH / 2).toFixed(4), w: zoneW, h: zoneH };
       });
@@ -8161,7 +8315,7 @@ async function displayScanDebug(screenshotDataUrl, slots, cropper) {
   // Bouton copier
   document.getElementById("debug-copy-coords").addEventListener("click", () => {
     if (calibPoints.length === 0) { alert("Clique d'abord sur les portraits !"); return; }
-    const slotsConfig = generateSlotsFromPoints(calibPoints);
+    const slotsConfig = generateSlotsFromPoints(calibPoints, powerPoints.length === 4 ? powerPoints : null);
     const configText = JSON.stringify(slotsConfig, null, 2);
     navigator.clipboard.writeText(configText).then(() => {
       alert("Coordonnees copiees ! Colle-les dans la console ou envoie-les moi.");
@@ -8178,7 +8332,7 @@ async function displayScanDebug(screenshotDataUrl, slots, cropper) {
       return;
     }
 
-    const slotsConfig = generateSlotsFromPoints(calibPoints);
+    const slotsConfig = generateSlotsFromPoints(calibPoints, powerPoints.length === 4 ? powerPoints : null);
     const calibData = {
       reference: { aspectRatio: cropper.referenceAspect, calibratedAt: `${imgW}x${imgH}` },
       slots: { custom: slotsConfig },
